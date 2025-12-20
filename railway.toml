@@ -2,9 +2,11 @@
 builder = "NIXPACKS"
 buildCommand = """
 composer install --no-dev --optimize-autoloader
+npm install
+npm run build
 php artisan optimize
 php artisan optimize:clear
 """
 
 [start]
-command = "php artisan serve --host=0.0.0.0 --port=$PORT"
+command = "php -S 0.0.0.0:$PORT -t public"
