@@ -2,7 +2,6 @@
 builder = "NIXPACKS"
 buildCommand = """
 composer install --no-dev --optimize-autoloader
-npm run build
 php artisan optimize
 php artisan optimize:clear
 """
