@@ -15,11 +15,25 @@ class ProjectController extends Controller
     }
 
     public function create()
-    {
-        $company = Auth::user()->company;
+{
+    $user = auth()->user();
 
-        return view('projects.create', compact('company'));
+    // Admin safety check (extra, middleware already does this)
+    if ($user->role !== 'admin') {
+        abort(403);
     }
+
+    $company = $user->company;
+
+    // Fetch company members
+    $members = \App\Models\User::where('company_id', $company->id)->get();
+
+    return view('projects.create', [
+        'company' => $company,
+        'members' => $members
+    ]);
+}
+
 
     public function store(Request $request)
     {

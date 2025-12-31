@@ -38,6 +38,22 @@
         </div>
     </div>
 </div>
+@if(auth()->user()->role === 'admin')
+    <h5>Company Members</h5>
+
+    <ul class="list-group mb-3">
+        @foreach($members as $member)
+            <li class="list-group-item d-flex justify-content-between">
+                {{ $member->name ?? $member->email }}
+
+                <span class="badge bg-secondary">
+                    {{ $member->role }}
+                </span>
+            </li>
+        @endforeach
+    </ul>
+@endif
+
 
 </body>
 </html>
