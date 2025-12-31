@@ -22,13 +22,14 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    public function isAdmin(): bool
-    {
-        return $this->role === 'admin';
-    }
+    public function isCompanyAdmin(): bool
+{
+    return $this->company && $this->company->created_by === $this->id;
+}
 
     public function company()
     {
         return $this->belongsTo(Company::class);
     }
 }
+

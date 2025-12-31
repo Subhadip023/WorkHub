@@ -21,11 +21,22 @@ class ProjectController extends Controller
     /**
      * Show create project form
      */
-     public function create()
-    {
-        $company = auth()->user()->company; // 🔑 get company
-        return view('projects.create', compact('company'));
+    public function create()
+{
+    $user = auth()->user();
+    $company = $user->company;
+
+    // Default empty collection
+    $members = collect();
+
+    // Only admin can see members
+    if ($user->isCompanyAdmin()) {
+        $members = $company->users()->get();
     }
+
+    return view('projects.create', compact('company', 'members'));
+}
+
     /**
      * Store new project
      */
