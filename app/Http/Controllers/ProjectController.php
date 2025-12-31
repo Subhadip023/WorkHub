@@ -35,11 +35,12 @@ class ProjectController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
         ]);
-
+        // dd(auth()->user()->id);
         Project::create([
             'name' => $request->name,
             'description' => $request->description,
             'company_id' => Auth::user()->company_id,
+            'created_by' => auth()->user()->id,
         ]);
 
         return redirect()->route('projects.index')

@@ -10,6 +10,7 @@ class Project extends Model
         'name',
         'description',
         'company_id',
+        'created_by',
     ];
 
     public function tasks()
