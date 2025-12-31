@@ -10,9 +10,16 @@ use Illuminate\Support\Facades\Auth;
 class CompanyController extends Controller
 {
     public function index()
-    {
-        return view('company.index');
+{
+    // If user already belongs to a company → go to projects
+    if (Auth::user()->company_id) {
+        return redirect('/projects');
     }
+
+    // Else show company create / join page
+    return view('company.index');
+}
+
 
     public function store(Request $request)
     {
