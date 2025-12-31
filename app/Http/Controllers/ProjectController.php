@@ -16,7 +16,9 @@ class ProjectController extends Controller
 
     public function create()
     {
-        return view('projects.create');
+        $company = Auth::user()->company;
+
+        return view('projects.create', compact('company'));
     }
 
     public function store(Request $request)

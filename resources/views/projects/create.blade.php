@@ -5,6 +5,13 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
+@if(auth()->user()->role === 'admin')
+    <div class="alert alert-info">
+        <strong>Company Join Code:</strong>
+        {{ $company->join_code }}
+    </div>
+@endif
+
 
 <div class="container mt-5">
     <div class="card shadow">
