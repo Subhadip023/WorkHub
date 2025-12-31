@@ -21,11 +21,11 @@ class ProjectController extends Controller
     /**
      * Show create project form
      */
-    public function create()
+     public function create()
     {
-        return view('projects.create');
+        $company = auth()->user()->company; // 🔑 get company
+        return view('projects.create', compact('company'));
     }
-
     /**
      * Store new project
      */
