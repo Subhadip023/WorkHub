@@ -9,12 +9,31 @@ class Company extends Model
 {
     use HasFactory;
 
-    protected $table = 'companies';
-
     protected $fillable = [
         'name',
-        'email',
-        'phone',
-        'address'
+        'join_code',
+        'created_by',
     ];
+
+    /* =======================
+       RELATIONSHIPS
+    ======================== */
+
+    // Company has many users
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
+
+    // Company has many projects
+    public function projects()
+    {
+        return $this->hasMany(Project::class);
+    }
+
+    // Company creator (admin)
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }

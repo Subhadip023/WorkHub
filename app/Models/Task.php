@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,6 +12,20 @@ class Task extends Model
     protected $fillable = [
         'title',
         'description',
-        'status'
+        'status',
+        'project_id',
+        'user_id',
     ];
+
+    // Task belongs to a project
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
+    }
+
+    // Task belongs to a user
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

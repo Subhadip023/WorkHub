@@ -1,39 +1,37 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Project;
 use App\Models\Task;
+use Illuminate\Http\Request;
 
-class TaskController extends Controller
+class TaskController extends Controller // ✅ must extend App\Http\Controllers\Controller
 {
-    // Show all tasks
-    public function index()
+    public function index(Project $project)
     {
-        $tasks = Task::latest()->get();
-        return view('tasks.index', compact('tasks'));
+        $this->authorize('viewAny', [Task::class, $project]);
+        $tasks = $project->tasks()->latest()->get();
+        return view('tasks.index', compact('project', 'tasks'));
     }
 
-    // Store new task
-    public function store(Request $request)
+    public function store(Request $request, Project $project)
     {
+        $this->authorize('create', [Task::class, $project]);
+
         $request->validate([
-            'title' => 'required|min:3',
-            'description' => 'nullable'
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
         ]);
 
         Task::create([
             'title' => $request->title,
             'description' => $request->description,
-            'status' => 'pending'
+            'status' => 'todo',
+            'project_id' => $project->id,
+            'user_id' => auth()->id(),
         ]);
 
-        return redirect('/tasks')->with('success', 'Task added successfully!');
-    }
-
-    // Delete task
-    public function destroy($id)
-    {
-        Task::findOrFail($id)->delete();
-        return redirect('/tasks')->with('success', 'Task deleted!');
+        return redirect()->back()->with('success', 'Task created successfully!');
     }
 }

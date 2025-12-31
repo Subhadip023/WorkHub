@@ -1,57 +1,46 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Task Manager</title>
-    <style>
-        body { font-family: Arial; background:#f4f4f4; }
-        .box { width:500px; margin:auto; background:#fff; padding:20px; }
-        input, textarea { width:100%; padding:8px; margin:5px 0; }
-        button { padding:8px 15px; background:#28a745; color:white; border:none; }
-        .task { margin-top:10px; padding:10px; border-bottom:1px solid #ccc; }
-        .delete { background:red; margin-top:5px; }
-        .error { color:red; }
-        .success { color:green; }
-    </style>
-</head>
-<body>
+@extends('layouts.app')
 
-<div class="box">
-    <h2>Add Task</h2>
+@section('title', 'Tasks')
+
+@section('content')
+<div class="container mt-4">
+
+    <h1 class="h3 mb-4 text-gray-800">
+        {{ $project->name }} – Tasks
+    </h1>
 
     @if(session('success'))
-        <p class="success">{{ session('success') }}</p>
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
     @endif
 
-    @if($errors->any())
-        @foreach($errors->all() as $error)
-            <p class="error">{{ $error }}</p>
-        @endforeach
-    @endif
-
-    <form method="POST" action="/tasks">
+    <form method="POST" action="{{ route('tasks.store', $project) }}" class="mb-4">
         @csrf
-        <input type="text" name="title" placeholder="Task title">
-        <textarea name="description" placeholder="Task description"></textarea>
-        <button type="submit">Add Task</button>
+
+        <div class="form-group">
+            <input type="text" name="title" class="form-control" placeholder="Task title" required>
+        </div>
+
+        <div class="form-group mt-2">
+            <textarea name="description" class="form-control" placeholder="Task description"></textarea>
+        </div>
+
+        <button class="btn btn-primary mt-3">
+            Add Task
+        </button>
     </form>
 
-    <hr>
-
-    <h3>Task List</h3>
-
-    @foreach($tasks as $task)
-        <div class="task">
-            <strong>{{ $task->title }}</strong><br>
-            {{ $task->description }}
-
-            <form method="POST" action="/tasks/{{ $task->id }}">
-                @csrf
-                @method('DELETE')
-                <button class="delete">Delete</button>
-            </form>
+    @forelse($tasks as $task)
+        <div class="card mb-2">
+            <div class="card-body">
+                <strong>{{ $task->title }}</strong>
+                <p class="mb-0 text-muted">{{ $task->description ?? '-' }}</p>
+            </div>
         </div>
-    @endforeach
-</div>
+    @empty
+        <p class="text-muted">No tasks yet.</p>
+    @endforelse
 
-</body>
-</html>
+</div>
+@endsection

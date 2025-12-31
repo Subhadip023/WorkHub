@@ -1,46 +1,21 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Add Company</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-<div class="container mt-5">
+@extends('layout.userlayout')
+@section('content')
 
-    <h2 class="mb-4">Add Company</h2>
+<div class="bg-white p-10 rounded-xl shadow-xl w-full max-w-md">
+    <h2 class="text-3xl font-bold mb-6 text-center text-yellow-700">Setup Your Company</h2>
 
-    @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul class="mb-0">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
-    <form method="POST" action="{{ route('companies.store') }}">
+    <form method="POST" action="{{ route('company.store') }}">
         @csrf
-        <div class="mb-3">
-            <label>Name</label>
-            <input type="text" name="name" class="form-control" value="{{ old('name') }}" required>
-        </div>
-        <div class="mb-3">
-            <label>Email</label>
-            <input type="email" name="email" class="form-control" value="{{ old('email') }}" required>
-        </div>
-        <div class="mb-3">
-            <label>Phone</label>
-            <input type="text" name="phone" class="form-control" value="{{ old('phone') }}">
-        </div>
-        <div class="mb-3">
-            <label>Address</label>
-            <textarea name="address" class="form-control">{{ old('address') }}</textarea>
-        </div>
-        <button type="submit" class="btn btn-success">Save</button>
-        <a href="{{ route('companies.index') }}" class="btn btn-secondary">Back</a>
+        <input type="text" name="name" placeholder="Company Name" class="w-full p-3 border rounded mb-4" required>
+        <button type="submit" class="w-full bg-yellow-600 text-white p-3 rounded hover:bg-yellow-700 transition mb-4">Create Company</button>
     </form>
 
+    <hr class="my-4">
+
+    <form method="POST" action="{{ route('company.join') }}">
+        @csrf
+        <input type="text" name="join_code" placeholder="Join Code" class="w-full p-3 border rounded mb-4" required>
+        <button type="submit" class="w-full bg-green-600 text-white p-3 rounded hover:bg-green-700 transition">Join Company</button>
+    </form>
 </div>
-</body>
-</html>
+@endsection
