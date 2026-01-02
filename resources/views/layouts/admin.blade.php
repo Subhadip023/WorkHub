@@ -22,6 +22,12 @@
 </head>
 
 <body id="page-top">
+    @foreach (['success', 'error', 'warning', 'info'] as $type)
+        @if(session($type))
+           <div class="alert alert-{{ $type=='error' ? 'danger' : $type }} alert-dismissible fade show mx-2 my-1 " role="alert" style="position: fixed; top: 0; left: 0; right: 0; z-index: 9999"> {{ session($type) }}<button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">&times;</span> </button> 
+            </div>
+        @endif
+    @endforeach
 
     <!-- Page Wrapper -->
     <div id="wrapper">
@@ -98,7 +104,11 @@
 
     <!-- Custom scripts for all pages-->
     <script src="{{ asset('asset/js/sb-admin-2.min.js') }}"></script>
-
+    <script>
+        setTimeout(() => {
+            $('.alert').alert('close');
+        }, 3000);
+    </script>
     @stack('scripts')
 </body>
 
