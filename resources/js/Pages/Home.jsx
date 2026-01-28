@@ -14,7 +14,7 @@ function NavLink({ href, children }) {
 
 export default function Home({ auth, appName, canLogin, canRegister }) {
     const description =
-        'Work Hub is a Laravel learning project to practice building a real-world SaaS: Company → Project → Task, with roles and multi-tenant security.';
+        'Work Hub is a multi-company task management platform built for teams. Organize work by company and projects, assign tasks to users, and keep every company’s data securely isolated.';
 
     return (
         <>
@@ -64,11 +64,11 @@ export default function Home({ auth, appName, canLogin, canRegister }) {
                             <div>
                                 <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
                                     <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                                    Phase-wise roadmap included
+                                    Built for multi-company teams
                                 </div>
 
                                 <h1 className="mt-5 text-4xl font-semibold tracking-tight text-slate-900 dark:text-slate-50 sm:text-5xl">
-                                    Build a clean SaaS backend step by step with{' '}
+                                    Run tasks across multiple companies with{' '}
                                     <span className="underline decoration-slate-300 underline-offset-4">
                                         Work Hub
                                     </span>
@@ -150,19 +150,19 @@ export default function Home({ auth, appName, canLogin, canRegister }) {
                                     {[
                                         {
                                             title: 'Phase 1 — Tasks (no users)',
-                                            text: 'Form → controller → DB → Blade/Views.',
+                                            text: 'Learn the basics: form → controller → DB → UI.',
                                         },
                                         {
                                             title: 'Phase 2 — Auth',
-                                            text: 'Users, relationships, per-user tasks.',
+                                            text: 'Login/register and show tasks per user.',
                                         },
                                         {
-                                            title: 'Phase 3 — Company & Projects',
-                                            text: 'Multi-tenant structure: company owns projects.',
+                                            title: 'Phase 3 — Companies & Projects',
+                                            text: 'Multi-company structure: company owns projects.',
                                         },
                                         {
                                             title: 'Phase 4 — Roles & Policies',
-                                            text: 'Admin vs member, secure access rules.',
+                                            text: 'Admin vs member and secure access rules.',
                                         },
                                     ].map((item) => (
                                         <div

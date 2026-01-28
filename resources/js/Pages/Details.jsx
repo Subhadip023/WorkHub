@@ -23,7 +23,7 @@ function SectionTitle({ title, subtitle }) {
 export default function Details({ auth, appName }) {
     const name = appName ?? 'Work Hub';
     const desc =
-        'A phase-wise Laravel learning project to build a multi-tenant SaaS backend: Company → Project → Task, with roles, policies, and secure data access.';
+        'Work Hub is a multi-company task management product: Company → Project → Task, with roles, policies, and strict tenant isolation.';
 
     return (
         <>
