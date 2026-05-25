@@ -154,6 +154,43 @@
             </div>
         </li>
 
+        <!-- Company Selector Dropdown -->
+        @if(session('current_company_data'))
+            <li class="nav-item dropdown no-arrow mx-2">
+                <a class="nav-link dropdown-toggle" href="#" id="companyDropdown" role="button"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="mr-1 d-none d-lg-inline text-gray-700 font-weight-bold">
+                        <i class="fas fa-building mr-1 text-primary"></i>
+                        {{ session('current_company_data')->name }}
+                    </span>
+                    <i class="fas fa-chevron-down fa-xs text-gray-500"></i>
+                </a>
+                <!-- Dropdown - Companies List -->
+                <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="companyDropdown" style="width: 240px;">
+                    <h6 class="dropdown-header text-primary font-weight-bold">
+                        Active Company
+                    </h6>
+                    @foreach(auth()->user()->companies as $cu)
+                        @if($cu->company)
+                            <a class="dropdown-item d-flex align-items-center py-2 {{ $cu->company_id == session('current_company_id') ? 'active bg-primary text-white' : '' }}" 
+                               href="{{ route('companies.switch', $cu->company) }}">
+                                <div class="font-weight-bold text-truncate" style="max-width: 160px;">
+                                    {{ $cu->company->name }}
+                                </div>
+                                @if($cu->company_id == session('current_company_id'))
+                                    <i class="fas fa-check-circle ml-auto {{ $cu->company_id == session('current_company_id') ? 'text-white' : 'text-success' }}"></i>
+                                @endif
+                            </a>
+                        @endif
+                    @endforeach
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item text-center small text-gray-600 font-weight-bold py-2" href="{{ route('companies.index') }}">
+                        <i class="fas fa-plus-circle mr-1"></i> Join / Create Company
+                    </a>
+                </div>
+            </li>
+        @endif
+
         <div class="topbar-divider d-none d-sm-block"></div>
 
         <!-- Nav Item - User Information -->

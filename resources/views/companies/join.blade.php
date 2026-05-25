@@ -37,7 +37,7 @@
                                     </div>
                                    
                                     <button type="submit" class="btn btn-primary btn-user btn-block">
-                                        Create
+                                        Join Company
                                     </button>
                                     <div class="text-center">
                                         <a class="small" href="{{ route('companies.create') }}">Want to create a company?</a>

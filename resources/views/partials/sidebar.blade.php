@@ -24,6 +24,12 @@
             <span>Projects</span>
         </a>
     </li>
+    <li class="nav-item {{Route::currentRouteName() == 'tasks.index' ? 'active' : ''}}">
+        <a class="nav-link" href="{{ route('tasks.index') }}">
+            <i class="fas fa-tasks"></i>
+            <span>Tasks</span>
+        </a>
+    </li>
 
    
 

@@ -82,15 +82,39 @@ class CompanyController extends Controller
 
     public function join(Request $request)
     {
-        $request->validate(['code' => 'required|string |exists:companies,code']);
+        $request->validate(['code' => 'required|string|exists:companies,code']);
         $code = $request->input('code');
         $company = Company::where('code', $code)->first();
         if($company) {
             $company_id = $company->id;
             $user_id = auth()->user()->id;
+
+            // Prevent double-joining and gracefully switch company
+            $exists = CompanyUsers::where('company_id', $company_id)->where('user_id', $user_id)->exists();
+            if ($exists) {
+                session(['current_company_id' => $company_id]);
+                return redirect()->route('dashboard')->with('info', "You are already a member of {$company->name}. Active company switched.");
+            }
+
             CompanyUsers::create(['company_id' => $company_id, 'user_id' => $user_id, 'role' => 0,]);
+            session(['current_company_id' => $company_id]);
             return redirect()->route('dashboard')->with('success', 'Company joined successfully');
         }
         return back()->with('error', 'Company not found');
+    }
+
+    /**
+     * Switch active company.
+     */
+    public function switch(Company $company)
+    {
+        $user_id = auth()->user()->id;
+        $belongs = CompanyUsers::where('company_id', $company->id)->where('user_id', $user_id)->exists();
+        if (!$belongs) {
+            abort(403);
+        }
+
+        session(['current_company_id' => $company->id]);
+        return redirect()->route('dashboard')->with('success', "Switched to {$company->name}");
     }
 }

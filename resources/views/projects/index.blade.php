@@ -18,27 +18,57 @@
                 <h6 class="m-0 font-weight-bold text-primary">Projects</h6>
             </div>
             <div class="table-responsive mx-2">
-                <table class="table table-bordered" id="dataTable" width="98%" cellspacing="0">
+                <table class="table table-bordered table-hover" width="98%" cellspacing="0">
                     <thead>
                         <tr>
                             <th>Name</th>
                             <th>Description</th>
                             <th>Theme</th>
                             <th>Tasks</th>
+                            <th style="width: 140px;" class="text-center">Actions</th>
                         </tr>
                     </thead>
                 
                     <tbody>
                         @foreach ($projects as $project)
-                            <tr style="background-color: {{$project->theme}};">
-                                <td>{{ $project->name }}</td>
-                                <td>{{ $project->description }}</td>
-                                <td>{{ $project->theme }}</td>
-                                <td>0</td>
+                            <tr>
+                                <td class="align-middle">
+                                    <div class="d-flex align-items-center">
+                                        <span class="mr-2 shadow-sm" style="display: inline-block; width: 16px; height: 16px; border-radius: 50%; background-color: {{ $project->theme }}; border: 1px solid rgba(0,0,0,0.15);"></span>
+                                        <a href="{{ route('projects.show', $project) }}" class="font-weight-bold text-primary">
+                                            {{ $project->name }}
+                                        </a>
+                                    </div>
+                                </td>
+                                <td class="align-middle">{{ $project->description }}</td>
+                                <td class="align-middle">
+                                    <span class="badge text-white px-2 py-1 shadow-sm" style="background-color: {{ $project->theme }}">
+                                        {{ $project->theme }}
+                                    </span>
+                                </td>
+                                <td class="align-middle">
+                                    @php
+                                        $total = $project->tasks->count();
+                                        $completed = $project->tasks->where('is_completed', true)->count();
+                                    @endphp
+                                    <span class="badge badge-info p-2 font-weight-bold">
+                                        {{ $completed }} / {{ $total }} Tasks
+                                    </span>
+                                </td>
+                                <td class="text-center align-middle">
+                                    <a href="{{ route('projects.show', $project) }}" class="btn btn-sm btn-primary shadow-sm">
+                                        <i class="fas fa-eye mr-1"></i> View Tasks
+                                    </a>
+                                </td>
                             </tr>
                          @endforeach
                     </tbody>
                 </table>
+            </div>
+            <div class="card-footer py-2">
+                <div class="d-flex justify-content-center">
+                    {!! $projects->links() !!}
+                </div>
             </div>
         </div>
 

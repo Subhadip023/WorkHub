@@ -13,7 +13,7 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        $projects = Project::where('company_id', session('current_company_id'))->get();
+        $projects = Project::where('company_id', session('current_company_id'))->with('tasks')->paginate(10);
         return view('projects.index')->with('projects', $projects);
     }
 
@@ -42,7 +42,24 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        //
+        if ($project->company_id != session('current_company_id')) {
+            abort(403);
+        }
+
+        $project->load('tasks.assignedUser');
+
+        $companyUsers = \App\Models\CompanyUsers::where('company_id', $project->company_id)
+            ->with('user')
+            ->get()
+            ->map(function ($cu) {
+                return $cu->user;
+            });
+
+        $user_role = \App\Models\CompanyUsers::where('company_id', $project->company_id)
+            ->where('user_id', auth()->id())
+            ->first()->role ?? 0;
+
+        return view('projects.show', compact('project', 'companyUsers', 'user_role'));
     }
 
     /**
