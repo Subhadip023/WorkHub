@@ -1,65 +1,41 @@
 <?php
 
+use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
 
-// Dashboard
 Route::get('/', function () {
-    return view('welcome');
-})->name('dashboard');
+    return redirect()->route('login');
+});
 
-// Components Routes
-Route::get('/buttons', function () {
-    return view('pages.buttons');
-})->name('buttons');
+Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/cards', function () {
-    return view('pages.cards');
-})->name('cards');
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-// Utilities Routes
-Route::get('/utilities/colors', function () {
-    return view('pages.utilities.colors');
-})->name('utilities.colors');
+    Route::resource('companies', CompanyController::class);
+    Route::post('/companies/join', [CompanyController::class, 'join'])->name('companies.join');
+    Route::get('/companies/{company}/switch', [CompanyController::class, 'switch'])->name('companies.switch');
 
-Route::get('/utilities/borders', function () {
-    return view('pages.utilities.borders');
-})->name('utilities.borders');
+    Route::resource('projects', ProjectController::class);
+    Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
+    Route::post('/tasks', [TaskController::class, 'storeGeneral'])->name('tasks.store');
+    Route::post('/projects/{project}/tasks', [TaskController::class, 'store'])->name('projects.tasks.store');
+    Route::post('/projects/{project}/tasks/import', [TaskController::class, 'import'])->name('projects.tasks.import');
+    Route::patch('/tasks/{task}/toggle', [TaskController::class, 'toggle'])->name('tasks.toggle');
+    Route::patch('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
+    Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
+    Route::get('/tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');
+    Route::post('/tasks/{task}/images', [TaskController::class, 'uploadImage'])->name('tasks.images.store');
+    Route::delete('/tasks/images/{image}', [TaskController::class, 'deleteImage'])->name('tasks.images.destroy');
+});
 
-Route::get('/utilities/animations', function () {
-    return view('pages.utilities.animations');
-})->name('utilities.animations');
 
-Route::get('/utilities/other', function () {
-    return view('pages.utilities.other');
-})->name('utilities.other');
 
-// Auth Routes
-Route::get('/login', function () {
-    return view('pages.login');
-})->name('login');
-
-Route::get('/register', function () {
-    return view('pages.register');
-})->name('register');
-
-Route::get('/forgot-password', function () {
-    return view('pages.forgot-password');
-})->name('forgot-password');
-
-// Other Pages Routes
-Route::get('/404', function () {
-    return view('pages.404');
-})->name('404');
-
-Route::get('/blank', function () {
-    return view('pages.blank');
-})->name('blank');
-
-// Data Visualization Routes
-Route::get('/charts', function () {
-    return view('pages.charts');
-})->name('charts');
-
-Route::get('/tables', function () {
-    return view('pages.tables');
-})->name('tables');
+require __DIR__.'/auth.php';
+require __DIR__.'/desing.php';

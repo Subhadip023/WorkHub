@@ -22,6 +22,61 @@
 </head>
 
 <body id="page-top">
+    @php
+        $icons = [
+            'success' => 'fa-check-circle text-success',
+            'error' => 'fa-exclamation-circle text-danger',
+            'warning' => 'fa-exclamation-triangle text-warning',
+            'info' => 'fa-info-circle text-info'
+        ];
+        $borderColors = [
+            'success' => '#1cc88a',
+            'error' => '#e74a3b',
+            'warning' => '#f6c23e',
+            'info' => '#36b9cc'
+        ];
+    @endphp
+
+    <div style="position: fixed; top: 25px; right: 25px; z-index: 1050; max-width: 380px; min-width: 280px;">
+        @foreach (['success', 'error', 'warning', 'info'] as $type)
+            @if(session($type))
+                <div class="toast-notification alert alert-dismissible fade show p-3 border-0" role="alert" 
+                     style="background: rgba(255, 255, 255, 0.98); 
+                            backdrop-filter: blur(8px); 
+                            -webkit-backdrop-filter: blur(8px); 
+                            border-left: 5px solid {{ $borderColors[$type] }} !important; 
+                            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15); 
+                            border-radius: 8px; 
+                            color: #333;
+                            margin-bottom: 12px;
+                            display: block;">
+                    <div class="d-flex align-items-center">
+                        <i class="fas {{ $icons[$type] }} fa-lg mr-3"></i>
+                        <div style="flex-grow: 1; font-weight: 600; font-size: 0.9rem; padding-right: 20px;">
+                            {{ session($type) }}
+                        </div>
+                        <button type="button" class="close p-2" data-dismiss="alert" aria-label="Close" style="top: 50%; transform: translateY(-50%); right: 5px;">
+                            <span aria-hidden="true" class="text-gray-500">&times;</span>
+                        </button>
+                    </div>
+                </div>
+            @endif
+        @endforeach
+    </div>
+
+    @if(session('success') || session('error') || session('warning') || session('info'))
+        @push('scripts')
+        <script>
+            $(document).ready(function() {
+                setTimeout(function() {
+                    $('.toast-notification').fadeTo(500, 0).slideUp(500, function(){
+                        $(this).remove(); 
+                    });
+                }, 4000);
+            });
+        </script>
+        @endpush
+    @endif
 
     <!-- Page Wrapper -->
     <div id="wrapper">
@@ -81,7 +136,7 @@
                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                         Logout
                     </a>
-                    <form id="logout-form" action="#" method="POST" class="d-none">
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                         @csrf
                     </form>
                 </div>
@@ -98,7 +153,11 @@
 
     <!-- Custom scripts for all pages-->
     <script src="{{ asset('asset/js/sb-admin-2.min.js') }}"></script>
-
+    <script>
+        setTimeout(() => {
+            $('.alert').alert('close');
+        }, 3000);
+    </script>
     @stack('scripts')
 </body>
 
