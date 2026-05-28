@@ -36,7 +36,7 @@ class TaskController extends Controller
             ->count();
 
         // Fetch paginated tasks
-        $tasks = $tasksQuery->with(['project', 'assignedUser'])->paginate(15);
+        $tasks = $tasksQuery->with(['project', 'assignedUser'])->paginate(5);
 
         // Fetch team members of the company for dropdowns
         $companyUsers = \App\Models\CompanyUsers::where('company_id', $current_company)
