@@ -25,3 +25,4 @@ Thumbs.db
 package-lock.json
 composer.lock
 temp-sb-admin/
+.env.testing

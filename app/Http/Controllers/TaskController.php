@@ -15,18 +15,47 @@ class TaskController extends Controller
     {
         $current_company = session('current_company_id');
         if (!$current_company) {
-            return redirect()->route('companies.create')->with('error', 'Please create a company first');
+            $current_company = 'personal';
         }
 
-        // Fetch projects for filtering and association
-        $projects = Project::where('company_id', $current_company)->get();
+        if ($current_company === 'personal') {
+            // Fetch personal projects
+            $projects = Project::whereNull('company_id')
+                ->where('user_id', auth()->id())
+                ->get();
 
-        // Base query for tasks in this company
-        $tasksQuery = Task::whereHas('project', function ($query) use ($current_company) {
-            $query->where('company_id', $current_company);
-        });
+            // Base query for tasks in personal projects
+            $tasksQuery = Task::whereHas('project', function ($query) {
+                $query->whereNull('company_id')->where('user_id', auth()->id());
+            });
 
-        // Compute company-wide stats before pagination
+            $companyUsers = collect([auth()->user()]);
+            $user_role = 1;
+        } else {
+            // Fetch projects for filtering and association
+            $projects = Project::where('company_id', $current_company)->get();
+
+            // Base query for tasks in this company
+            $tasksQuery = Task::whereHas('project', function ($query) use ($current_company) {
+                $query->where('company_id', $current_company);
+            });
+
+            // Fetch team members of the company for dropdowns
+            $companyUsers = \App\Models\CompanyUsers::where('company_id', $current_company)
+                ->with('user')
+                ->get()
+                ->map(function ($cu) {
+                    return $cu->user;
+                })
+                ->filter()
+                ->values();
+
+            $user_role = \App\Models\CompanyUsers::where('company_id', $current_company)
+                ->where('user_id', auth()->id())
+                ->first()->role ?? 0;
+        }
+
+        // Compute stats before pagination
         $totalCount = (clone $tasksQuery)->count();
         $completedCount = (clone $tasksQuery)->where('is_completed', true)->count();
         $pendingCount = $totalCount - $completedCount;
@@ -37,20 +66,6 @@ class TaskController extends Controller
 
         // Fetch paginated tasks
         $tasks = $tasksQuery->with(['project', 'assignedUser'])->paginate(5);
-
-        // Fetch team members of the company for dropdowns
-        $companyUsers = \App\Models\CompanyUsers::where('company_id', $current_company)
-            ->with('user')
-            ->get()
-            ->map(function ($cu) {
-                return $cu->user;
-            })
-            ->filter()
-            ->values();
-
-        $user_role = \App\Models\CompanyUsers::where('company_id', $current_company)
-            ->where('user_id', auth()->id())
-            ->first()->role ?? 0;
 
         return view('tasks.index', compact(
             'tasks', 
@@ -78,8 +93,16 @@ class TaskController extends Controller
         ]);
 
         $project = Project::findOrFail($validated['project_id']);
-        if ($project->company_id != session('current_company_id')) {
-            abort(403);
+        $current_company = session('current_company_id');
+
+        if ($current_company === 'personal') {
+            if ($project->company_id !== null || $project->user_id !== auth()->id()) {
+                abort(403);
+            }
+        } else {
+            if ($project->company_id != $current_company) {
+                abort(403);
+            }
         }
 
         if (empty($validated['assigned_to'])) {
@@ -96,8 +119,15 @@ class TaskController extends Controller
      */
     public function store(Request $request, Project $project)
     {
-        if ($project->company_id != session('current_company_id')) {
-            abort(403);
+        $current_company = session('current_company_id');
+        if ($current_company === 'personal') {
+            if ($project->company_id !== null || $project->user_id !== auth()->id()) {
+                abort(403);
+            }
+        } else {
+            if ($project->company_id != $current_company) {
+                abort(403);
+            }
         }
 
         $validated = $request->validate([
@@ -121,16 +151,23 @@ class TaskController extends Controller
      */
     protected function checkTaskOwnership(Task $task)
     {
-        if ($task->project->company_id != session('current_company_id')) {
-            abort(403);
-        }
+        $current_company = session('current_company_id');
+        if ($current_company === 'personal') {
+            if ($task->project->company_id !== null || $task->project->user_id !== auth()->id()) {
+                abort(403);
+            }
+        } else {
+            if ($task->project->company_id != $current_company) {
+                abort(403);
+            }
 
-        $user_role = \App\Models\CompanyUsers::where('company_id', session('current_company_id'))
-            ->where('user_id', auth()->id())
-            ->first()->role ?? 0;
+            $user_role = \App\Models\CompanyUsers::where('company_id', $current_company)
+                ->where('user_id', auth()->id())
+                ->first()->role ?? 0;
 
-        if ($user_role == 0 && $task->assigned_to !== auth()->id()) {
-            abort(403, 'You can only modify tasks assigned to you.');
+            if ($user_role == 0 && $task->assigned_to !== auth()->id()) {
+                abort(403, 'You can only modify tasks assigned to you.');
+            }
         }
     }
 
@@ -184,8 +221,15 @@ class TaskController extends Controller
      */
     public function import(Request $request, Project $project)
     {
-        if ($project->company_id != session('current_company_id')) {
-            abort(403);
+        $current_company = session('current_company_id');
+        if ($current_company === 'personal') {
+            if ($project->company_id !== null || $project->user_id !== auth()->id()) {
+                abort(403);
+            }
+        } else {
+            if ($project->company_id != $current_company) {
+                abort(403);
+            }
         }
 
         $request->validate([
@@ -229,25 +273,35 @@ class TaskController extends Controller
      */
     public function show(Task $task)
     {
-        if ($task->project->company_id != session('current_company_id')) {
-            abort(403);
-        }
-
-        $task->load(['project', 'assignedUser', 'images']);
-
         $current_company = session('current_company_id');
-        $companyUsers = \App\Models\CompanyUsers::where('company_id', $current_company)
-            ->with('user')
-            ->get()
-            ->map(function ($cu) {
-                return $cu->user;
-            })
-            ->filter()
-            ->values();
+        if ($current_company === 'personal') {
+            if ($task->project->company_id !== null || $task->project->user_id !== auth()->id()) {
+                abort(403);
+            }
 
-        $user_role = \App\Models\CompanyUsers::where('company_id', $current_company)
-            ->where('user_id', auth()->id())
-            ->first()->role ?? 0;
+            $task->load(['project', 'assignedUser', 'images']);
+            $companyUsers = collect([auth()->user()]);
+            $user_role = 1;
+        } else {
+            if ($task->project->company_id != $current_company) {
+                abort(403);
+            }
+
+            $task->load(['project', 'assignedUser', 'images']);
+
+            $companyUsers = \App\Models\CompanyUsers::where('company_id', $current_company)
+                ->with('user')
+                ->get()
+                ->map(function ($cu) {
+                    return $cu->user;
+                })
+                ->filter()
+                ->values();
+
+            $user_role = \App\Models\CompanyUsers::where('company_id', $current_company)
+                ->where('user_id', auth()->id())
+                ->first()->role ?? 0;
+        }
 
         return view('tasks.show', compact('task', 'companyUsers', 'user_role'));
     }
@@ -257,8 +311,15 @@ class TaskController extends Controller
      */
     public function uploadImage(Request $request, Task $task)
     {
-        if ($task->project->company_id != session('current_company_id')) {
-            abort(403);
+        $current_company = session('current_company_id');
+        if ($current_company === 'personal') {
+            if ($task->project->company_id !== null || $task->project->user_id !== auth()->id()) {
+                abort(403);
+            }
+        } else {
+            if ($task->project->company_id != $current_company) {
+                abort(403);
+            }
         }
 
         $this->checkTaskOwnership($task);
@@ -286,9 +347,15 @@ class TaskController extends Controller
     public function deleteImage(Request $request, \App\Models\TaskImage $image)
     {
         $task = $image->task;
-
-        if ($task->project->company_id != session('current_company_id')) {
-            abort(403);
+        $current_company = session('current_company_id');
+        if ($current_company === 'personal') {
+            if ($task->project->company_id !== null || $task->project->user_id !== auth()->id()) {
+                abort(403);
+            }
+        } else {
+            if ($task->project->company_id != $current_company) {
+                abort(403);
+            }
         }
 
         $this->checkTaskOwnership($task);

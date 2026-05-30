@@ -6,9 +6,13 @@
 <!-- Page Heading -->
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
-    @if(session('current_company_data'))
+    @if(session('current_company_id') === 'personal')
         <h2 class="h5 mb-0 text-gray-600 font-weight-bold">
-            <i class="fas fa-building mr-1 text-primary"></i> {{ session('current_company_data')->name }}
+            <i class="fas fa-user mr-1 text-primary"></i> Personal Space
+        </h2>
+    @elseif(session('current_company_data'))
+        <h2 class="h5 mb-0 text-gray-600 font-weight-bold">
+            <i class="fas fa-sitemap mr-1 text-primary"></i> {{ session('current_company_data')->name }}
         </h2>
     @endif
 </div>
@@ -102,7 +106,7 @@
                 </div>
                 <p>
                     Welcome to your <strong>Task & Project Management System</strong>.
-                    Here you can easily manage your company’s projects, assign tasks,
+                    Here you can easily manage your projects, assign tasks,
                     track progress, and collaborate with your team — all in one place.
                 </p>
 
@@ -117,40 +121,52 @@
         <div class="card shadow mb-4">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 <h6 class="m-0 font-weight-bold text-primary">Team Members</h6>
-                <span class="badge badge-primary p-2" style="font-size: 0.9rem; cursor: pointer;" onclick="navigator.clipboard.writeText('{{ session('code') }}'); alert('Invite code copied to clipboard!');" title="Click to copy invite code">
-                    <i class="fas fa-copy mr-1"></i> Code: {{ session('code') }}
-                </span>
+                @if(session('current_company_id') !== 'personal' && session('code'))
+                    <span class="badge badge-primary p-2" style="font-size: 0.9rem; cursor: pointer;" onclick="navigator.clipboard.writeText('{{ session('code') }}'); alert('Invite code copied to clipboard!');" title="Click to copy invite code">
+                        <i class="fas fa-copy mr-1"></i> Code: {{ session('code') }}
+                    </span>
+                @endif
             </div>
             <div class="card-body">
-                <p class="small text-gray-500 mb-3">
-                    Share the invite code above with users so they can join this company.
-                </p>
-                <div class="list-group list-group-flush">
-                    @forelse($teamMembers as $member)
-                        @if($member->user)
-                            <div class="list-group-item px-0 py-3 d-flex align-items-center justify-content-between">
-                                <div class="d-flex align-items-center">
-                                    <div class="bg-light rounded-circle p-2 mr-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
-                                        <i class="fas fa-user text-primary"></i>
+                @if(session('current_company_id') === 'personal')
+                    <p class="small text-gray-500 mb-3">
+                        This is your personal workspace. Create or switch to an organization to invite team members.
+                    </p>
+                    <div class="text-center py-4">
+                        <i class="fas fa-user-friends text-gray-300 fa-3x mb-3"></i>
+                        <p class="text-muted small">Collaborate with others by creating or joining an organization.</p>
+                    </div>
+                @else
+                    <p class="small text-gray-500 mb-3">
+                        Share the invite code above with users so they can join this organization.
+                    </p>
+                    <div class="list-group list-group-flush">
+                        @forelse($teamMembers as $member)
+                            @if($member->user)
+                                <div class="list-group-item px-0 py-3 d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-light rounded-circle p-2 mr-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-user text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-weight-semibold text-gray-800">{{ $member->user->name }}</div>
+                                            <div class="small text-gray-500">{{ $member->user->email }}</div>
+                                        </div>
                                     </div>
                                     <div>
-                                        <div class="font-weight-semibold text-gray-800">{{ $member->user->name }}</div>
-                                        <div class="small text-gray-500">{{ $member->user->email }}</div>
+                                        @if($member->role == 1)
+                                            <span class="badge badge-success p-2">Admin</span>
+                                        @else
+                                            <span class="badge badge-secondary p-2">Member</span>
+                                        @endif
                                     </div>
                                 </div>
-                                <div>
-                                    @if($member->role == 1)
-                                        <span class="badge badge-success p-2">Admin</span>
-                                    @else
-                                        <span class="badge badge-secondary p-2">Member</span>
-                                    @endif
-                                </div>
-                            </div>
-                        @endif
-                    @empty
-                        <p class="text-muted text-center py-3">No members found.</p>
-                    @endforelse
-                </div>
+                            @endif
+                        @empty
+                            <p class="text-muted text-center py-3">No members found.</p>
+                        @endforelse
+                    </div>
+                @endif
             </div>
         </div>
     </div>

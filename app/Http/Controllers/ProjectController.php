@@ -13,7 +13,17 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        $projects = Project::where('company_id', session('current_company_id'))->with('tasks')->paginate(10);
+        $current_company = session('current_company_id');
+        if ($current_company === 'personal') {
+            $projects = Project::whereNull('company_id')
+                ->where('user_id', auth()->id())
+                ->with('tasks')
+                ->paginate(10);
+        } else {
+            $projects = Project::where('company_id', $current_company)
+                ->with('tasks')
+                ->paginate(10);
+        }
         return view('projects.index')->with('projects', $projects);
     }
 
@@ -30,9 +40,17 @@ class ProjectController extends Controller
      */
     public function store(StoreProjectRequest $request)
     {
-        $data=$request->validated();
+        $data = $request->validated();
         $data['slug'] = str_replace(' ', '-', strtolower($data['name']));
-        $data['company_id'] = session('current_company_id');
+        
+        $current_company = session('current_company_id');
+        if ($current_company === 'personal') {
+            $data['company_id'] = null;
+        } else {
+            $data['company_id'] = $current_company;
+        }
+        $data['user_id'] = auth()->id();
+
         Project::create($data);
         return redirect()->route('projects.index')->with('success', 'Project created successfully');
     }
@@ -42,22 +60,36 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        if ($project->company_id != session('current_company_id')) {
-            abort(403);
+        $current_company = session('current_company_id');
+        
+        if ($current_company === 'personal') {
+            if ($project->company_id !== null || $project->user_id !== auth()->id()) {
+                abort(403);
+            }
+            
+            $project->load('tasks.assignedUser');
+            $companyUsers = collect([auth()->user()]);
+            $user_role = 1; // Admin of their personal space
+        } else {
+            if ($project->company_id != $current_company) {
+                abort(403);
+            }
+
+            $project->load('tasks.assignedUser');
+
+            $companyUsers = \App\Models\CompanyUsers::where('company_id', $project->company_id)
+                ->with('user')
+                ->get()
+                ->map(function ($cu) {
+                    return $cu->user;
+                })
+                ->filter()
+                ->values();
+
+            $user_role = \App\Models\CompanyUsers::where('company_id', $project->company_id)
+                ->where('user_id', auth()->id())
+                ->first()->role ?? 0;
         }
-
-        $project->load('tasks.assignedUser');
-
-        $companyUsers = \App\Models\CompanyUsers::where('company_id', $project->company_id)
-            ->with('user')
-            ->get()
-            ->map(function ($cu) {
-                return $cu->user;
-            });
-
-        $user_role = \App\Models\CompanyUsers::where('company_id', $project->company_id)
-            ->where('user_id', auth()->id())
-            ->first()->role ?? 0;
 
         return view('projects.show', compact('project', 'companyUsers', 'user_role'));
     }
@@ -67,7 +99,17 @@ class ProjectController extends Controller
      */
     public function edit(Project $project)
     {
-        //
+        $current_company = session('current_company_id');
+        if ($current_company === 'personal') {
+            if ($project->company_id !== null || $project->user_id !== auth()->id()) {
+                abort(403);
+            }
+        } else {
+            if ($project->company_id != $current_company) {
+                abort(403);
+            }
+        }
+        return view('projects.edit', compact('project'));
     }
 
     /**
@@ -75,7 +117,22 @@ class ProjectController extends Controller
      */
     public function update(UpdateProjectRequest $request, Project $project)
     {
-        //
+        $current_company = session('current_company_id');
+        if ($current_company === 'personal') {
+            if ($project->company_id !== null || $project->user_id !== auth()->id()) {
+                abort(403);
+            }
+        } else {
+            if ($project->company_id != $current_company) {
+                abort(403);
+            }
+        }
+
+        $data = $request->validated();
+        $data['slug'] = str_replace(' ', '-', strtolower($data['name']));
+        $project->update($data);
+
+        return redirect()->route('projects.index')->with('success', 'Project updated successfully');
     }
 
     /**
@@ -83,6 +140,27 @@ class ProjectController extends Controller
      */
     public function destroy(Project $project)
     {
-        //
+        $current_company = session('current_company_id');
+        if ($current_company === 'personal') {
+            if ($project->company_id !== null || $project->user_id !== auth()->id()) {
+                abort(403);
+            }
+        } else {
+            if ($project->company_id != $current_company) {
+                abort(403);
+            }
+            
+            // Check if user is admin of the company to delete
+            $is_admin = \App\Models\CompanyUsers::where('company_id', $current_company)
+                ->where('user_id', auth()->id())
+                ->where('role', 1)
+                ->exists();
+            if (!$is_admin) {
+                abort(403, 'Only organization admins can delete projects.');
+            }
+        }
+
+        $project->delete();
+        return redirect()->route('projects.index')->with('success', 'Project deleted successfully');
     }
 }

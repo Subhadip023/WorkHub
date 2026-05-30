@@ -115,13 +115,13 @@ class CompanyController extends Controller
             $next_company = CompanyUsers::where('user_id', $user->id)->first();
             if ($next_company) {
                 session(['current_company_id' => $next_company->company_id]);
-                return redirect()->route('dashboard')->with('success', 'Company deleted successfully');
             } else {
-                return redirect()->route('companies.create')->with('success', 'Company deleted successfully. Please create a new company.');
+                session(['current_company_id' => 'personal']);
             }
+            return redirect()->route('dashboard')->with('success', 'Organization deleted successfully');
         }
 
-        return redirect()->route('companies.index')->with('success', 'Company deleted successfully');
+        return redirect()->route('companies.index')->with('success', 'Organization deleted successfully');
     }
 
     public function join(Request $request)
@@ -160,5 +160,14 @@ class CompanyController extends Controller
 
         session(['current_company_id' => $company->id]);
         return redirect()->route('dashboard')->with('success', "Switched to {$company->name}");
+    }
+
+    /**
+     * Switch to Personal Space.
+     */
+    public function switchToPersonal()
+    {
+        session(['current_company_id' => 'personal']);
+        return redirect()->route('dashboard')->with('success', 'Switched to Personal Space');
     }
 }

@@ -32,8 +32,8 @@
     </li>
     <li class="nav-item {{request()->routeIs('companies.*') ? 'active' : ''}}">
         <a class="nav-link" href="{{ route('companies.index') }}">
-            <i class="fas fa-building"></i>
-            <span>Companies</span>
+            <i class="fas fa-sitemap"></i>
+            <span>Organizations</span>
         </a>
     </li>
 

@@ -1,25 +1,25 @@
 @extends('layouts.admin')
 
-@section('title', 'Companies')
+@section('title', 'Organizations')
 
 @section('content')
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Company Management</h1>
+    <h1 class="h3 mb-0 text-gray-800">Organization Management</h1>
 </div>
 
 <div class="row">
-    <!-- Left column: list of companies -->
+    <!-- Left column: list of organizations -->
     <div class="col-lg-8 mb-4">
         <div class="card shadow mb-4">
             <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                <h6 class="m-0 font-weight-bold text-primary">Your Companies</h6>
+                <h6 class="m-0 font-weight-bold text-primary">Your Organizations</h6>
             </div>
             <div class="card-body">
                 @if($companies->isEmpty())
                     <div class="text-center py-5">
                         <img class="img-fluid px-3 px-sm-4 mb-4" style="width: 15rem;"
                              src="{{ asset('asset/img/undraw_factory.svg') }}" alt="...">
-                        <p class="text-gray-500">You don't belong to any companies yet. Create one or join using a code.</p>
+                        <p class="text-gray-500">You don't belong to any organizations yet. Create one or join using a code.</p>
                     </div>
                 @else
                     <div class="table-responsive">
@@ -82,8 +82,8 @@
                                                         @method('DELETE')
                                                         <button type="submit" 
                                                                 class="btn btn-danger btn-sm btn-circle" 
-                                                                title="Delete Company"
-                                                                onclick="return confirm('Warning: Deleting this company will permanently remove all of its projects and tasks. This action cannot be undone. Are you sure you want to proceed?');">
+                                                                title="Delete Organization"
+                                                                onclick="return confirm('Warning: Deleting this organization will permanently remove all of its projects and tasks. This action cannot be undone. Are you sure you want to proceed?');">
                                                             <i class="fas fa-trash"></i>
                                                         </button>
                                                     </form>
@@ -104,45 +104,45 @@
 
     <!-- Right column: Create and Join forms -->
     <div class="col-lg-4">
-        <!-- Join Company Card -->
+        <!-- Join Organization Card -->
         <div class="card shadow mb-4">
             <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Join a Company</h6>
+                <h6 class="m-0 font-weight-bold text-primary">Join an Organization</h6>
             </div>
             <div class="card-body">
                 <form method="POST" action="{{ route('companies.join') }}">
                     @csrf
                     <div class="form-group">
-                        <label for="joinCode" class="text-xs font-weight-bold text-gray-600 uppercase">Company Code</label>
+                        <label for="joinCode" class="text-xs font-weight-bold text-gray-600 uppercase">Organization Code</label>
                         <input type="text" name="code" id="joinCode" class="form-control" placeholder="Enter Code (e.g. ABCD)" required>
                         @error('code')
                             <span class="text-danger small">{{ $message }}</span>
                         @enderror
                     </div>
                     <button type="submit" class="btn btn-primary btn-block">
-                        <i class="fas fa-sign-in-alt mr-1"></i>Join Company
+                        <i class="fas fa-sign-in-alt mr-1"></i>Join Organization
                     </button>
                 </form>
             </div>
         </div>
 
-        <!-- Create Company Card -->
+        <!-- Create Organization Card -->
         <div class="card shadow mb-4">
             <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Create a Company</h6>
+                <h6 class="m-0 font-weight-bold text-primary">Create an Organization</h6>
             </div>
             <div class="card-body">
                 <form method="POST" action="{{ route('companies.store') }}">
                     @csrf
                     <div class="form-group">
-                        <label for="createName" class="text-xs font-weight-bold text-gray-600 uppercase">Company Name</label>
-                        <input type="text" name="name" id="createName" class="form-control" placeholder="Enter Company Name" required>
+                        <label for="createName" class="text-xs font-weight-bold text-gray-600 uppercase">Organization Name</label>
+                        <input type="text" name="name" id="createName" class="form-control" placeholder="Enter Organization Name" required>
                         @error('name')
                             <span class="text-danger small">{{ $message }}</span>
                         @enderror
                     </div>
                     <button type="submit" class="btn btn-success btn-block">
-                        <i class="fas fa-plus mr-1"></i>Create Company
+                        <i class="fas fa-plus mr-1"></i>Create Organization
                     </button>
                 </form>
             </div>
@@ -150,7 +150,7 @@
     </div>
 </div>
 
-<!-- Edit Company Modal -->
+<!-- Edit Organization Modal -->
 <div class="modal fade" id="editCompanyModal" tabindex="-1" role="dialog" aria-labelledby="editCompanyModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -158,14 +158,14 @@
                 @csrf
                 @method('PATCH')
                 <div class="modal-header">
-                    <h5 class="modal-title text-primary font-weight-bold" id="editCompanyModalLabel">Edit Company Name</h5>
+                    <h5 class="modal-title text-primary font-weight-bold" id="editCompanyModalLabel">Edit Organization Name</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="editCompanyName" class="text-xs font-weight-bold text-gray-600 uppercase">Company Name</label>
+                        <label for="editCompanyName" class="text-xs font-weight-bold text-gray-600 uppercase">Organization Name</label>
                         <input type="text" name="name" id="editCompanyName" class="form-control" required>
                         @error('name')
                             <span class="text-danger small">{{ $message }}</span>
@@ -185,7 +185,7 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
-        // Handle edit company button click
+        // Handle edit organization button click
         $('.edit-company-btn').click(function() {
             var url = $(this).data('url');
             var name = $(this).data('name');

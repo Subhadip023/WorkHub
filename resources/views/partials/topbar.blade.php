@@ -154,21 +154,40 @@
             </div>
         </li>
 
-        <!-- Company Selector Dropdown -->
-        @if(session('current_company_data'))
-            <li class="nav-item dropdown no-arrow mx-2">
-                <a class="nav-link dropdown-toggle" href="#" id="companyDropdown" role="button"
-                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <span class="mr-1 d-none d-lg-inline text-gray-700 font-weight-bold">
-                        <i class="fas fa-building mr-1 text-primary"></i>
-                        {{ session('current_company_data')->name }}
-                    </span>
-                    <i class="fas fa-chevron-down fa-xs text-gray-500"></i>
+        <!-- Organization Selector Dropdown -->
+        <li class="nav-item dropdown no-arrow mx-2">
+            <a class="nav-link dropdown-toggle" href="#" id="companyDropdown" role="button"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="mr-1 d-none d-lg-inline text-gray-700 font-weight-bold">
+                    @if(session('current_company_id') === 'personal')
+                        <i class="fas fa-user mr-1 text-primary"></i>
+                        Personal Space
+                    @else
+                        <i class="fas fa-sitemap mr-1 text-primary"></i>
+                        {{ session('current_company_data')->name ?? 'Personal Space' }}
+                    @endif
+                </span>
+                <i class="fas fa-chevron-down fa-xs text-gray-500"></i>
+            </a>
+            <!-- Dropdown - Organizations List -->
+            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="companyDropdown" style="width: 240px;">
+                <h6 class="dropdown-header text-primary font-weight-bold">
+                    Active Space
+                </h6>
+                <a class="dropdown-item d-flex align-items-center py-2 {{ session('current_company_id') === 'personal' ? 'active bg-primary text-white' : '' }}" 
+                   href="{{ route('personal.switch') }}">
+                    <div class="font-weight-bold text-truncate" style="max-width: 160px;">
+                        Personal Space
+                    </div>
+                    @if(session('current_company_id') === 'personal')
+                        <i class="fas fa-check-circle ml-auto text-white"></i>
+                    @endif
                 </a>
-                <!-- Dropdown - Companies List -->
-                <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="companyDropdown" style="width: 240px;">
+                
+                @if(auth()->user()->companies->isNotEmpty())
+                    <div class="dropdown-divider"></div>
                     <h6 class="dropdown-header text-primary font-weight-bold">
-                        Active Company
+                        Organizations
                     </h6>
                     @foreach(auth()->user()->companies as $cu)
                         @if($cu->company)
@@ -183,13 +202,14 @@
                             </a>
                         @endif
                     @endforeach
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item text-center small text-gray-600 font-weight-bold py-2" href="{{ route('companies.index') }}">
-                        <i class="fas fa-plus-circle mr-1"></i> Join / Create Company
-                    </a>
-                </div>
-            </li>
-        @endif
+                @endif
+                
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item text-center small text-gray-600 font-weight-bold py-2" href="{{ route('companies.index') }}">
+                    <i class="fas fa-plus-circle mr-1"></i> Join / Create Org
+                </a>
+            </div>
+        </li>
 
         <div class="topbar-divider d-none d-sm-block"></div>
 

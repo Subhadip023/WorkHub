@@ -23,6 +23,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('companies', CompanyController::class);
     Route::post('/companies/join', [CompanyController::class, 'join'])->name('companies.join');
     Route::get('/companies/{company}/switch', [CompanyController::class, 'switch'])->name('companies.switch');
+    Route::get('/personal/switch', [CompanyController::class, 'switchToPersonal'])->name('personal.switch');
 
     Route::resource('projects', ProjectController::class);
     Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
