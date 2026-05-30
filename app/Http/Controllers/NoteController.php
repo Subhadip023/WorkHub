@@ -7,6 +7,8 @@ use App\Models\Project;
 use App\Models\Task;
 use App\Models\Company;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Str;
 
 class NoteController extends Controller
 {
@@ -72,6 +74,20 @@ class NoteController extends Controller
         return view('notes.show', compact('note'));
     }
 
+    public function downloadPdf(Note $note)
+    {
+        $user = auth()->user();
+        $this->authorizeNoteAccess($note, $user);
+
+        $joyPixels = new \JoyPixels\Client();
+        $noteDescription = $joyPixels->toImage($note->description);
+
+        $pdf = Pdf::loadView('notes.pdf', compact('note', 'noteDescription'))
+            ->setOption('isRemoteEnabled', true);
+        
+        return $pdf->stream(Str::slug($note->title) . '.pdf');
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -117,6 +133,7 @@ class NoteController extends Controller
         }
 
         Note::create([
+            'user_id' => $user->id,
             'title' => $request->title,
             'description' => $request->description,
             'note_type' => $noteType,

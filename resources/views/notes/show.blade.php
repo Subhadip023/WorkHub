@@ -15,6 +15,9 @@
         <a href="{{ request()->query('redirect_back', route('notes.index')) }}" class="btn btn-secondary btn-sm shadow-sm mr-2">
             <i class="fas fa-arrow-left fa-sm mr-1"></i> Back
         </a>
+        <a href="{{ route('notes.pdf', $note) }}" class="btn btn-primary btn-sm shadow-sm mr-2">
+            <i class="fas fa-file-pdf fa-sm mr-1"></i> Download PDF
+        </a>
         <a href="{{ route('notes.edit', [$note, 'redirect_back' => request()->query('redirect_back', route('notes.index'))]) }}" class="btn btn-info btn-sm shadow-sm mr-2">
             <i class="fas fa-edit fa-sm mr-1"></i> Edit Note
         </a>
@@ -36,6 +39,9 @@
                 <div>
                     <h1 class="h3 font-weight-bold text-gray-900 mb-1">{{ $note->title }}</h1>
                     <div class="text-xs text-gray-500 font-weight-bold">
+                        @if($note->user)
+                            By {{ $note->user->name }} &bull;
+                        @endif
                         Created {{ $note->created_at->format('F d, Y \a\t h:i A') }} ({{ $note->created_at->diffForHumans() }})
                         @if($note->updated_at != $note->created_at)
                             &bull; Updated {{ $note->updated_at->diffForHumans() }}

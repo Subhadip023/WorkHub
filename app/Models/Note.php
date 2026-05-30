@@ -10,6 +10,7 @@ class Note extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'title',
         'description',
         'note_type',
@@ -21,6 +22,14 @@ class Note extends Model
     const TYPE_TASK = 2;
     const TYPE_ORGANIZATION = 3;
     const TYPE_PERSONAL = 4;
+
+    /**
+     * Get the author of the note.
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     /**
      * Get the parent noteable model.

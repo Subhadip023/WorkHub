@@ -28,6 +28,7 @@ it('allows creating a personal note', function () {
     $response->assertStatus(302);
     $this->assertDatabaseHas('notes', [
         'title' => 'My Personal Note',
+        'user_id' => $user->id,
         'note_type' => Note::TYPE_PERSONAL,
         'note_type_id' => $user->id,
         'description' => 'Personal note description here',
@@ -55,6 +56,7 @@ it('allows creating a project note', function () {
     $response->assertStatus(302);
     $this->assertDatabaseHas('notes', [
         'title' => 'Project A Note',
+        'user_id' => $user->id,
         'note_type' => Note::TYPE_PROJECT,
         'note_type_id' => $project->id,
     ]);
@@ -184,6 +186,36 @@ it('prevents viewing note details page for unauthorized note', function () {
     ]);
     
     $response = $this->actingAs($user2)->get(route('notes.show', $note));
+    
+    $response->assertStatus(403);
+});
+
+it('allows downloading note as PDF for authorized note', function () {
+    $user = User::factory()->create(['email_verified_at' => now()]);
+    $note = Note::create([
+        'title' => 'My PDF Note',
+        'description' => 'PDF desc content',
+        'note_type' => Note::TYPE_PERSONAL,
+        'note_type_id' => $user->id,
+    ]);
+    
+    $response = $this->actingAs($user)->get(route('notes.pdf', $note));
+    
+    $response->assertStatus(200);
+    $response->assertHeader('content-type', 'application/pdf');
+});
+
+it('prevents downloading note as PDF for unauthorized note', function () {
+    $user1 = User::factory()->create(['email_verified_at' => now()]);
+    $user2 = User::factory()->create(['email_verified_at' => now()]);
+    $note = Note::create([
+        'title' => 'User 1 Secret PDF',
+        'description' => 'Secret PDF desc',
+        'note_type' => Note::TYPE_PERSONAL,
+        'note_type_id' => $user1->id,
+    ]);
+    
+    $response = $this->actingAs($user2)->get(route('notes.pdf', $note));
     
     $response->assertStatus(403);
 });

@@ -68,7 +68,12 @@
                         <span class="text-success"><i class="fas fa-user mr-1"></i>Private</span>
                     @endif
                 </span>
-                <span>{{ $note->created_at->diffForHumans() }}</span>
+                <span>
+                    {{ $note->created_at->diffForHumans() }}
+                    @if($note->user)
+                        by {{ $note->user->name }}
+                    @endif
+                </span>
             </div>
         </div>
     </div>
