@@ -25,7 +25,7 @@ jobs:
         run: composer install --no-interaction --prefer-dist
 
       - name: Copy Env File
-        run: cp .env.testing .env
+        run: cp .env.example .env
 
       - name: Execute Tests
         env:
