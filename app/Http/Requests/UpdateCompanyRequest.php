@@ -11,7 +11,15 @@ class UpdateCompanyRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        $company = $this->route('company');
+        if (!$company) {
+            return false;
+        }
+
+        return \App\Models\CompanyUsers::where('company_id', $company->id)
+            ->where('user_id', $this->user()->id)
+            ->where('role', 1)
+            ->exists();
     }
 
     /**
@@ -22,7 +30,7 @@ class UpdateCompanyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => ['required', 'string', 'max:255'],
         ];
     }
 }

@@ -7,6 +7,7 @@ use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Requests\UpdateCompanyRequest;
 use App\Models\CompanyUsers;
 use Illuminate\Http\Request;
+
 class CompanyController extends Controller
 {
     /**
@@ -14,7 +15,8 @@ class CompanyController extends Controller
      */
     public function index()
     {
-        return view('companies.join');
+        $companies = auth()->user()->companies()->with('company')->get();
+        return view('companies.index', compact('companies'));
     }
 
     /**
@@ -45,6 +47,9 @@ class CompanyController extends Controller
         $company_id = $company->id;
         $user_id = auth()->user()->id;
         CompanyUsers::create(['company_id' => $company_id, 'user_id' => $user_id, 'role' => 1,]);
+        
+        session(['current_company_id' => $company_id]);
+        
         return redirect()->route('dashboard')->with('success', 'Company created successfully');
     }
 
@@ -53,7 +58,7 @@ class CompanyController extends Controller
      */
     public function show(Company $company)
     {
-        //
+        abort(404);
     }
 
     /**
@@ -61,15 +66,25 @@ class CompanyController extends Controller
      */
     public function edit(Company $company)
     {
-        
+        return redirect()->route('companies.index');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateCompanyRequest $request)
+    public function update(UpdateCompanyRequest $request, Company $company)
     {
-        dd($request->all());
+        $company->update([
+            'name' => $request->input('name')
+        ]);
+
+        if (session('current_company_id') == $company->id) {
+            session([
+                'current_company_data' => $company
+            ]);
+        }
+
+        return redirect()->route('companies.index')->with('success', 'Company name updated successfully');
     }
 
     /**
@@ -77,7 +92,36 @@ class CompanyController extends Controller
      */
     public function destroy(Company $company)
     {
-        //
+        $user = auth()->user();
+        $is_admin = CompanyUsers::where('company_id', $company->id)
+            ->where('user_id', $user->id)
+            ->where('role', 1)
+            ->exists();
+
+        if (!$is_admin) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Delete association records
+        CompanyUsers::where('company_id', $company->id)->delete();
+
+        // Delete the company
+        $company->delete();
+
+        // If the deleted company was the active company, switch session
+        if (session('current_company_id') == $company->id) {
+            session()->forget(['current_company_id', 'current_role', 'current_company_data', 'code']);
+
+            $next_company = CompanyUsers::where('user_id', $user->id)->first();
+            if ($next_company) {
+                session(['current_company_id' => $next_company->company_id]);
+                return redirect()->route('dashboard')->with('success', 'Company deleted successfully');
+            } else {
+                return redirect()->route('companies.create')->with('success', 'Company deleted successfully. Please create a new company.');
+            }
+        }
+
+        return redirect()->route('companies.index')->with('success', 'Company deleted successfully');
     }
 
     public function join(Request $request)
