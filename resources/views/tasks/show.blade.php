@@ -305,7 +305,7 @@
             </div>
             <div class="card-body">
                 <div class="text-center mb-4">
-                    @if($task->is_completed)
+                    @if($task->status == 3)
                         <div class="mb-2">
                             <i class="fas fa-check-circle fa-4x text-success"></i>
                         </div>
@@ -322,9 +322,9 @@
                     <form action="{{ route('tasks.toggle', $task) }}" method="POST" class="mb-3">
                         @csrf
                         @method('PATCH')
-                        <button type="submit" class="btn {{ $task->is_completed ? 'btn-warning' : 'btn-success' }} btn-block shadow-sm">
-                            <i class="fas {{ $task->is_completed ? 'fa-undo' : 'fa-check' }} mr-1"></i>
-                            Mark as {{ $task->is_completed ? 'Pending' : 'Completed' }}
+                        <button type="submit" class="btn {{ $task->status == 3 ? 'btn-warning' : 'btn-success' }} btn-block shadow-sm">
+                            <i class="fas {{ $task->status == 3 ? 'fa-undo' : 'fa-check' }} mr-1"></i>
+                            Mark as {{ $task->status == 3 ? 'Pending' : 'Completed' }}
                         </button>
                     </form>
                     
@@ -371,7 +371,7 @@
 
                 <div class="text-xs font-weight-bold text-gray-700 text-uppercase mb-2">Project</div>
                 <div class="mb-3">
-                    <a href="{{ route('projects.show', $task->project) }}" class="badge text-white p-2 shadow-sm font-weight-bold" style="background-color: {{ $task->project->theme }}; font-size: 0.85rem;">
+                    <a href="{{ route('projects.show', $task->project) }}" class="badge text-white p-2 shadow-sm" style="background-color: {{ $task->project->theme }}; font-size: 0.85rem;">
                         <i class="fas fa-project-diagram mr-1"></i>
                         {{ $task->project->name }}
                     </a>
@@ -381,7 +381,7 @@
                 <div>
                     @if($task->due_date)
                         @php
-                            $isOverdue = !$task->is_completed && \Carbon\Carbon::parse($task->due_date)->isPast();
+                            $isOverdue = $task->status != 3 && \Carbon\Carbon::parse($task->due_date)->isPast();
                         @endphp
                         <span class="badge {{ $isOverdue ? 'badge-danger' : 'badge-secondary' }} p-2" style="font-size: 0.85rem;">
                             <i class="far fa-calendar-alt mr-1"></i>

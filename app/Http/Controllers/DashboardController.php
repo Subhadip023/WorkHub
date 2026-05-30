@@ -57,7 +57,7 @@ class DashboardController extends Controller
         $completedTasks = 0;
         foreach ($projects as $project) {
             $totalTasks += $project->tasks->count();
-            $completedTasks += $project->tasks->where('is_completed', true)->count();
+            $completedTasks += $project->tasks->where('status', 3)->count();
         }
 
         return view('welcome', compact('projects', 'projectsCount', 'totalTasks', 'completedTasks', 'teamMembers', 'currentWorkspaceName', 'company'));

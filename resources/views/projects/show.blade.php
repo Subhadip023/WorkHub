@@ -80,7 +80,7 @@
 <!-- Task Stats & Progress Card -->
 @php
     $totalTasks = $project->tasks->count();
-    $completedTasks = $project->tasks->where('is_completed', true)->count();
+    $completedTasks = $project->tasks->where('status', 3)->count();
     $percentage = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100) : 0;
 @endphp
 <div class="card shadow mb-4" style="border-left: 4px solid {{ $project->theme }}">
@@ -200,7 +200,7 @@
                                         @csrf
                                         @method('PATCH')
                                         <button type="submit" class="btn btn-link p-0 text-decoration-none">
-                                            @if($task->is_completed)
+                                            @if($task->status == 3)
                                                 <i class="far fa-check-square fa-2x text-success"></i>
                                             @else
                                                 <i class="far fa-square fa-2x text-gray-300"></i>
@@ -209,7 +209,7 @@
                                     </form>
                                 @else
                                     <span class="text-muted" style="cursor: not-allowed;" title="You can only toggle tasks assigned to you.">
-                                        @if($task->is_completed)
+                                        @if($task->status == 3)
                                             <i class="far fa-check-square fa-2x text-success" style="opacity: 0.6;"></i>
                                         @else
                                             <i class="far fa-square fa-2x text-gray-300"></i>
@@ -218,7 +218,7 @@
                                 @endif
                             </td>
                             <td class="align-middle">
-                                <div class="font-weight-bold {{ $task->is_completed ? 'text-muted text-line-through' : 'text-gray-800' }}" style="font-size: 1.05rem;">
+                                <div class="font-weight-bold {{ $task->status == 3 ? 'text-muted text-line-through' : 'text-gray-800' }}" style="font-size: 1.05rem;">
                                     <a href="{{ route('tasks.show', $task) }}" class="text-decoration-none text-gray-900 hover-text-primary">
                                         {{ $task->title }}
                                     </a>
@@ -240,7 +240,7 @@
                             <td class="align-middle">
                                 @if($task->due_date)
                                     @php
-                                        $isOverdue = !$task->is_completed && \Carbon\Carbon::parse($task->due_date)->isPast();
+                                        $isOverdue = $task->status != 3 && \Carbon\Carbon::parse($task->due_date)->isPast();
                                     @endphp
                                     <span class="badge {{ $isOverdue ? 'badge-danger' : 'badge-secondary' }} p-2">
                                         <i class="far fa-calendar-alt fa-sm mr-1"></i>

@@ -184,7 +184,7 @@
                     @foreach($projects as $project)
                         @php
                             $pTotal = $project->tasks->count();
-                            $pCompleted = $project->tasks->where('is_completed', true)->count();
+                            $pCompleted = $project->tasks->where('status', 3)->count();
                             $pPercentage = $pTotal > 0 ? round(($pCompleted / $pTotal) * 100) : 0;
 
                             if ($pPercentage < 30) {

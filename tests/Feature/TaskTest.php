@@ -35,7 +35,6 @@ it('allows authenticated user to create a task in a personal project with status
         'project_id' => $project->id,
         'status' => 2,
         'priority' => 3,
-        'is_completed' => false,
     ]);
 });
 
@@ -62,7 +61,6 @@ it('automatically marks task as completed when status is set to 3', function () 
     $this->assertDatabaseHas('tasks', [
         'title' => 'Completed Task',
         'status' => 3,
-        'is_completed' => true,
     ]);
 });
 
@@ -83,7 +81,6 @@ it('allows user to update task status and priority', function () {
         'project_id' => $project->id,
         'status' => 1,
         'priority' => 2,
-        'is_completed' => false,
     ]);
 
     $this->actingAs($user);
@@ -100,7 +97,6 @@ it('allows user to update task status and priority', function () {
         'title' => 'Updated Task Title',
         'status' => 4,
         'priority' => 4,
-        'is_completed' => false,
     ]);
 });
 
@@ -121,7 +117,6 @@ it('syncs status when toggling task completion state', function () {
         'project_id' => $project->id,
         'status' => 1, // To Do
         'priority' => 2,
-        'is_completed' => false,
     ]);
 
     $this->actingAs($user);
@@ -131,7 +126,6 @@ it('syncs status when toggling task completion state', function () {
     $this->assertDatabaseHas('tasks', [
         'id' => $task->id,
         'status' => 3, // Completed
-        'is_completed' => true,
     ]);
 
     // Toggle back to pending
@@ -139,7 +133,6 @@ it('syncs status when toggling task completion state', function () {
     $this->assertDatabaseHas('tasks', [
         'id' => $task->id,
         'status' => 1, // Should revert to To Do (or 1)
-        'is_completed' => false,
     ]);
 });
 
@@ -270,7 +263,6 @@ it('allows user to import tasks from JSON format', function () {
         'title' => 'Imported Task 2',
         'status' => 3,
         'priority' => 1,
-        'is_completed' => true,
     ]);
 });
 
@@ -347,14 +339,12 @@ it('filters tasks by project, status, and assignee', function () {
         'project_id' => $project1->id,
         'status' => 1,
         'priority' => 1,
-        'is_completed' => false,
     ]);
     $task2 = Task::create([
         'title' => 'Completed Task in Project 2',
         'project_id' => $project2->id,
         'status' => 3,
         'priority' => 1,
-        'is_completed' => true,
     ]);
 
     $this->actingAs($user);

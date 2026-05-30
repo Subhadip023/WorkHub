@@ -45,9 +45,9 @@ class TaskController extends Controller
 
         // Compute stats before pagination
         $totalCount = (clone $tasksQuery)->count();
-        $completedCount = (clone $tasksQuery)->where('is_completed', true)->count();
+        $completedCount = (clone $tasksQuery)->where('status', 3)->count();
         $pendingCount = $totalCount - $completedCount;
-        $overdueCount = (clone $tasksQuery)->where('is_completed', false)
+        $overdueCount = (clone $tasksQuery)->where('status', '!=', 3)
             ->whereNotNull('due_date')
             ->where('due_date', '<', now()->toDateString())
             ->count();
@@ -59,9 +59,9 @@ class TaskController extends Controller
 
         if ($request->filled('status') && $request->status !== 'all') {
             if ($request->status === 'completed') {
-                $tasksQuery->where('is_completed', true);
+                $tasksQuery->where('status', 3);
             } elseif ($request->status === 'pending') {
-                $tasksQuery->where('is_completed', false);
+                $tasksQuery->where('status', '!=', 3);
             }
         }
 
@@ -126,10 +126,6 @@ class TaskController extends Controller
             $validated['assigned_to'] = $user_id;
         }
 
-        if (isset($validated['status'])) {
-            $validated['is_completed'] = ($validated['status'] == 3);
-        }
-
         $project->tasks()->create($validated);
 
         return redirect()->route('tasks.index')->with('success', 'Task created successfully');
@@ -165,10 +161,6 @@ class TaskController extends Controller
 
         if (empty($validated['assigned_to'])) {
             $validated['assigned_to'] = $user_id;
-        }
-
-        if (isset($validated['status'])) {
-            $validated['is_completed'] = ($validated['status'] == 3);
         }
 
         $project->tasks()->create($validated);
@@ -210,10 +202,9 @@ class TaskController extends Controller
     {
         $this->checkTaskOwnership($task);
 
-        $newCompleted = !$task->is_completed;
+        $newStatus = ($task->status == 3) ? 1 : 3;
         $task->update([
-            'is_completed' => $newCompleted,
-            'status' => $newCompleted ? 3 : 1,
+            'status' => $newStatus,
         ]);
 
         return redirect()->back()->with('success', 'Task status updated');
@@ -234,10 +225,6 @@ class TaskController extends Controller
             'status' => 'nullable|integer|in:1,2,3,4',
             'priority' => 'nullable|integer|in:1,2,3,4',
         ]);
-
-        if (isset($validated['status'])) {
-            $validated['is_completed'] = ($validated['status'] == 3);
-        }
 
         $task->update($validated);
 
@@ -297,18 +284,13 @@ class TaskController extends Controller
         $count = 0;
         foreach ($data as $item) {
             if (!empty($item['title'])) {
-                $isComp = $item['is_completed'] ?? false;
-                $status = $item['status'] ?? ($isComp ? 3 : 1);
-                if ($status == 3) {
-                    $isComp = true;
-                }
+                $status = $item['status'] ?? (($item['is_completed'] ?? false) ? 3 : 1);
                 $priority = $item['priority'] ?? 2;
                 $project->tasks()->create([
                     'title' => $item['title'],
                     'description' => $item['description'] ?? null,
                     'due_date' => $item['due_date'] ?? null,
                     'assigned_to' => $item['assigned_to'] ?? auth()->id(),
-                    'is_completed' => $isComp,
                     'status' => $status,
                     'priority' => $priority,
                 ]);
