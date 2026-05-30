@@ -355,7 +355,7 @@ class TaskController extends Controller
             $user_role = $membership->role;
         }
 
-        $task->load(['project', 'assignedUser', 'images']);
+        $task->load(['project', 'assignedUser', 'images', 'histories.user']);
 
         return view('tasks.show', compact('task', 'companyUsers', 'user_role'));
     }

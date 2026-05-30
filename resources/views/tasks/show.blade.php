@@ -396,6 +396,40 @@
                 </div>
             </div>
         </div>
+
+        <!-- Task History Card -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Task History</h6>
+            </div>
+            <div class="card-body" style="max-height: 350px; overflow-y: auto;">
+                @if($task->histories && $task->histories->isNotEmpty())
+                    <div class="timeline-history">
+                        @foreach($task->histories as $history)
+                            <div class="mb-3 pl-3" style="border-left: 3px solid #36b9cc !important;">
+                                <div class="font-weight-bold text-gray-800" style="font-size: 0.85rem;">
+                                    @if($history->old_status === null)
+                                        Task Created
+                                    @else
+                                        Status changed to <span class="badge badge-light text-gray-800 border" style="font-size: 0.75rem;">{{ \App\Models\TaskHistory::getStatusName($history->new_status) }}</span>
+                                    @endif
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    by {{ $history->user ? $history->user->name : 'System/Unknown' }} &bull; {{ $history->created_at->diffForHumans() }}
+                                </div>
+                                @if($history->old_status !== null)
+                                    <div class="text-xs text-muted">
+                                        From: {{ \App\Models\TaskHistory::getStatusName($history->old_status) }}
+                                    </div>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-muted small mb-0 font-italic">No status history available for this task.</p>
+                @endif
+            </div>
+        </div>
     </div>
 </div>
 

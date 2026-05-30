@@ -371,3 +371,50 @@ it('filters tasks by project, status, and assignee', function () {
     $response->assertSee('Completed Task in Project 2');
     $response->assertDontSee('Task in Project 1');
 });
+
+it('logs task status history and displays it on the task details page', function () {
+    $user = User::factory()->create();
+    $project = Project::create([
+        'name' => 'Personal Project',
+        'slug' => 'personal-project',
+        'theme' => '#ff0000',
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $user->id,
+        'company_id' => null,
+    ]);
+
+    $this->actingAs($user);
+
+    // 1. Log task creation
+    $task = Task::create([
+        'title' => 'Test Task History',
+        'project_id' => $project->id,
+        'status' => 1,
+        'priority' => 1,
+    ]);
+
+    $this->assertDatabaseHas('task_histories', [
+        'task_id' => $task->id,
+        'old_status' => null,
+        'new_status' => 1,
+    ]);
+
+    // 2. Log status update
+    $task->update([
+        'status' => 2,
+    ]);
+
+    $this->assertDatabaseHas('task_histories', [
+        'task_id' => $task->id,
+        'old_status' => 1,
+        'new_status' => 2,
+    ]);
+
+    // 3. View detail page and see logs
+    $response = $this->get(route('tasks.show', $task));
+    $response->assertStatus(200);
+    $response->assertSee('Task Created');
+    $response->assertSee('Status changed to');
+    $response->assertSee('In Progress');
+});
