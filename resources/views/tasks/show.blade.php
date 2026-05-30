@@ -239,6 +239,61 @@
             </div>
         </div>
 
+        <!-- Notes Section -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-sticky-note mr-1"></i> Task Notes</h6>
+                <a href="{{ route('notes.create', ['note_type' => 2, 'note_type_id' => $task->id, 'redirect_back' => request()->fullUrl()]) }}" class="btn btn-sm btn-primary shadow-sm">
+                    <i class="fas fa-plus fa-sm mr-1"></i> Add Note
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @forelse($task->notes as $note)
+                        <div class="col-md-6 col-12 mb-3">
+                            <div class="card border-left-warning shadow-sm h-100">
+                                <div class="card-body py-3 d-flex flex-column">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <h6 class="font-weight-bold mb-0 text-truncate" style="max-width: 85%;" title="{{ $note->title }}">
+                                        <a href="{{ route('notes.show', [$note, 'redirect_back' => request()->fullUrl()]) }}" class="text-gray-900 text-decoration-none">
+                                            {{ $note->title }}
+                                        </a>
+                                    </h6>
+                                    <div class="dropdown no-arrow">
+                                            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink{{ $note->id }}" data-toggle="dropdown">
+                                                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                            </a>
+                                            <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in">
+                                                <a class="dropdown-item" href="{{ route('notes.edit', [$note, 'redirect_back' => request()->fullUrl()]) }}">
+                                                    <i class="fas fa-edit fa-sm fa-fw mr-2 text-gray-400"></i> Edit Note
+                                                </a>
+                                                <div class="dropdown-divider"></div>
+                                                <form action="{{ route('notes.destroy', $note) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this note?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="dropdown-item text-danger">
+                                                        <i class="fas fa-trash fa-sm fa-fw mr-2 text-danger"></i> Delete Note
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="text-gray-600 small mb-2 flex-grow-1" style="white-space: pre-wrap;">{!! Str::limit(strip_tags($note->description), 200) !!}</p>
+                                    <div class="text-right text-xs text-gray-500 font-weight-bold mt-auto pt-2">
+                                        <span>{{ $note->created_at->diffForHumans() }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="col-12 text-center py-4">
+                            <p class="text-muted mb-0">No notes found for this task. Add one to document task details!</p>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- Right Column: Status & Sidebar Meta -->
@@ -343,6 +398,7 @@
         </div>
     </div>
 </div>
+
 @endsection
 
 @push('scripts')
@@ -359,9 +415,7 @@
         });
 
         $('#description-form').submit(function() {
-            // Set value of hidden input to the HTML content of the editor
             var descHtml = quill.root.innerHTML;
-            // If Quill editor only contains empty tags, normalize to empty string
             if (descHtml === '<p><br></p>' || descHtml.trim() === '') {
                 descHtml = '';
             }

@@ -40,6 +40,12 @@
             <span>Tasks</span>
         </a>
     </li>
+    <li class="nav-item {{Route::currentRouteName() == 'notes.index' ? 'active' : ''}}">
+        <a class="nav-link" href="{{ route('notes.index') }}">
+            <i class="fas fa-sticky-note"></i>
+            <span>Notes</span>
+        </a>
+    </li>
     <li class="nav-item {{request()->routeIs('companies.*') ? 'active' : ''}}">
         <a class="nav-link" href="{{ route('companies.index') }}">
             <i class="fas fa-sitemap"></i>

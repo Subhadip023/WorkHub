@@ -59,4 +59,7 @@ it('loads dashboard and main pages for authenticated user in an organization', f
 
     // Verify organizations page loads
     $this->get('/companies')->assertStatus(200);
+
+    // Verify notes page loads
+    $this->get('/notes')->assertStatus(200);
 });

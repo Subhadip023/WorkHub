@@ -25,4 +25,9 @@ class Task extends Model
     {
         return $this->hasMany(TaskImage::class);
     }
+
+    public function notes()
+    {
+        return $this->hasMany(Note::class, 'note_type_id')->where('note_type', Note::TYPE_TASK);
+    }
 }

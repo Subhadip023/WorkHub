@@ -25,4 +25,9 @@ class Project extends Model
     {
         return $this->belongsTo(Company::class);
     }
+
+    public function notes()
+    {
+        return $this->hasMany(Note::class, 'note_type_id')->where('note_type', Note::TYPE_PROJECT);
+    }
 }
