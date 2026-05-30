@@ -24,10 +24,12 @@
                     <thead>
                         <tr>
                             <th>Name</th>
+                            <th>Status</th>
+                            <th>Priority</th>
                             <th>Description</th>
                             <th>Theme</th>
                             <th>Tasks</th>
-                            <th style="width: 140px;" class="text-center">Actions</th>
+                            <th style="width: 180px;" class="text-center">Actions</th>
                         </tr>
                     </thead>
                 
@@ -41,6 +43,32 @@
                                             {{ $project->name }}
                                         </a>
                                     </div>
+                                </td>
+                                <td class="align-middle">
+                                    @if($project->status == 1)
+                                        <span class="badge badge-secondary px-2 py-1 font-weight-bold shadow-sm">To Do</span>
+                                    @elseif($project->status == 2)
+                                        <span class="badge badge-primary px-2 py-1 font-weight-bold shadow-sm">In Progress</span>
+                                    @elseif($project->status == 3)
+                                        <span class="badge badge-success px-2 py-1 font-weight-bold shadow-sm">Completed</span>
+                                    @elseif($project->status == 4)
+                                        <span class="badge badge-warning px-2 py-1 font-weight-bold shadow-sm">On Hold</span>
+                                    @else
+                                        <span class="badge badge-dark px-2 py-1 font-weight-bold shadow-sm">Unknown</span>
+                                    @endif
+                                </td>
+                                <td class="align-middle">
+                                    @if($project->priority == 1)
+                                        <span class="badge badge-light border px-2 py-1 font-weight-bold text-gray-800 shadow-sm">Low</span>
+                                    @elseif($project->priority == 2)
+                                        <span class="badge badge-info px-2 py-1 font-weight-bold shadow-sm">Medium</span>
+                                    @elseif($project->priority == 3)
+                                        <span class="badge badge-warning px-2 py-1 font-weight-bold shadow-sm">High</span>
+                                    @elseif($project->priority == 4)
+                                        <span class="badge badge-danger px-2 py-1 font-weight-bold shadow-sm">Urgent</span>
+                                    @else
+                                        <span class="badge badge-dark px-2 py-1 font-weight-bold shadow-sm">Unknown</span>
+                                    @endif
                                 </td>
                                 <td class="align-middle">{!! Str::limit(strip_tags($project->description), 100) !!}</td>
                                 <td class="align-middle">
@@ -58,8 +86,11 @@
                                     </span>
                                 </td>
                                 <td class="text-center align-middle">
-                                    <a href="{{ route('projects.show', $project) }}" class="btn btn-sm btn-primary shadow-sm">
+                                    <a href="{{ route('projects.show', $project) }}" class="btn btn-sm btn-primary shadow-sm mr-1">
                                         <i class="fas fa-eye mr-1"></i> View Tasks
+                                    </a>
+                                    <a href="{{ route('projects.edit', $project) }}" class="btn btn-sm btn-info shadow-sm">
+                                        <i class="fas fa-edit mr-1"></i> Edit
                                     </a>
                                 </td>
                             </tr>

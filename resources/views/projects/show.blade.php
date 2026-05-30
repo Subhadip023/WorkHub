@@ -22,6 +22,52 @@
             <span class="badge ml-2 text-white px-2 py-1 align-middle" style="background-color: {{ $project->theme }}; font-size: 0.8rem;">
                 {{ $project->theme }}
             </span>
+            @if($project->status == 1)
+                <span class="badge ml-2 badge-secondary px-2 py-1 align-middle" style="font-size: 0.8rem;">To Do</span>
+            @elseif($project->status == 2)
+                <span class="badge ml-2 badge-primary px-2 py-1 align-middle" style="font-size: 0.8rem;">In Progress</span>
+            @elseif($project->status == 3)
+                <span class="badge ml-2 badge-success px-2 py-1 align-middle" style="font-size: 0.8rem;">Completed</span>
+            @elseif($project->status == 4)
+                <span class="badge ml-2 badge-warning px-2 py-1 align-middle" style="font-size: 0.8rem;">On Hold</span>
+            @endif
+
+            @if($project->priority == 1)
+                <span class="badge ml-2 badge-light border px-2 py-1 align-middle text-gray-800" style="font-size: 0.8rem;">Low</span>
+            @elseif($project->priority == 2)
+                <span class="badge ml-2 badge-info px-2 py-1 align-middle" style="font-size: 0.8rem;">Medium</span>
+            @elseif($project->priority == 3)
+                <span class="badge ml-2 badge-warning px-2 py-1 align-middle" style="font-size: 0.8rem;">High</span>
+            @elseif($project->priority == 4)
+                <span class="badge ml-2 badge-danger px-2 py-1 align-middle" style="font-size: 0.8rem;">Urgent</span>
+            @endif
+        </div>
+        <div>
+            <a href="{{ route('projects.edit', $project) }}" class="btn btn-sm btn-info shadow-sm">
+                <i class="fas fa-edit fa-sm text-white-50 mr-1"></i> Edit Project
+            </a>
+            @php
+                $current_company = session('current_company_id');
+                $canDelete = false;
+                if ($current_company === 'personal') {
+                    $canDelete = ($project->company_id === null && $project->user_id === auth()->id());
+                } else {
+                    $is_admin = \App\Models\CompanyUsers::where('company_id', $current_company)
+                        ->where('user_id', auth()->id())
+                        ->where('role', 1)
+                        ->exists();
+                    $canDelete = ($project->company_id == $current_company && $is_admin);
+                }
+            @endphp
+            @if($canDelete)
+                <form action="{{ route('projects.destroy', $project) }}" method="POST" class="d-inline ml-1" onsubmit="return confirm('Are you sure you want to delete this project? This will delete all tasks within it.');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-sm btn-danger shadow-sm">
+                        <i class="fas fa-trash fa-sm text-white-50 mr-1"></i> Delete Project
+                    </button>
+                </form>
+            @endif
         </div>
     </div>
     @if($project->description)

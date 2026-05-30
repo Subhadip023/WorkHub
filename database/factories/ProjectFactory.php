@@ -16,8 +16,14 @@ class ProjectFactory extends Factory
      */
     public function definition(): array
     {
+        $name = $this->faker->sentence(3);
         return [
-            //
+            'name' => $name,
+            'slug' => str_replace(' ', '-', strtolower($name)),
+            'description' => $this->faker->paragraph,
+            'theme' => $this->faker->safeHexColor,
+            'status' => 1,
+            'priority' => 2,
         ];
     }
 }
