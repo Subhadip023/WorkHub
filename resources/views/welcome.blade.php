@@ -4,12 +4,29 @@
 
 @section('content')
 <!-- Page Heading -->
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
+<div class="d-sm-flex align-items-center justify-content-between mb-3">
     <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
     <h2 class="h5 mb-0 text-gray-600 font-weight-bold">
-        <i class="fas fa-cubes mr-1 text-primary"></i> All Workspaces
+        <i class="fas fa-cubes mr-1 text-primary"></i> {{ $currentWorkspaceName }}
     </h2>
 </div>
+
+<!-- Workspace Filter Selector -->
+@if(auth()->user()->companies->isNotEmpty())
+    <div class="mb-4">
+        <span class="text-xs font-weight-bold text-gray-600 text-uppercase mr-2"><i class="fas fa-filter mr-1"></i> Filter Workspace:</span>
+        <a href="{{ route('dashboard') }}" class="btn btn-sm {{ empty($company) ? 'btn-primary shadow-sm' : 'btn-light border text-gray-800' }} mr-1 mb-1" style="border-radius: 20px;">
+            All Workspaces
+        </a>
+        @foreach(auth()->user()->companies as $cUser)
+            @if($cUser->company)
+                <a href="{{ route('dashboard.org', $cUser->company) }}" class="btn btn-sm {{ (!empty($company) && $company->id == $cUser->company->id) ? 'btn-primary shadow-sm' : 'btn-light border text-gray-800' }} mr-1 mb-1" style="border-radius: 20px;">
+                    {{ $cUser->company->name }}
+                </a>
+            @endif
+        @endforeach
+    </div>
+@endif
 
 <!-- Content Row -->
 <div class="row">
