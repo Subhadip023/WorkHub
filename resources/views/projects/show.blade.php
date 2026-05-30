@@ -151,7 +151,6 @@
                         </td>
                         <td class="align-middle">
                             <input type="text" id="inline_title" name="title" form="inlineAddTaskForm" class="form-control form-control-sm font-weight-bold mb-1" placeholder="What needs to be done? (Press Enter to save)" required>
-                            <input type="text" name="description" form="inlineAddTaskForm" class="form-control form-control-sm text-gray-500 small" placeholder="Add details/description...">
                         </td>
                         <td class="align-middle">
                             <select name="assigned_to" form="inlineAddTaskForm" class="form-control form-control-sm">
