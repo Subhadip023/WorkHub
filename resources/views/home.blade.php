@@ -24,6 +24,7 @@
     <meta property="twitter:description" content="WorkHub is a premium collaborative workspace for modern teams to organize tasks, track project completion in real-time, switch between company profiles, and collaborate effortlessly.">
     
     <!-- Fonts & Icons -->
+    <link rel="icon" type="image/svg+xml" href="{{ asset('asset/img/logo.svg') }}">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="{{ asset('asset/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
     
@@ -492,7 +493,17 @@
     <header>
         <div class="container nav-wrapper">
             <a href="{{ url('/') }}" class="logo">
-                <i class="fas fa-project-diagram"></i>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" style="width: 32px; height: 32px; filter: drop-shadow(0 2px 4px rgba(78, 115, 223, 0.25));">
+                    <defs>
+                        <linearGradient id="nav-logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#4e73df" />
+                            <stop offset="100%" stop-color="#8f6cf0" />
+                        </linearGradient>
+                    </defs>
+                    <path d="M16 2 L28 9 L28 23 L16 30 L4 23 L4 9 Z" fill="none" stroke="url(#nav-logo-grad)" stroke-width="2.5" stroke-linejoin="round" />
+                    <path d="M16 8 L23 12 L23 20 L16 24 L9 20 L9 12 Z" fill="url(#nav-logo-grad)" opacity="0.9" />
+                    <circle cx="16" cy="16" r="3.5" fill="#ffffff" />
+                </svg>
                 WorkHub
             </a>
             
@@ -662,8 +673,18 @@
     <footer>
         <div class="container">
             <div class="footer-grid">
-                <a href="{{ url('/') }}" class="footer-logo">
-                    <i class="fas fa-project-diagram"></i>
+                 <a href="{{ url('/') }}" class="footer-logo">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" style="width: 32px; height: 32px; filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.15));">
+                        <defs>
+                            <linearGradient id="footer-logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#ffffff" />
+                                <stop offset="100%" stop-color="#cbd5e1" />
+                            </linearGradient>
+                        </defs>
+                        <path d="M16 2 L28 9 L28 23 L16 30 L4 23 L4 9 Z" fill="none" stroke="url(#footer-logo-grad)" stroke-width="2.5" stroke-linejoin="round" />
+                        <path d="M16 8 L23 12 L23 20 L16 24 L9 20 L9 12 Z" fill="url(#footer-logo-grad)" opacity="0.9" />
+                        <circle cx="16" cy="16" r="3.5" fill="#0f172a" />
+                    </svg>
                     WorkHub
                 </a>
                 <div class="footer-copyright">
