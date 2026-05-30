@@ -6,7 +6,9 @@
 <!-- Page Heading -->
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <h1 class="h3 mb-0 text-gray-800">Projects</h1>
-    <button class="btn btn-primary" data-toggle="modal" data-target="#addProjectModal">Add Project</button>
+    <a href="{{ route('projects.create') }}" class="btn btn-primary shadow-sm">
+        <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Add Project
+    </a>
 </div>
 
 <!-- Content Column -->
@@ -40,7 +42,7 @@
                                         </a>
                                     </div>
                                 </td>
-                                <td class="align-middle">{{ $project->description }}</td>
+                                <td class="align-middle">{!! Str::limit(strip_tags($project->description), 100) !!}</td>
                                 <td class="align-middle">
                                     <span class="badge text-white px-2 py-1 shadow-sm" style="background-color: {{ $project->theme }}">
                                         {{ $project->theme }}
@@ -74,42 +76,6 @@
 
        
 
-    </div>
-    {{-- add project modal --}}
-    <div class="modal fade" id="addProjectModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Add Project</h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close"></button>
-                        <span aria-hidden="true">×</span>
-                </div>
-                <div class="modal-body">
-                    <form action="{{ route('projects.store') }}" method="POST" id="addProjectForm">
-                        @csrf
-                        <div class="row">
-                            <div class="form-group col-10">
-                            <label for="name">Name</label>
-                            <input type="text" class="form-control" id="name" name="name">
-                        </div>      
-                        <div class="col-2">
-                            <label for="theme">Theme</label>
-                            <input type="color" class="form-control" id="theme" name="theme" value="#326499" style="padding: 0;!important">
-                        </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="description">Description</label>
-                            <textarea type="" class="form-control" id="description" name="description" rows="4"></textarea>
-                        </div>
-                       
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary" onclick="document.getElementById('addProjectForm').submit();">Add</a>
-                </div>
-            </div>
-        </div>
     </div>
 
 @endsection

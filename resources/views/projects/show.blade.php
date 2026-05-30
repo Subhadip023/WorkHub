@@ -25,7 +25,7 @@
         </div>
     </div>
     @if($project->description)
-        <p class="mt-2 text-gray-600 lead">{{ $project->description }}</p>
+        <div class="mt-2 text-gray-600 lead">{!! $project->description !!}</div>
     @else
         <p class="mt-2 text-gray-500 italic">No description provided for this project.</p>
     @endif
