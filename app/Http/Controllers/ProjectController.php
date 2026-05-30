@@ -77,7 +77,9 @@ class ProjectController extends Controller
                 abort(403);
             }
             
-            $project->load('tasks.assignedUser');
+            $project->load(['tasks' => function ($query) {
+                $query->orderByRaw('due_date IS NULL, due_date ASC')->orderBy('priority', 'desc');
+            }, 'tasks.assignedUser']);
             $companyUsers = collect([auth()->user()]);
             $user_role = 1; // Admin of their personal space
         } else {
@@ -89,7 +91,9 @@ class ProjectController extends Controller
                 abort(403);
             }
 
-            $project->load('tasks.assignedUser');
+            $project->load(['tasks' => function ($query) {
+                $query->orderByRaw('due_date IS NULL, due_date ASC')->orderBy('priority', 'desc');
+            }, 'tasks.assignedUser']);
 
             $companyUsers = \App\Models\CompanyUsers::where('company_id', $project->company_id)
                 ->with('user')

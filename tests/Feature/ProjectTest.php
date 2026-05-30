@@ -106,3 +106,70 @@ it('allows authenticated user to update project status and priority', function (
         'priority' => 4,
     ]);
 });
+
+it('sorts tasks in project details page by due_date ascending and priority descending', function () {
+    $user = User::factory()->create();
+    $project = Project::create([
+        'name' => 'Personal Project',
+        'slug' => 'personal-project',
+        'theme' => '#ff0000',
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $user->id,
+        'company_id' => null,
+    ]);
+
+    // Create tasks with different due dates and priorities
+    // Task A: No due date, priority Urgent
+    $taskA = \App\Models\Task::create([
+        'title' => 'Task A',
+        'project_id' => $project->id,
+        'due_date' => null,
+        'priority' => 4,
+        'status' => 1,
+    ]);
+
+    // Task B: Later due date, priority Medium
+    $taskB = \App\Models\Task::create([
+        'title' => 'Task B',
+        'project_id' => $project->id,
+        'due_date' => '2026-06-05',
+        'priority' => 2,
+        'status' => 1,
+    ]);
+
+    // Task C: Earlier due date, priority Low
+    $taskC = \App\Models\Task::create([
+        'title' => 'Task C',
+        'project_id' => $project->id,
+        'due_date' => '2026-06-01',
+        'priority' => 1,
+        'status' => 1,
+    ]);
+
+    // Task D: Earlier due date, priority Urgent (same due date as C, higher priority)
+    $taskD = \App\Models\Task::create([
+        'title' => 'Task D',
+        'project_id' => $project->id,
+        'due_date' => '2026-06-01',
+        'priority' => 4,
+        'status' => 1,
+    ]);
+
+    $this->actingAs($user);
+
+    $response = $this->get(route('projects.show', $project));
+    $response->assertStatus(200);
+
+    // Expected order:
+    // 1. Task D (Earlier due date 2026-06-01, Priority Urgent 4)
+    // 2. Task C (Earlier due date 2026-06-01, Priority Low 1)
+    // 3. Task B (Later due date 2026-06-05, Priority Medium 2)
+    // 4. Task A (No due date, Priority Urgent 4 - comes last because due_date is null)
+    $tasks = $response->viewData('project')->tasks;
+
+    expect($tasks->get(0)->id)->toBe($taskD->id)
+        ->and($tasks->get(1)->id)->toBe($taskC->id)
+        ->and($tasks->get(2)->id)->toBe($taskB->id)
+        ->and($tasks->get(3)->id)->toBe($taskA->id);
+});
