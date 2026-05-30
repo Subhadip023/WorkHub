@@ -59,12 +59,17 @@ jobs:
           to: code88068@gmail.com
           from: GitHub Actions
           body: |
-            Deployment completed successfully.
+            🚀 Deployment Successful
 
-            Repository: ${{ github.repository }}
+            Repo: ${{ github.repository }}
             Branch: ${{ github.ref_name }}
-            Commit: ${{ github.sha }}
-            Actor: ${{ github.actor }}
+            By: ${{ github.actor }}
+
+            📝 Commit Message:
+            ${{ github.event.head_commit.message }}
+
+            🔗 Commit SHA:
+            ${{ github.sha }}
 
       - name: Send Deployment Failure Email
         if: failure()
@@ -79,11 +84,17 @@ jobs:
           to: code88068@gmail.com
           from: GitHub Actions
           body: |
-            Deployment failed!
+            ❌ Deployment Failed
 
-            Repository: ${{ github.repository }}
+            Repo: ${{ github.repository }}
             Branch: ${{ github.ref_name }}
-            Commit: ${{ github.sha }}
-            Actor: ${{ github.actor }}
+            By: ${{ github.actor }}
 
-            Please check the logs for more details.
+            📝 Commit Message:
+            ${{ github.event.head_commit.message }}
+
+            🔗 Commit SHA:
+            ${{ github.sha }}
+            ⚠️ Note:
+            Check GitHub Actions logs for full error details:
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
