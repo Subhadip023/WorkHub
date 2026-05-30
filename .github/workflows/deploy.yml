@@ -102,7 +102,7 @@ jobs:
           username: ${{ secrets.GMAIL_USERNAME }}
           password: ${{ secrets.GMAIL_APP_PASSWORD }}
           subject: "✅ WorkHub Deployment Successful"
-          to: code88068@gmail.com
+          to: ${{ secrets.NOTIFICATION_EMAILS }}
           from: GitHub Actions
           body: |
             🚀 Deployment Successful
