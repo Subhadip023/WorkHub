@@ -278,6 +278,9 @@ class TaskController extends Controller
             if (!empty($item['title'])) {
                 $isComp = $item['is_completed'] ?? false;
                 $status = $item['status'] ?? ($isComp ? 3 : 1);
+                if ($status == 3) {
+                    $isComp = true;
+                }
                 $priority = $item['priority'] ?? 2;
                 $project->tasks()->create([
                     'title' => $item['title'],
