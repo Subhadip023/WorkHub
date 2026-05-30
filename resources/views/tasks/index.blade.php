@@ -96,27 +96,27 @@
             <div class="col-md-3 mb-2 mb-md-0">
                 <label for="filterProject" class="font-weight-bold text-xs text-gray-700 text-uppercase">Project</label>
                 <select id="filterProject" class="form-control form-control-sm">
-                    <option value="all">All Projects</option>
+                    <option value="all" {{ request('project') == 'all' || !request('project') ? 'selected' : '' }}>All Projects</option>
                     @foreach($projects as $project)
-                        <option value="{{ $project->id }}">{{ $project->name }}</option>
+                        <option value="{{ $project->id }}" {{ request('project') == $project->id ? 'selected' : '' }}>{{ $project->name }}</option>
                     @endforeach
                 </select>
             </div>
             <div class="col-md-3 mb-2 mb-md-0">
                 <label for="filterStatus" class="font-weight-bold text-xs text-gray-700 text-uppercase">Status</label>
                 <select id="filterStatus" class="form-control form-control-sm">
-                    <option value="all">All Statuses</option>
-                    <option value="pending">Pending</option>
-                    <option value="completed">Completed</option>
+                    <option value="all" {{ request('status') == 'all' || !request('status') ? 'selected' : '' }}>All Statuses</option>
+                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                    <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
                 </select>
             </div>
             <div class="col-md-3 mb-2 mb-md-0">
                 <label for="filterAssignee" class="font-weight-bold text-xs text-gray-700 text-uppercase">Assignee</label>
                 <select id="filterAssignee" class="form-control form-control-sm">
-                    <option value="all">All Assignees</option>
-                    <option value="unassigned">Unassigned</option>
+                    <option value="all" {{ request('assignee') == 'all' || !request('assignee') ? 'selected' : '' }}>All Assignees</option>
+                    <option value="unassigned" {{ request('assignee') == 'unassigned' ? 'selected' : '' }}>Unassigned</option>
                     @foreach($companyUsers as $user)
-                        <option value="{{ $user->id }}">{{ $user->name }}</option>
+                        <option value="{{ $user->id }}" {{ request('assignee') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -295,7 +295,7 @@
     </div>
     <div class="card-footer py-2">
         <div class="d-flex justify-content-center">
-            {!! $tasks->links() !!}
+            {!! $tasks->withQueryString()->links() !!}
         </div>
     </div>
 </div>
@@ -448,33 +448,29 @@
             var selectedStatus = $('#filterStatus').val();
             var selectedAssignee = $('#filterAssignee').val();
 
-            var visibleRows = 0;
-
-            $('.task-row').each(function() {
-                var row = $(this);
-                var project = row.data('project').toString();
-                var status = row.data('completed');
-                var assignee = row.data('assigned').toString();
-
-                var matchProject = (selectedProject === 'all' || project === selectedProject);
-                var matchStatus = (selectedStatus === 'all' || status === selectedStatus);
-                var matchAssignee = (selectedAssignee === 'all' || assignee === selectedAssignee);
-
-                if (matchProject && matchStatus && matchAssignee) {
-                    row.show();
-                    visibleRows++;
-                } else {
-                    row.hide();
-                }
-            });
-
-            if (visibleRows === 0) {
-                $('#tasksTableContainer').hide();
-                $('#noTasksContainer').show();
+            var params = new URLSearchParams(window.location.search);
+            
+            if (selectedProject && selectedProject !== 'all') {
+                params.set('project', selectedProject);
             } else {
-                $('#noTasksContainer').hide();
-                $('#tasksTableContainer').show();
+                params.delete('project');
             }
+
+            if (selectedStatus && selectedStatus !== 'all') {
+                params.set('status', selectedStatus);
+            } else {
+                params.delete('status');
+            }
+
+            if (selectedAssignee && selectedAssignee !== 'all') {
+                params.set('assignee', selectedAssignee);
+            } else {
+                params.delete('assignee');
+            }
+
+            params.delete('page');
+
+            window.location.href = window.location.pathname + '?' + params.toString();
         }
 
         // Event listeners for filters

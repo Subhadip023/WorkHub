@@ -320,3 +320,54 @@ it('allows user to upload and delete task images', function () {
     ]);
     \Illuminate\Support\Facades\Storage::disk('public')->assertMissing($taskImage->image_path);
 });
+
+it('filters tasks by project, status, and assignee', function () {
+    $user = User::factory()->create();
+    $project1 = Project::create([
+        'name' => 'Project One',
+        'slug' => 'project-one',
+        'theme' => '#ff0000',
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $user->id,
+        'company_id' => null,
+    ]);
+    $project2 = Project::create([
+        'name' => 'Project Two',
+        'slug' => 'project-two',
+        'theme' => '#00ff00',
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $user->id,
+        'company_id' => null,
+    ]);
+
+    $task1 = Task::create([
+        'title' => 'Task in Project 1',
+        'project_id' => $project1->id,
+        'status' => 1,
+        'priority' => 1,
+        'is_completed' => false,
+    ]);
+    $task2 = Task::create([
+        'title' => 'Completed Task in Project 2',
+        'project_id' => $project2->id,
+        'status' => 3,
+        'priority' => 1,
+        'is_completed' => true,
+    ]);
+
+    $this->actingAs($user);
+
+    // Filter by project 1
+    $response = $this->get(route('tasks.index', ['project' => $project1->id]));
+    $response->assertStatus(200);
+    $response->assertSee('Task in Project 1');
+    $response->assertDontSee('Completed Task in Project 2');
+
+    // Filter by status completed
+    $response = $this->get(route('tasks.index', ['status' => 'completed']));
+    $response->assertStatus(200);
+    $response->assertSee('Completed Task in Project 2');
+    $response->assertDontSee('Task in Project 1');
+});

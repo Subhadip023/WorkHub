@@ -52,6 +52,27 @@ class TaskController extends Controller
             ->where('due_date', '<', now()->toDateString())
             ->count();
 
+        // Apply filters from query parameters
+        if ($request->filled('project') && $request->project !== 'all') {
+            $tasksQuery->where('project_id', $request->project);
+        }
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            if ($request->status === 'completed') {
+                $tasksQuery->where('is_completed', true);
+            } elseif ($request->status === 'pending') {
+                $tasksQuery->where('is_completed', false);
+            }
+        }
+
+        if ($request->filled('assignee') && $request->assignee !== 'all') {
+            if ($request->assignee === 'unassigned') {
+                $tasksQuery->whereNull('assigned_to');
+            } else {
+                $tasksQuery->where('assigned_to', $request->assignee);
+            }
+        }
+
         // Fetch paginated tasks
         $tasks = $tasksQuery->with(['project', 'assignedUser'])->paginate(5);
 
