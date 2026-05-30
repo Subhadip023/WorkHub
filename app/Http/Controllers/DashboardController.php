@@ -14,48 +14,21 @@ class DashboardController extends Controller
     public function __invoke(Request $request)
     {
         $auth_user = auth()->user();
-        $companies = $auth_user->companies;
-        
-        $current_company = session('current_company_id');
-        
-        // Default to first company if not explicitly in personal space and has companies
-        if ($current_company !== 'personal') {
-            if (!$current_company || !$companies->contains('company_id', $current_company)) {
-                $current_company = $companies->first()->company_id ?? 'personal';
-            }
-        }
+        $companyIds = $auth_user->companies()->pluck('company_id')->toArray();
 
-        if ($current_company === 'personal') {
-            session([
-                'current_company_id' => 'personal',
-                'current_role' => 1, // Admin of personal space
-                'current_company_data' => null,
-                'code' => null
-            ]);
+        // Fetch all projects (both personal and organizational)
+        $projects = \App\Models\Project::whereIn('company_id', $companyIds)
+            ->orWhere(function ($query) use ($auth_user) {
+                $query->whereNull('company_id')->where('user_id', $auth_user->id);
+            })
+            ->with(['tasks', 'company'])
+            ->get();
 
-            $projects = \App\Models\Project::whereNull('company_id')
-                ->where('user_id', $auth_user->id)
-                ->with('tasks')
-                ->get();
-
-            $teamMembers = collect();
-        } else {
-            $user_role = CompanyUsers::where('company_id', $current_company)->where('user_id', $auth_user->id)->first()->role ?? null;
-            $current_company_data = Company::where('id', $current_company)->first();
-
-            session([
-                'current_company_id' => $current_company,
-                'current_role' => $user_role,
-                'current_company_data' => $current_company_data,
-                'code' => $current_company_data->code
-            ]);
-
-            $projects = \App\Models\Project::where('company_id', $current_company)->with('tasks')->get();
-
-            $teamMembers = CompanyUsers::where('company_id', $current_company)
-                ->with('user')
-                ->get();
-        }
+        // Fetch all team members from all companies they belong to
+        $teamMembers = \App\Models\CompanyUsers::whereIn('company_id', $companyIds)
+            ->with(['user', 'company'])
+            ->get()
+            ->unique('user_id');
 
         $projectsCount = $projects->count();
 

@@ -13,17 +13,16 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        $current_company = session('current_company_id');
-        if ($current_company === 'personal') {
-            $projects = Project::whereNull('company_id')
-                ->where('user_id', auth()->id())
-                ->with('tasks')
-                ->paginate(10);
-        } else {
-            $projects = Project::where('company_id', $current_company)
-                ->with('tasks')
-                ->paginate(10);
-        }
+        $user = auth()->user();
+        $companyIds = $user->companies()->pluck('company_id')->toArray();
+
+        $projects = Project::whereIn('company_id', $companyIds)
+            ->orWhere(function ($query) use ($user) {
+                $query->whereNull('company_id')->where('user_id', $user->id);
+            })
+            ->with('tasks')
+            ->paginate(10);
+
         return view('projects.index')->with('projects', $projects);
     }
 
@@ -60,10 +59,10 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        $current_company = session('current_company_id');
+        $user_id = auth()->id();
         
-        if ($current_company === 'personal') {
-            if ($project->company_id !== null || $project->user_id !== auth()->id()) {
+        if ($project->company_id === null) {
+            if ($project->user_id !== $user_id) {
                 abort(403);
             }
             
@@ -71,7 +70,11 @@ class ProjectController extends Controller
             $companyUsers = collect([auth()->user()]);
             $user_role = 1; // Admin of their personal space
         } else {
-            if ($project->company_id != $current_company) {
+            $membership = \App\Models\CompanyUsers::where('company_id', $project->company_id)
+                ->where('user_id', $user_id)
+                ->first();
+
+            if (!$membership) {
                 abort(403);
             }
 
@@ -86,9 +89,7 @@ class ProjectController extends Controller
                 ->filter()
                 ->values();
 
-            $user_role = \App\Models\CompanyUsers::where('company_id', $project->company_id)
-                ->where('user_id', auth()->id())
-                ->first()->role ?? 0;
+            $user_role = $membership->role;
         }
 
         return view('projects.show', compact('project', 'companyUsers', 'user_role'));
@@ -99,13 +100,16 @@ class ProjectController extends Controller
      */
     public function edit(Project $project)
     {
-        $current_company = session('current_company_id');
-        if ($current_company === 'personal') {
-            if ($project->company_id !== null || $project->user_id !== auth()->id()) {
+        $user_id = auth()->id();
+        if ($project->company_id === null) {
+            if ($project->user_id !== $user_id) {
                 abort(403);
             }
         } else {
-            if ($project->company_id != $current_company) {
+            $membership = \App\Models\CompanyUsers::where('company_id', $project->company_id)
+                ->where('user_id', $user_id)
+                ->exists();
+            if (!$membership) {
                 abort(403);
             }
         }
@@ -117,13 +121,16 @@ class ProjectController extends Controller
      */
     public function update(UpdateProjectRequest $request, Project $project)
     {
-        $current_company = session('current_company_id');
-        if ($current_company === 'personal') {
-            if ($project->company_id !== null || $project->user_id !== auth()->id()) {
+        $user_id = auth()->id();
+        if ($project->company_id === null) {
+            if ($project->user_id !== $user_id) {
                 abort(403);
             }
         } else {
-            if ($project->company_id != $current_company) {
+            $membership = \App\Models\CompanyUsers::where('company_id', $project->company_id)
+                ->where('user_id', $user_id)
+                ->exists();
+            if (!$membership) {
                 abort(403);
             }
         }
@@ -140,22 +147,16 @@ class ProjectController extends Controller
      */
     public function destroy(Project $project)
     {
-        $current_company = session('current_company_id');
-        if ($current_company === 'personal') {
-            if ($project->company_id !== null || $project->user_id !== auth()->id()) {
+        $user_id = auth()->id();
+        if ($project->company_id === null) {
+            if ($project->user_id !== $user_id) {
                 abort(403);
             }
         } else {
-            if ($project->company_id != $current_company) {
-                abort(403);
-            }
-            
-            // Check if user is admin of the company to delete
-            $is_admin = \App\Models\CompanyUsers::where('company_id', $current_company)
-                ->where('user_id', auth()->id())
-                ->where('role', 1)
-                ->exists();
-            if (!$is_admin) {
+            $membership = \App\Models\CompanyUsers::where('company_id', $project->company_id)
+                ->where('user_id', $user_id)
+                ->first();
+            if (!$membership || $membership->role !== 1) {
                 abort(403, 'Only organization admins can delete projects.');
             }
         }

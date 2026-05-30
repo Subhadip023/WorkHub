@@ -156,7 +156,13 @@
                 <tbody>
                     @foreach($tasks as $task)
                         @php
-                            $canMutate = ($user_role == 1) || ($task->assigned_to === auth()->id());
+                            $canMutate = false;
+                            if ($task->project->company_id === null) {
+                                $canMutate = $task->project->user_id === auth()->id();
+                            } else {
+                                $role = auth()->user()->companies->where('company_id', $task->project->company_id)->first()->role ?? 0;
+                                $canMutate = ($role == 1) || ($task->assigned_to === auth()->id());
+                            }
                         @endphp
                         <tr class="task-row" 
                             data-project="{{ $task->project_id }}" 
