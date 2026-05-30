@@ -17,7 +17,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
 
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('companies', CompanyController::class);
     Route::post('/companies/join', [CompanyController::class, 'join'])->name('companies.join');
     Route::get('/companies/{company}/switch', [CompanyController::class, 'switch'])->name('companies.switch');

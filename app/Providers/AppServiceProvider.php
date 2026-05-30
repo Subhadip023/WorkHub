@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Notifications\Messages\MailMessage;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -14,8 +16,8 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         if (app()->environment('production')) {
-        URL::forceScheme('https');
-    }
+            URL::forceScheme('https');
+        }
     }
 
     /**
@@ -24,5 +26,14 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::useBootstrapFour();
+
+        VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
+            return (new MailMessage)
+                ->subject('Verify Email Address - WorkHub')
+                ->view('emails.verify-email', [
+                    'url' => $url,
+                    'name' => $notifiable->name ?? 'User',
+                ]);
+        });
     }
 }
