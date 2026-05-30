@@ -30,9 +30,9 @@ jobs:
       - name: Copy Env File
         run: cp .env.example .env
 
-      # craete vite.config.js
-      - name: craete vite.config.js
-        run: cp vite.config.example.js vite.config.js
+      # create build files 
+      - name: Create build files
+        run: npm run build
 
       - name: Generate App Key
         run: php artisan key:generate
