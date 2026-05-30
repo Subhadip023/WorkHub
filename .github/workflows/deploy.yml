@@ -3,14 +3,26 @@ name: Deploy to Server
 on:
   push:
     branches:
-      - main  
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+
+      - name: Validate Composer
+        run: composer validate --no-check-publish
+
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist
 
       - name: Executing remote ssh commands
         uses: appleboy/ssh-action@v1.0.3
@@ -21,13 +33,57 @@ jobs:
           port: 22
           script: |
             cd /var/www/workhub.subhadip.online
+
             git pull origin main
-            
-            # For Laravel specific tasks:
+
+            php artisan optimize:clear
+            php artisan view:clear
+
             composer install --no-dev --optimize-autoloader
+
             php artisan migrate --force
+
             php artisan config:cache
             php artisan route:cache
-            php artisan view:cache
-            php artisan optimize:clear
-            
+
+      - name: Send Email Notification
+        if: success()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.GMAIL_USERNAME }}
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          subject: "✅ WorkHub Deployment Successful"
+          to: code88068@gmail.com
+          from: GitHub Actions
+          body: |
+            Deployment completed successfully.
+
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Actor: ${{ github.actor }}
+
+      - name: Send Deployment Failure Email
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.GMAIL_USERNAME }}
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          subject: "❌ Deployment Failed"
+          to: code88068@gmail.com
+          from: GitHub Actions
+          body: |
+            Deployment failed!
+
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Actor: ${{ github.actor }}
+
+            Please check the logs for more details.
