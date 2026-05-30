@@ -81,6 +81,9 @@
 
     <div class="header">
         <h1 class="title">{{ $note->title }}</h1>
+        <div style="font-size: 13px; color: #7f8c8d; margin-top: -5px; margin-bottom: 15px;">
+            Written by {{ $note->user ? $note->user->name : 'System User' }}
+        </div>
         <table class="meta-table">
             <tr>
                 <td class="meta-label">Note Scope:</td>
