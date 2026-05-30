@@ -24,8 +24,14 @@ jobs:
       - name: Install Dependencies
         run: composer install --no-interaction --prefer-dist
 
+      - name: Copy Env File
+        run: cp .env.testing .env
+
       - name: Execute Tests
-        run: php artisan test --env=testing
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+        run: php artisan test
 
       - name: Executing remote ssh commands
         uses: appleboy/ssh-action@v1.0.3
