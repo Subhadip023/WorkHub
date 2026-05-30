@@ -27,6 +27,7 @@ class StoreProjectRequest extends FormRequest
             'theme' => ['required', 'string', 'max:255'],
             'status' => ['required', 'integer', 'in:1,2,3,4'],
             'priority' => ['required', 'integer', 'in:1,2,3,4'],
+            'company_id' => ['nullable', 'string'],
         ];
     }
 }

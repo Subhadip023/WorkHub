@@ -58,6 +58,25 @@
                     </div>
 
                     <div class="row">
+                        <div class="form-group col-md-12">
+                            <label for="company_id" class="font-weight-bold text-gray-700">Workspace / Organization <span class="text-danger">*</span></label>
+                            <select class="form-control @error('company_id') is-invalid @enderror" id="company_id" name="company_id" required>
+                                <option value="personal" {{ old('company_id') == 'personal' ? 'selected' : '' }}>Personal Space (Default)</option>
+                                @foreach($companies as $company)
+                                    <option value="{{ $company->id }}" {{ old('company_id') == $company->id ? 'selected' : '' }}>
+                                        Organization: {{ $company->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('company_id')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="row">
                         <div class="form-group col-md-6">
                             <label for="status" class="font-weight-bold text-gray-700">Status <span class="text-danger">*</span></label>
                             <select class="form-control @error('status') is-invalid @enderror" id="status" name="status" required>

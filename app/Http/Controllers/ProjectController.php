@@ -31,7 +31,11 @@ class ProjectController extends Controller
      */
     public function create()
     {
-        return view('projects.create');
+        $companies = auth()->user()->companies()->with('company')->get()->map(function ($cu) {
+            return $cu->company;
+        })->filter();
+
+        return view('projects.create', compact('companies'));
     }
 
     /**
@@ -42,11 +46,18 @@ class ProjectController extends Controller
         $data = $request->validated();
         $data['slug'] = str_replace(' ', '-', strtolower($data['name']));
         
-        $current_company = session('current_company_id');
-        if ($current_company === 'personal') {
+        $company_id = $request->input('company_id');
+        if ($company_id === 'personal' || empty($company_id)) {
             $data['company_id'] = null;
         } else {
-            $data['company_id'] = $current_company;
+            // Verify user belongs to this company
+            $belongs = \App\Models\CompanyUsers::where('company_id', $company_id)
+                ->where('user_id', auth()->id())
+                ->exists();
+            if (!$belongs) {
+                abort(403);
+            }
+            $data['company_id'] = $company_id;
         }
         $data['user_id'] = auth()->id();
 
@@ -113,7 +124,12 @@ class ProjectController extends Controller
                 abort(403);
             }
         }
-        return view('projects.edit', compact('project'));
+
+        $companies = auth()->user()->companies()->with('company')->get()->map(function ($cu) {
+            return $cu->company;
+        })->filter();
+
+        return view('projects.edit', compact('project', 'companies'));
     }
 
     /**
@@ -137,6 +153,21 @@ class ProjectController extends Controller
 
         $data = $request->validated();
         $data['slug'] = str_replace(' ', '-', strtolower($data['name']));
+
+        $company_id = $request->input('company_id');
+        if ($company_id === 'personal' || empty($company_id)) {
+            $data['company_id'] = null;
+        } else {
+            // Verify user belongs to this company
+            $belongs = \App\Models\CompanyUsers::where('company_id', $company_id)
+                ->where('user_id', auth()->id())
+                ->exists();
+            if (!$belongs) {
+                abort(403);
+            }
+            $data['company_id'] = $company_id;
+        }
+
         $project->update($data);
 
         return redirect()->route('projects.index')->with('success', 'Project updated successfully');
