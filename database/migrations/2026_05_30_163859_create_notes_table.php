@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('notes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('title');
             $table->longText('description');
             $table->integer('note_type')->default(1)->comment('1 = Project, 2 = Task, 3= Organization ,4 = personal');
