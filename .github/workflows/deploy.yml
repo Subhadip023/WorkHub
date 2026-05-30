@@ -8,41 +8,67 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     env:
       DB_CONNECTION: sqlite
-      DB_DATABASE: ":memory:"
+      DB_DATABASE: database/database.sqlite
 
     steps:
+      # Checkout repository
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # PHP
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: "8.3"
 
+      # Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # Validate composer.json
       - name: Validate Composer
         run: composer validate --no-check-publish
 
+      # Install PHP dependencies
       - name: Install Dependencies
         run: composer install --no-interaction --prefer-dist
 
+      # Create Laravel environment
       - name: Copy Env File
         run: cp .env.example .env
 
-      # create build files 
-      - name: Create build files
-        run: npm i && npm run build
-
+      # Generate APP_KEY
       - name: Generate App Key
         run: php artisan key:generate
 
-      - name: Run Migrations
-        run: php artisan migrate
+      # Create SQLite database
+      - name: Create SQLite Database
+        run: |
+          mkdir -p database
+          touch database/database.sqlite
 
+      # Run migrations
+      - name: Run Migrations
+        run: php artisan migrate --force
+
+      # Install frontend dependencies
+      - name: Install NPM Dependencies
+        run: npm install
+
+      # Build assets
+      - name: Build Assets
+        run: npm run build
+
+      # Run tests (Deployment stops here if tests fail)
       - name: Execute Tests
         run: php artisan test
 
+      # Deploy to production server
       - name: Executing remote ssh commands
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -65,6 +91,7 @@ jobs:
             php artisan config:cache
             php artisan route:cache
 
+      # Success email
       - name: Send Email Notification
         if: success()
         uses: dawidd6/action-send-mail@v3
@@ -84,12 +111,13 @@ jobs:
             Branch: ${{ github.ref_name }}
             By: ${{ github.actor }}
 
-            📝 Commit Message:
+            Commit Message:
             ${{ github.event.head_commit.message }}
 
-            🔗 Commit SHA:
+            Commit SHA:
             ${{ github.sha }}
 
+      # Failure email
       - name: Send Deployment Failure Email
         if: failure()
         uses: dawidd6/action-send-mail@v3
@@ -99,7 +127,7 @@ jobs:
           secure: true
           username: ${{ secrets.GMAIL_USERNAME }}
           password: ${{ secrets.GMAIL_APP_PASSWORD }}
-          subject: "❌ Deployment Failed"
+          subject: "❌ WorkHub Deployment Failed"
           to: code88068@gmail.com
           from: GitHub Actions
           body: |
@@ -109,11 +137,11 @@ jobs:
             Branch: ${{ github.ref_name }}
             By: ${{ github.actor }}
 
-            📝 Commit Message:
+            Commit Message:
             ${{ github.event.head_commit.message }}
 
-            🔗 Commit SHA:
+            Commit SHA:
             ${{ github.sha }}
-            ⚠️ Note:
-            Check GitHub Actions logs for full error details:
+
+            Workflow Logs:
             ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
