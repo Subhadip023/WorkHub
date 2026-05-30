@@ -123,12 +123,10 @@
                 <td class="meta-label">Created At:</td>
                 <td class="meta-value">{{ $note->created_at->format('F d, Y h:i A') }}</td>
             </tr>
-            @if($note->updated_at != $note->created_at)
-                <tr>
-                    <td class="meta-label">Updated At:</td>
-                    <td class="meta-value">{{ $note->updated_at->format('F d, Y h:i A') }}</td>
-                </tr>
-            @endif
+            <tr>
+                <td class="meta-label">Updated At:</td>
+                <td class="meta-value">{{ $note->updated_at->format('F d, Y h:i A') }}</td>
+            </tr>
         </table>
     </div>
 

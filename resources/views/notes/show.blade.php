@@ -43,9 +43,7 @@
                             By {{ $note->user->name }} &bull;
                         @endif
                         Created {{ $note->created_at->format('F d, Y \a\t h:i A') }} ({{ $note->created_at->diffForHumans() }})
-                        @if($note->updated_at != $note->created_at)
-                            &bull; Updated {{ $note->updated_at->diffForHumans() }}
-                        @endif
+                        &bull; Updated {{ $note->updated_at->format('F d, Y \a\t h:i A') }} ({{ $note->updated_at->diffForHumans() }})
                     </div>
                 </div>
             </div>
