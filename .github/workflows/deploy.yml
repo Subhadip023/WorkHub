@@ -81,13 +81,18 @@ jobs:
 
             git pull origin main
 
+            # Install dependencies without running hooks to avoid package uninstall / autoload mismatches
+            composer install --no-dev --optimize-autoloader --no-scripts
+
+            # Discover packages and clear caches
+            php artisan package:discover --ansi
             php artisan optimize:clear
             php artisan view:clear
 
-            composer install --no-dev --optimize-autoloader
-
+            # Run migrations
             php artisan migrate --force
 
+            # Cache configurations and routes
             php artisan config:cache
             php artisan route:cache
 
