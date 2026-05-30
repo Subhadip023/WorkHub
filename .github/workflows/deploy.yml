@@ -32,7 +32,7 @@ jobs:
 
       # create build files 
       - name: Create build files
-        run: npm run build
+        run: npm i && npm run build
 
       - name: Generate App Key
         run: php artisan key:generate
