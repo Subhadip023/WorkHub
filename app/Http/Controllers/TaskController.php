@@ -81,6 +81,8 @@ class TaskController extends Controller
             'description' => 'nullable|string',
             'due_date' => 'nullable|date',
             'assigned_to' => 'nullable|exists:users,id',
+            'status' => 'nullable|integer|in:1,2,3,4',
+            'priority' => 'nullable|integer|in:1,2,3,4',
         ]);
 
         $project = Project::findOrFail($validated['project_id']);
@@ -103,6 +105,10 @@ class TaskController extends Controller
             $validated['assigned_to'] = $user_id;
         }
 
+        if (isset($validated['status'])) {
+            $validated['is_completed'] = ($validated['status'] == 3);
+        }
+
         $project->tasks()->create($validated);
 
         return redirect()->route('tasks.index')->with('success', 'Task created successfully');
@@ -113,13 +119,16 @@ class TaskController extends Controller
      */
     public function store(Request $request, Project $project)
     {
-        $current_company = session('current_company_id');
-        if ($current_company === 'personal') {
-            if ($project->company_id !== null || $project->user_id !== auth()->id()) {
+        $user_id = auth()->id();
+        if ($project->company_id === null) {
+            if ($project->user_id !== $user_id) {
                 abort(403);
             }
         } else {
-            if ($project->company_id != $current_company) {
+            $belongs = \App\Models\CompanyUsers::where('company_id', $project->company_id)
+                ->where('user_id', $user_id)
+                ->exists();
+            if (!$belongs) {
                 abort(403);
             }
         }
@@ -129,10 +138,16 @@ class TaskController extends Controller
             'description' => 'nullable|string',
             'due_date' => 'nullable|date',
             'assigned_to' => 'nullable|exists:users,id',
+            'status' => 'nullable|integer|in:1,2,3,4',
+            'priority' => 'nullable|integer|in:1,2,3,4',
         ]);
 
         if (empty($validated['assigned_to'])) {
-            $validated['assigned_to'] = auth()->id();
+            $validated['assigned_to'] = $user_id;
+        }
+
+        if (isset($validated['status'])) {
+            $validated['is_completed'] = ($validated['status'] == 3);
         }
 
         $project->tasks()->create($validated);
@@ -174,8 +189,10 @@ class TaskController extends Controller
     {
         $this->checkTaskOwnership($task);
 
+        $newCompleted = !$task->is_completed;
         $task->update([
-            'is_completed' => !$task->is_completed,
+            'is_completed' => $newCompleted,
+            'status' => $newCompleted ? 3 : 1,
         ]);
 
         return redirect()->back()->with('success', 'Task status updated');
@@ -193,7 +210,13 @@ class TaskController extends Controller
             'description' => 'nullable|string',
             'due_date' => 'nullable|date',
             'assigned_to' => 'nullable|exists:users,id',
+            'status' => 'nullable|integer|in:1,2,3,4',
+            'priority' => 'nullable|integer|in:1,2,3,4',
         ]);
+
+        if (isset($validated['status'])) {
+            $validated['is_completed'] = ($validated['status'] == 3);
+        }
 
         $task->update($validated);
 
@@ -217,13 +240,16 @@ class TaskController extends Controller
      */
     public function import(Request $request, Project $project)
     {
-        $current_company = session('current_company_id');
-        if ($current_company === 'personal') {
-            if ($project->company_id !== null || $project->user_id !== auth()->id()) {
+        $user_id = auth()->id();
+        if ($project->company_id === null) {
+            if ($project->user_id !== $user_id) {
                 abort(403);
             }
         } else {
-            if ($project->company_id != $current_company) {
+            $belongs = \App\Models\CompanyUsers::where('company_id', $project->company_id)
+                ->where('user_id', $user_id)
+                ->exists();
+            if (!$belongs) {
                 abort(403);
             }
         }
@@ -250,12 +276,17 @@ class TaskController extends Controller
         $count = 0;
         foreach ($data as $item) {
             if (!empty($item['title'])) {
+                $isComp = $item['is_completed'] ?? false;
+                $status = $item['status'] ?? ($isComp ? 3 : 1);
+                $priority = $item['priority'] ?? 2;
                 $project->tasks()->create([
                     'title' => $item['title'],
                     'description' => $item['description'] ?? null,
                     'due_date' => $item['due_date'] ?? null,
                     'assigned_to' => $item['assigned_to'] ?? auth()->id(),
-                    'is_completed' => $item['is_completed'] ?? false,
+                    'is_completed' => $isComp,
+                    'status' => $status,
+                    'priority' => $priority,
                 ]);
                 $count++;
             }

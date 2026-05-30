@@ -138,6 +138,8 @@
                         <th>Task Details</th>
                         <th>Assigned To</th>
                         <th>Due Date</th>
+                        <th>Status</th>
+                        <th>Priority</th>
                         <th style="width: 120px;" class="text-center">Actions</th>
                     </tr>
                 </thead>
@@ -161,6 +163,22 @@
                         </td>
                         <td class="align-middle">
                             <input type="date" name="due_date" form="inlineAddTaskForm" class="form-control form-control-sm">
+                        </td>
+                        <td class="align-middle">
+                            <select name="status" form="inlineAddTaskForm" class="form-control form-control-sm">
+                                <option value="1" selected>To Do</option>
+                                <option value="2">In Progress</option>
+                                <option value="3">Completed</option>
+                                <option value="4">On Hold</option>
+                            </select>
+                        </td>
+                        <td class="align-middle">
+                            <select name="priority" form="inlineAddTaskForm" class="form-control form-control-sm">
+                                <option value="1">Low</option>
+                                <option value="2" selected>Medium</option>
+                                <option value="3">High</option>
+                                <option value="4">Urgent</option>
+                            </select>
                         </td>
                         <td class="text-center align-middle">
                             <button type="submit" form="inlineAddTaskForm" class="btn btn-sm btn-success shadow-sm" title="Save Todo">
@@ -236,6 +254,32 @@
                                     <span class="text-muted small">-</span>
                                 @endif
                             </td>
+                            <td class="align-middle">
+                                @if($task->status == 1)
+                                    <span class="badge badge-secondary p-2">To Do</span>
+                                @elseif($task->status == 2)
+                                    <span class="badge badge-warning p-2">In Progress</span>
+                                @elseif($task->status == 3)
+                                    <span class="badge badge-success p-2">Completed</span>
+                                @elseif($task->status == 4)
+                                    <span class="badge badge-danger p-2">On Hold</span>
+                                @else
+                                    <span class="badge badge-light p-2">To Do</span>
+                                @endif
+                            </td>
+                            <td class="align-middle">
+                                @if($task->priority == 1)
+                                    <span class="badge badge-secondary p-2">Low</span>
+                                @elseif($task->priority == 2)
+                                    <span class="badge badge-info p-2">Medium</span>
+                                @elseif($task->priority == 3)
+                                    <span class="badge badge-warning p-2">High</span>
+                                @elseif($task->priority == 4)
+                                    <span class="badge badge-danger p-2">Urgent</span>
+                                @else
+                                    <span class="badge badge-info p-2">Medium</span>
+                                @endif
+                            </td>
                             <td class="text-center align-middle">
                                 @if($canMutate)
                                     <button class="btn btn-sm btn-info edit-task-btn" 
@@ -246,6 +290,8 @@
                                             data-description="{{ $task->description }}"
                                             data-due_date="{{ $task->due_date }}"
                                             data-assigned_to="{{ $task->assigned_to }}"
+                                            data-status="{{ $task->status }}"
+                                            data-priority="{{ $task->priority }}"
                                             data-action="{{ route('tasks.update', $task) }}">
                                         <i class="fas fa-edit"></i>
                                     </button>
@@ -293,6 +339,26 @@
                     <div class="form-group">
                         <label for="edit_task_description" class="font-weight-bold text-gray-700">Description</label>
                         <textarea class="form-control" id="edit_task_description" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label for="edit_task_status" class="font-weight-bold text-gray-700">Status <span class="text-danger">*</span></label>
+                            <select class="form-control" id="edit_task_status" name="status" required>
+                                <option value="1">To Do</option>
+                                <option value="2">In Progress</option>
+                                <option value="3">Completed</option>
+                                <option value="4">On Hold</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="edit_task_priority" class="font-weight-bold text-gray-700">Priority <span class="text-danger">*</span></label>
+                            <select class="form-control" id="edit_task_priority" name="priority" required>
+                                <option value="1">Low</option>
+                                <option value="2">Medium</option>
+                                <option value="3">High</option>
+                                <option value="4">Urgent</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="edit_task_assigned_to" class="font-weight-bold text-gray-700">Assign To</label>
@@ -401,6 +467,8 @@
             var description = $(this).data('description');
             var due_date = $(this).data('due_date');
             var assigned_to = $(this).data('assigned_to');
+            var status = $(this).data('status');
+            var priority = $(this).data('priority');
             var action = $(this).data('action');
 
             $('#editTaskForm').attr('action', action);
@@ -408,6 +476,8 @@
             $('#edit_task_description').val(description);
             $('#edit_task_due_date').val(due_date);
             $('#edit_task_assigned_to').val(assigned_to);
+            $('#edit_task_status').val(status);
+            $('#edit_task_priority').val(priority);
         });
     });
 </script>
