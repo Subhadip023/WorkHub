@@ -4,9 +4,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('/desing')->group(function () {
    // Dashboard
-Route::get('/', function () {
-    return view('welcome');
-})->name('dashboard');
+// Route::get('/', function () {
+//     return view('welcome');
+// })->name('dashboard');
 
 // Components Routes
 Route::get('/buttons', function () {
