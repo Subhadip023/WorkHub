@@ -66,7 +66,15 @@ jobs:
 
       # Run tests (Deployment stops here if tests fail)
       - name: Execute Tests
-        run: php artisan test
+        shell: bash
+        run: |
+          set -o pipefail
+          php artisan test --colors=never | tee test-output.txt
+          TEST_SUMMARY=$(grep -E 'Tests:[[:space:]]+[0-9]+' test-output.txt | sed -E 's/[[:space:]]*Tests:[[:space:]]*//' | tail -n 1)
+          if [ -z "$TEST_SUMMARY" ]; then
+            TEST_SUMMARY="All tests passed successfully."
+          fi
+          echo "TEST_SUMMARY=$TEST_SUMMARY" >> $GITHUB_ENV
 
       # Deploy to production server
       - name: Executing remote ssh commands
@@ -116,6 +124,9 @@ jobs:
 
             Commit SHA:
             ${{ github.sha }}
+
+            Test Results:
+            ✅ ${{ env.TEST_SUMMARY }}
 
       # Failure email
       - name: Send Deployment Failure Email
