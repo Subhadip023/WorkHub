@@ -120,8 +120,14 @@
 
 <!-- Tasks List Card -->
 <div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Project Tasks</h6>
+    <div class="card-header py-3 d-flex align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary mb-0">Project Tasks</h6>
+        <div class="custom-control custom-checkbox">
+            <input type="checkbox" class="custom-control-input" id="toggleCompletedTasks">
+            <label class="custom-control-label font-weight-bold text-gray-700 small" for="toggleCompletedTasks" style="cursor: pointer; user-select: none;">
+                Show Completed Tasks
+            </label>
+        </div>
     </div>
     <div class="card-body">
         <div id="noTasksContainer" class="text-center py-5" style="display: {{ $project->tasks->isEmpty() ? 'block' : 'none' }}">
@@ -193,7 +199,7 @@
                         @php
                             $canMutate = ($user_role == 1) || ($task->assigned_to === auth()->id());
                         @endphp
-                        <tr>
+                        <tr class="task-row-item {{ $task->status == 3 ? 'completed-task' : 'pending-task' }}">
                             <td class="text-center align-middle">
                                 @if($canMutate)
                                     <form action="{{ route('tasks.toggle', $task) }}" method="POST">
@@ -480,6 +486,7 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
+        var applyFilter;
         // Toggle inline add row visibility
         $('#btnShowInlineAdd').click(function(e) {
             e.preventDefault();
@@ -493,11 +500,15 @@
         $('#cancelInlineAdd').click(function() {
             $('#inlineAddRow').hide();
             
-            // If there are no other tasks, restore the "No tasks found" state
-            var taskCount = $('#tasksTable tbody tr').length - 1; // subtract 1 for the inline row itself
-            if (taskCount <= 0) {
-                $('#tasksTableContainer').hide();
-                $('#noTasksContainer').show();
+            if (typeof applyFilter === 'function') {
+                applyFilter();
+            } else {
+                // If there are no other tasks, restore the "No tasks found" state
+                var taskCount = $('#tasksTable tbody tr').length - 1; // subtract 1 for the inline row itself
+                if (taskCount <= 0) {
+                    $('#tasksTableContainer').hide();
+                    $('#noTasksContainer').show();
+                }
             }
 
             // Clear values
@@ -532,6 +543,68 @@
             $('#edit_task_status').val(status);
             $('#edit_task_priority').val(priority);
         });
+
+        // Toggle Completed Tasks filtering logic
+        var toggleCheckbox = document.getElementById('toggleCompletedTasks');
+        if (toggleCheckbox) {
+            // Load preference from localStorage or default to unchecked (false)
+            var showCompleted = localStorage.getItem('showCompletedTasks') === 'true';
+            toggleCheckbox.checked = showCompleted;
+
+            applyFilter = function() {
+                var show = toggleCheckbox.checked;
+                localStorage.setItem('showCompletedTasks', show);
+                
+                var rows = document.querySelectorAll('.task-row-item');
+                var visibleCount = 0;
+                
+                rows.forEach(function(row) {
+                    if (row.classList.contains('completed-task')) {
+                        if (show) {
+                            row.style.setProperty('display', '', 'important');
+                            visibleCount++;
+                        } else {
+                            row.style.setProperty('display', 'none', 'important');
+                        }
+                    } else {
+                        row.style.setProperty('display', '', 'important');
+                        visibleCount++;
+                    }
+                });
+
+                // Toggle container visibility
+                var inlineAddRowVisible = document.getElementById('inlineAddRow').style.display !== 'none';
+                var hasVisibleTasks = visibleCount > 0 || inlineAddRowVisible;
+                
+                var tasksTableContainer = document.getElementById('tasksTableContainer');
+                var noTasksContainer = document.getElementById('noTasksContainer');
+                
+                if (tasksTableContainer && noTasksContainer) {
+                    var totalProjectTasks = rows.length;
+                    if (totalProjectTasks === 0) {
+                        tasksTableContainer.style.display = 'none';
+                        noTasksContainer.style.display = 'block';
+                        noTasksContainer.querySelector('h5').innerText = 'No tasks found';
+                        noTasksContainer.querySelector('p').innerText = 'Get started by creating your first task for this project!';
+                    } else {
+                        if (hasVisibleTasks) {
+                            tasksTableContainer.style.display = 'block';
+                            noTasksContainer.style.display = 'none';
+                        } else {
+                            tasksTableContainer.style.display = 'none';
+                            noTasksContainer.style.display = 'block';
+                            noTasksContainer.querySelector('h5').innerText = 'No pending tasks';
+                            noTasksContainer.querySelector('p').innerText = 'Check "Show Completed Tasks" to see finished tasks.';
+                        }
+                    }
+                }
+            };
+
+            toggleCheckbox.addEventListener('change', applyFilter);
+
+            // Initial run
+            applyFilter();
+        }
     });
 </script>
 @endpush

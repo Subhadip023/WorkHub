@@ -156,20 +156,36 @@ it('sorts tasks in project details page by due_date ascending and priority desce
         'status' => 1,
     ]);
 
+    // Task E: Completed Task
+    $taskE = \App\Models\Task::create([
+        'title' => 'Task E',
+        'project_id' => $project->id,
+        'due_date' => '2026-06-10',
+        'priority' => 1,
+        'status' => 3, // Completed
+    ]);
+
     $this->actingAs($user);
 
     $response = $this->get(route('projects.show', $project));
     $response->assertStatus(200);
 
+    // Verify Show Completed Tasks checkbox and row classes are in HTML
+    $response->assertSee('id="toggleCompletedTasks"', false);
+    $response->assertSee('completed-task');
+    $response->assertSee('pending-task');
+
     // Expected order:
     // 1. Task D (Earlier due date 2026-06-01, Priority Urgent 4)
     // 2. Task C (Earlier due date 2026-06-01, Priority Low 1)
     // 3. Task B (Later due date 2026-06-05, Priority Medium 2)
-    // 4. Task A (No due date, Priority Urgent 4 - comes last because due_date is null)
+    // 4. Task E (Later due date 2026-06-10, Priority Low 1)
+    // 5. Task A (No due date, Priority Urgent 4 - comes last because due_date is null)
     $tasks = $response->viewData('project')->tasks;
 
     expect($tasks->get(0)->id)->toBe($taskD->id)
         ->and($tasks->get(1)->id)->toBe($taskC->id)
         ->and($tasks->get(2)->id)->toBe($taskB->id)
-        ->and($tasks->get(3)->id)->toBe($taskA->id);
+        ->and($tasks->get(3)->id)->toBe($taskE->id)
+        ->and($tasks->get(4)->id)->toBe($taskA->id);
 });
