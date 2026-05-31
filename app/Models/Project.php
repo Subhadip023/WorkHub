@@ -12,22 +12,34 @@ class Project extends Model
 
     protected $guarded = [];
 
-    public function tasks()
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<Task, $this>
+     */
+    public function tasks(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Task::class);
     }
 
-    public function user()
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<User, $this>
+     */
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function company()
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<Company, $this>
+     */
+    public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);
     }
 
-    public function notes()
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<Note, $this>
+     */
+    public function notes(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Note::class, 'note_type_id')->where('note_type', Note::TYPE_PROJECT);
     }

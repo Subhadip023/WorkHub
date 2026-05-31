@@ -14,6 +14,8 @@ class TaskImage extends Model
 
     /**
      * Get the task that owns the image.
+     *
+     * @return BelongsTo<Task, $this>
      */
     public function task(): BelongsTo
     {

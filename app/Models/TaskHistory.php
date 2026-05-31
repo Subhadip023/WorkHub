@@ -16,12 +16,18 @@ class TaskHistory extends Model
         'new_status',
     ];
 
-    public function task()
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<Task, $this>
+     */
+    public function task(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Task::class);
     }
 
-    public function user()
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<User, $this>
+     */
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(User::class);
     }

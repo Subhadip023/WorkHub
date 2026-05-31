@@ -39,27 +39,42 @@ class Task extends Model
         });
     }
 
-    public function project()
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<Project, $this>
+     */
+    public function project(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
 
-    public function assignedUser()
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<User, $this>
+     */
+    public function assignedUser(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_to');
     }
 
-    public function images()
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<TaskImage, $this>
+     */
+    public function images(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(TaskImage::class);
     }
 
-    public function notes()
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<Note, $this>
+     */
+    public function notes(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Note::class, 'note_type_id')->where('note_type', Note::TYPE_TASK);
     }
 
-    public function histories()
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<TaskHistory, $this>
+     */
+    public function histories(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(TaskHistory::class)->latest();
     }

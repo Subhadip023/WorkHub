@@ -46,7 +46,10 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
-    public function companies()
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<CompanyUsers, $this>
+     */
+    public function companies(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(CompanyUsers::class, 'user_id');
     }

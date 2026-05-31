@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class CompanyUsers extends Model
 {
     /** @use HasFactory<\Database\Factories\CompanyUsersFactory> */
@@ -12,12 +12,18 @@ class CompanyUsers extends Model
 
     protected $fillable = ['role', 'company_id', 'user_id'];
 
-    public function company()
+    /**
+     * @return BelongsTo<Company, $this>
+     */
+    public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
     }
 
-    public function user()
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
