@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Company;
+use App\Models\CompanyUsers;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
@@ -430,4 +432,217 @@ it('logs task status history and displays it on the task details page', function
     $response->assertSee('Priority changed to');
     $response->assertSee('High');
     $response->assertSee('Title changed to');
+});
+
+it('allows creating tasks with specific types and validates type values', function () {
+    $user = User::factory()->create();
+    $project = Project::create([
+        'name' => 'Personal Project',
+        'slug' => 'personal-project',
+        'theme' => '#ff0000',
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $user->id,
+        'company_id' => null,
+    ]);
+
+    $this->actingAs($user);
+
+    // Create a Bug type task via general store
+    $response = $this->post(route('tasks.store'), [
+        'project_id' => $project->id,
+        'title' => 'Important Bug Task',
+        'type' => 2, // Bug
+        'status' => 1,
+        'priority' => 2,
+    ]);
+    $response->assertRedirect();
+    $this->assertDatabaseHas('tasks', [
+        'title' => 'Important Bug Task',
+        'type' => 2,
+    ]);
+
+    // Try creating a task with invalid type (out of bounds)
+    $response = $this->post(route('tasks.store'), [
+        'project_id' => $project->id,
+        'title' => 'Invalid Type Task',
+        'type' => 99, // Invalid
+        'status' => 1,
+        'priority' => 2,
+    ]);
+    $response->assertSessionHasErrors('type');
+});
+
+it('tracks task type changes in task history', function () {
+    $user = User::factory()->create();
+    $project = Project::create([
+        'name' => 'Personal Project',
+        'slug' => 'personal-project',
+        'theme' => '#ff0000',
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $user->id,
+        'company_id' => null,
+    ]);
+
+    $this->actingAs($user);
+
+    $task = Task::create([
+        'title' => 'Test Task Type History',
+        'project_id' => $project->id,
+        'status' => 1,
+        'priority' => 1,
+        'type' => 1, // Task
+    ]);
+
+    $task->update([
+        'type' => 3, // Feature
+    ]);
+
+    $this->assertDatabaseHas('task_histories', [
+        'task_id' => $task->id,
+        'field' => 'type',
+        'old_value' => '1',
+        'new_value' => '3',
+    ]);
+
+    $response = $this->get(route('tasks.show', $task));
+    $response->assertStatus(200);
+    $response->assertSee('Type changed to');
+    $response->assertSee('Feature');
+});
+
+it('filters tasks by type in tasks index', function () {
+    $user = User::factory()->create();
+    $project = Project::create([
+        'name' => 'Personal Project',
+        'slug' => 'personal-project',
+        'theme' => '#ff0000',
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $user->id,
+        'company_id' => null,
+    ]);
+
+    $this->actingAs($user);
+
+    Task::create([
+        'title' => 'General Bug Task',
+        'project_id' => $project->id,
+        'status' => 1,
+        'priority' => 2,
+        'type' => 2, // Bug
+    ]);
+
+    Task::create([
+        'title' => 'General Feature Task',
+        'project_id' => $project->id,
+        'status' => 1,
+        'priority' => 2,
+        'type' => 3, // Feature
+    ]);
+
+    // Filter by type 2 (Bug)
+    $response = $this->get(route('tasks.index', ['type' => '2']));
+    $response->assertStatus(200);
+    $response->assertSee('General Bug Task');
+    $response->assertDontSee('General Feature Task');
+
+    // Filter by type 3 (Feature)
+    $response = $this->get(route('tasks.index', ['type' => '3']));
+    $response->assertStatus(200);
+    $response->assertSee('General Feature Task');
+    $response->assertDontSee('General Bug Task');
+});
+
+it('enforces company permissions for task image uploads', function () {
+    Storage::fake('public');
+
+    // 1. Setup Company, Admin, Member, and Non-member
+    $admin = User::factory()->create();
+    $member = User::factory()->create();
+    $nonMember = User::factory()->create();
+
+    $company = Company::create([
+        'name' => 'Test Org',
+        'slug' => 'test-org',
+        'invite_code' => 'INVITE123',
+        'owner_id' => $admin->id,
+    ]);
+
+    // Attach users to company
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $admin->id,
+        'role' => 1, // Admin
+    ]);
+
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $member->id,
+        'role' => 0, // Member
+    ]);
+
+    // 2. Setup Project & Tasks
+    $project = Project::create([
+        'name' => 'Company Project',
+        'slug' => 'company-project',
+        'theme' => '#00ff00',
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $admin->id,
+        'company_id' => $company->id,
+    ]);
+
+    // Task 1: Assigned to the member
+    $taskAssignedToMember = Task::create([
+        'title' => 'Member Task',
+        'project_id' => $project->id,
+        'status' => 1,
+        'priority' => 1,
+        'assigned_to' => $member->id,
+    ]);
+
+    // Task 2: Assigned to the admin
+    $taskAssignedToAdmin = Task::create([
+        'title' => 'Admin Task',
+        'project_id' => $project->id,
+        'status' => 1,
+        'priority' => 1,
+        'assigned_to' => $admin->id,
+    ]);
+
+    // 3. Test: Member uploading to their own task -> Success
+    $this->actingAs($member);
+    $file = UploadedFile::fake()->image('member_upload.png');
+    $response = $this->post(route('tasks.images.store', $taskAssignedToMember), [
+        'image' => $file,
+    ]);
+    $response->assertRedirect();
+    $this->assertDatabaseHas('task_images', [
+        'task_id' => $taskAssignedToMember->id,
+    ]);
+
+    // 4. Test: Member uploading to admin's task -> 403 Forbidden
+    $file2 = UploadedFile::fake()->image('member_upload_admin_task.png');
+    $response = $this->post(route('tasks.images.store', $taskAssignedToAdmin), [
+        'image' => $file2,
+    ]);
+    $response->assertStatus(403);
+
+    // 5. Test: Admin uploading to member's task -> Success (Admin role bypasses assignment check)
+    $this->actingAs($admin);
+    $file3 = UploadedFile::fake()->image('admin_upload.png');
+    $response = $this->post(route('tasks.images.store', $taskAssignedToMember), [
+        'image' => $file3,
+    ]);
+    $response->assertRedirect();
+
+    // 6. Test: Non-member uploading to member's task -> 403 Forbidden
+    $this->actingAs($nonMember);
+    $file4 = UploadedFile::fake()->image('non_member_upload.png');
+    $response = $this->post(route('tasks.images.store', $taskAssignedToMember), [
+        'image' => $file4,
+    ]);
+    $response->assertStatus(403);
 });

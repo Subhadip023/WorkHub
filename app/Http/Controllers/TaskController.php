@@ -76,6 +76,10 @@ class TaskController extends Controller
             }
         }
 
+        if ($request->filled('type') && $request->type !== 'all') {
+            $tasksQuery->where('type', $request->type);
+        }
+
         // Fetch paginated tasks
         $tasks = $tasksQuery->with(['project', 'assignedUser'])->paginate(5);
 
@@ -107,6 +111,7 @@ class TaskController extends Controller
             'assigned_to' => 'nullable|exists:users,id',
             'status' => 'nullable|integer|in:1,2,3,4',
             'priority' => 'nullable|integer|in:1,2,3,4',
+            'type' => 'nullable|integer|in:1,2,3,4',
         ]);
 
         $project = Project::findOrFail($validated['project_id']);
@@ -160,6 +165,7 @@ class TaskController extends Controller
             'assigned_to' => 'nullable|exists:users,id',
             'status' => 'nullable|integer|in:1,2,3,4',
             'priority' => 'nullable|integer|in:1,2,3,4',
+            'type' => 'nullable|integer|in:1,2,3,4',
         ]);
 
         if (empty($validated['assigned_to'])) {
@@ -227,6 +233,7 @@ class TaskController extends Controller
             'assigned_to' => 'nullable|exists:users,id',
             'status' => 'nullable|integer|in:1,2,3,4',
             'priority' => 'nullable|integer|in:1,2,3,4',
+            'type' => 'nullable|integer|in:1,2,3,4',
         ]);
 
         $task->update($validated);
@@ -289,6 +296,7 @@ class TaskController extends Controller
             if (! empty($item['title'])) {
                 $status = $item['status'] ?? (($item['is_completed'] ?? false) ? 3 : 1);
                 $priority = $item['priority'] ?? 2;
+                $type = $item['type'] ?? 1;
                 $project->tasks()->create([
                     'title' => $item['title'],
                     'description' => $item['description'] ?? null,
@@ -296,6 +304,7 @@ class TaskController extends Controller
                     'assigned_to' => $item['assigned_to'] ?? auth()->id(),
                     'status' => $status,
                     'priority' => $priority,
+                    'type' => $type,
                 ]);
                 $count++;
             }

@@ -12,6 +12,14 @@ class Task extends Model
 {
     use HasFactory;
 
+    const TYPE_TASK = 1;
+
+    const TYPE_BUG = 2;
+
+    const TYPE_FEATURE = 3;
+
+    const TYPE_IMPROVEMENT = 4;
+
     protected $guarded = [];
 
     protected static function booted()
@@ -36,10 +44,20 @@ class Task extends Model
                     'new_value' => (string) $task->priority,
                 ]);
             }
+
+            if ($task->type) {
+                TaskHistory::create([
+                    'task_id' => $task->id,
+                    'user_id' => auth()->id(),
+                    'field' => 'type',
+                    'old_value' => null,
+                    'new_value' => (string) $task->type,
+                ]);
+            }
         });
 
         static::updating(function ($task) {
-            $trackedFields = ['status', 'priority', 'title', 'description', 'due_date', 'assigned_to'];
+            $trackedFields = ['status', 'priority', 'type', 'title', 'description', 'due_date', 'assigned_to'];
             foreach ($trackedFields as $field) {
                 if ($task->isDirty($field)) {
                     $oldVal = $task->getOriginal($field);
@@ -63,6 +81,50 @@ class Task extends Model
                 }
             }
         });
+    }
+
+    /**
+     * Get human-readable type name.
+     */
+    public function getTypeName(): string
+    {
+        switch ($this->type) {
+            case self::TYPE_TASK: return 'Task';
+            case self::TYPE_BUG: return 'Bug';
+            case self::TYPE_FEATURE: return 'Feature';
+            case self::TYPE_IMPROVEMENT: return 'Improvement';
+            default: return 'Task';
+        }
+    }
+
+    /**
+     * Get CSS badge class for styling the task type.
+     */
+    public function getTypeBadgeClass(): string
+    {
+        switch ($this->type) {
+            case self::TYPE_BUG: return 'badge-danger';
+            case self::TYPE_FEATURE: return 'badge-success';
+            case self::TYPE_IMPROVEMENT: return 'badge-info';
+            case self::TYPE_TASK:
+            default:
+                return 'badge-light border text-gray-800';
+        }
+    }
+
+    /**
+     * Get FontAwesome icon class.
+     */
+    public function getTypeIcon(): string
+    {
+        switch ($this->type) {
+            case self::TYPE_BUG: return 'fa-bug text-danger';
+            case self::TYPE_FEATURE: return 'fa-rocket text-success';
+            case self::TYPE_IMPROVEMENT: return 'fa-chart-line text-info';
+            case self::TYPE_TASK:
+            default:
+                return 'fa-tasks text-secondary';
+        }
     }
 
     /**

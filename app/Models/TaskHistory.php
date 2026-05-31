@@ -80,6 +80,20 @@ class TaskHistory extends Model
     }
 
     /**
+     * Get human-readable type name.
+     */
+    public static function getTypeName(?int $type): string
+    {
+        switch ($type) {
+            case 1: return 'Task';
+            case 2: return 'Bug';
+            case 3: return 'Feature';
+            case 4: return 'Improvement';
+            default: return 'Task';
+        }
+    }
+
+    /**
      * Get human-readable description for the history event.
      */
     public function getDescription(): string
@@ -102,6 +116,14 @@ class TaskHistory extends Model
             }
 
             return 'Priority changed to '.self::getPriorityName((int) $new);
+        }
+
+        if ($field === 'type') {
+            if ($old === null) {
+                return 'Type set to '.self::getTypeName((int) $new);
+            }
+
+            return 'Type changed to '.self::getTypeName((int) $new);
         }
 
         if ($field === 'title') {
@@ -154,6 +176,10 @@ class TaskHistory extends Model
 
         if ($field === 'priority') {
             return 'From: '.self::getPriorityName((int) $old);
+        }
+
+        if ($field === 'type') {
+            return 'From: '.self::getTypeName((int) $old);
         }
 
         if ($field === 'title') {

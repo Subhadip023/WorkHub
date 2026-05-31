@@ -105,7 +105,7 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-6 form-group">
+                            <div class="col-md-4 form-group">
                                 <label for="status" class="font-weight-bold text-gray-700 text-xs text-uppercase">Status</label>
                                 <select class="form-control" name="status" id="status">
                                     <option value="1" {{ $task->status == 1 ? 'selected' : '' }}>To Do</option>
@@ -114,13 +114,22 @@
                                     <option value="4" {{ $task->status == 4 ? 'selected' : '' }}>On Hold</option>
                                 </select>
                             </div>
-                            <div class="col-md-6 form-group">
+                            <div class="col-md-4 form-group">
                                 <label for="priority" class="font-weight-bold text-gray-700 text-xs text-uppercase">Priority</label>
                                 <select class="form-control" name="priority" id="priority">
                                     <option value="1" {{ $task->priority == 1 ? 'selected' : '' }}>Low</option>
                                     <option value="2" {{ $task->priority == 2 ? 'selected' : '' }}>Medium</option>
                                     <option value="3" {{ $task->priority == 3 ? 'selected' : '' }}>High</option>
                                     <option value="4" {{ $task->priority == 4 ? 'selected' : '' }}>Urgent</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 form-group">
+                                <label for="type" class="font-weight-bold text-gray-700 text-xs text-uppercase">Type</label>
+                                <select class="form-control" name="type" id="type">
+                                    <option value="1" {{ $task->type == 1 ? 'selected' : '' }}>Task</option>
+                                    <option value="2" {{ $task->type == 2 ? 'selected' : '' }}>Bug</option>
+                                    <option value="3" {{ $task->type == 3 ? 'selected' : '' }}>Feature</option>
+                                    <option value="4" {{ $task->type == 4 ? 'selected' : '' }}>Improvement</option>
                                 </select>
                             </div>
                         </div>
@@ -161,7 +170,7 @@
                                 <span class="badge badge-danger p-2">On Hold</span>
                             @endif
                         </div>
-                        <div class="mb-2">
+                        <div class="mr-4 mb-2">
                             <span class="font-weight-bold text-xs text-uppercase d-block mb-1">Priority</span>
                             @if($task->priority == 1)
                                 <span class="badge badge-secondary p-2">Low</span>
@@ -172,6 +181,13 @@
                             @elseif($task->priority == 4)
                                 <span class="badge badge-danger p-2">Urgent</span>
                             @endif
+                        </div>
+                        <div class="mb-2">
+                            <span class="font-weight-bold text-xs text-uppercase d-block mb-1">Type</span>
+                            <span class="badge {{ $task->getTypeBadgeClass() }} p-2 shadow-sm">
+                                <i class="fas {{ $task->getTypeIcon() }} mr-1"></i>
+                                {{ $task->getTypeName() }}
+                            </span>
                         </div>
                     </div>
                 @endif
@@ -192,6 +208,7 @@
                     <input type="hidden" name="due_date" value="{{ $task->due_date }}">
                     <input type="hidden" name="status" value="{{ $task->status }}">
                     <input type="hidden" name="priority" value="{{ $task->priority }}">
+                    <input type="hidden" name="type" value="{{ $task->type }}">
                     <input type="hidden" name="description" id="hidden-description">
                     
                     <div id="editor-container" style="height: 250px;">{!! $task->description !!}</div>

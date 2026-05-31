@@ -102,7 +102,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-3 mb-2 mb-md-0">
+            <div class="col-md-2 mb-2 mb-md-0">
                 <label for="filterStatus" class="font-weight-bold text-xs text-gray-700 text-uppercase">Status</label>
                 <select id="filterStatus" class="form-control form-control-sm">
                     <option value="all" {{ request('status') == 'all' || !request('status') ? 'selected' : '' }}>All Statuses</option>
@@ -110,7 +110,7 @@
                     <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
                 </select>
             </div>
-            <div class="col-md-3 mb-2 mb-md-0">
+            <div class="col-md-2 mb-2 mb-md-0">
                 <label for="filterAssignee" class="font-weight-bold text-xs text-gray-700 text-uppercase">Assignee</label>
                 <select id="filterAssignee" class="form-control form-control-sm">
                     <option value="all" {{ request('assignee') == 'all' || !request('assignee') ? 'selected' : '' }}>All Assignees</option>
@@ -118,6 +118,16 @@
                     @foreach($companyUsers as $user)
                         <option value="{{ $user->id }}" {{ request('assignee') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
                     @endforeach
+                </select>
+            </div>
+            <div class="col-md-2 mb-2 mb-md-0">
+                <label for="filterType" class="font-weight-bold text-xs text-gray-700 text-uppercase">Type</label>
+                <select id="filterType" class="form-control form-control-sm">
+                    <option value="all" {{ request('type') == 'all' || !request('type') ? 'selected' : '' }}>All Types</option>
+                    <option value="1" {{ request('type') == '1' ? 'selected' : '' }}>Task</option>
+                    <option value="2" {{ request('type') == '2' ? 'selected' : '' }}>Bug</option>
+                    <option value="3" {{ request('type') == '3' ? 'selected' : '' }}>Feature</option>
+                    <option value="4" {{ request('type') == '4' ? 'selected' : '' }}>Improvement</option>
                 </select>
             </div>
             <div class="col-md-3 text-right pt-4">
@@ -147,6 +157,7 @@
                     <tr>
                         <th style="width: 60px;" class="text-center">Done</th>
                         <th>Task Details</th>
+                        <th>Type</th>
                         <th>Project</th>
                         <th>Assigned To</th>
                         <th>Due Date</th>
@@ -202,6 +213,12 @@
                                 @if($task->description)
                                     <div class="text-gray-500 small mt-1">{!! Str::limit(strip_tags($task->description), 100) !!}</div>
                                 @endif
+                            </td>
+                            <td class="align-middle">
+                                <span class="badge {{ $task->getTypeBadgeClass() }} p-2 shadow-sm">
+                                    <i class="fas {{ $task->getTypeIcon() }} mr-1"></i>
+                                    {{ $task->getTypeName() }}
+                                </span>
                             </td>
                             <td class="align-middle">
                                 <a href="{{ route('projects.show', $task->project) }}" class="badge text-white p-2 shadow-sm" style="background-color: {{ $task->project->theme }}">
@@ -273,6 +290,7 @@
                                             data-assigned_to="{{ $task->assigned_to }}"
                                             data-status="{{ $task->status }}"
                                             data-priority="{{ $task->priority }}"
+                                            data-type="{{ $task->type }}"
                                             data-action="{{ route('tasks.update', $task) }}">
                                         <i class="fas fa-edit"></i>
                                     </button>
@@ -331,7 +349,7 @@
                         <textarea class="form-control" id="task_description" name="description" rows="3" placeholder="Add optional details..."></textarea>
                     </div>
                     <div class="row">
-                        <div class="form-group col-md-6">
+                        <div class="form-group col-md-4">
                             <label for="task_status" class="font-weight-bold text-gray-700">Status <span class="text-danger">*</span></label>
                             <select class="form-control" id="task_status" name="status" required>
                                 <option value="1" selected>To Do</option>
@@ -340,13 +358,22 @@
                                 <option value="4">On Hold</option>
                             </select>
                         </div>
-                        <div class="form-group col-md-6">
+                        <div class="form-group col-md-4">
                             <label for="task_priority" class="font-weight-bold text-gray-700">Priority <span class="text-danger">*</span></label>
                             <select class="form-control" id="task_priority" name="priority" required>
                                 <option value="1">Low</option>
                                 <option value="2" selected>Medium</option>
                                 <option value="3">High</option>
                                 <option value="4">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="task_type" class="font-weight-bold text-gray-700">Type <span class="text-danger">*</span></label>
+                            <select class="form-control" id="task_type" name="type" required>
+                                <option value="1" selected>Task</option>
+                                <option value="2">Bug</option>
+                                <option value="3">Feature</option>
+                                <option value="4">Improvement</option>
                             </select>
                         </div>
                     </div>
@@ -396,7 +423,7 @@
                         <textarea class="form-control" id="edit_task_description" name="description" rows="3"></textarea>
                     </div>
                     <div class="row">
-                        <div class="form-group col-md-6">
+                        <div class="form-group col-md-4">
                             <label for="edit_task_status" class="font-weight-bold text-gray-700">Status <span class="text-danger">*</span></label>
                             <select class="form-control" id="edit_task_status" name="status" required>
                                 <option value="1">To Do</option>
@@ -405,13 +432,22 @@
                                 <option value="4">On Hold</option>
                             </select>
                         </div>
-                        <div class="form-group col-md-6">
+                        <div class="form-group col-md-4">
                             <label for="edit_task_priority" class="font-weight-bold text-gray-700">Priority <span class="text-danger">*</span></label>
                             <select class="form-control" id="edit_task_priority" name="priority" required>
                                 <option value="1">Low</option>
                                 <option value="2">Medium</option>
                                 <option value="3">High</option>
                                 <option value="4">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="edit_task_type" class="font-weight-bold text-gray-700">Type <span class="text-danger">*</span></label>
+                            <select class="form-control" id="edit_task_type" name="type" required>
+                                <option value="1">Task</option>
+                                <option value="2">Bug</option>
+                                <option value="3">Feature</option>
+                                <option value="4">Improvement</option>
                             </select>
                         </div>
                     </div>
@@ -447,6 +483,7 @@
             var selectedProject = $('#filterProject').val();
             var selectedStatus = $('#filterStatus').val();
             var selectedAssignee = $('#filterAssignee').val();
+            var selectedType = $('#filterType').val();
 
             var params = new URLSearchParams(window.location.search);
             
@@ -468,13 +505,19 @@
                 params.delete('assignee');
             }
 
+            if (selectedType && selectedType !== 'all') {
+                params.set('type', selectedType);
+            } else {
+                params.delete('type');
+            }
+
             params.delete('page');
 
             window.location.href = window.location.pathname + '?' + params.toString();
         }
 
         // Event listeners for filters
-        $('#filterProject, #filterStatus, #filterAssignee').change(function() {
+        $('#filterProject, #filterStatus, #filterAssignee, #filterType').change(function() {
             applyFilters();
         });
 
@@ -483,6 +526,7 @@
             $('#filterProject').val('all');
             $('#filterStatus').val('all');
             $('#filterAssignee').val('all');
+            $('#filterType').val('all');
             applyFilters();
         });
 
@@ -495,6 +539,7 @@
             var assigned_to = $(this).data('assigned_to');
             var status = $(this).data('status');
             var priority = $(this).data('priority');
+            var type = $(this).data('type');
             var action = $(this).data('action');
 
             $('#editTaskForm').attr('action', action);
@@ -504,6 +549,7 @@
             $('#edit_task_assigned_to').val(assigned_to);
             $('#edit_task_status').val(status);
             $('#edit_task_priority').val(priority);
+            $('#edit_task_type').val(type);
         });
     });
 </script>

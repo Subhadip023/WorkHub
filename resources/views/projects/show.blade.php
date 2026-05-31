@@ -142,6 +142,7 @@
                     <tr>
                         <th style="width: 60px;" class="text-center">Done</th>
                         <th>Task Details</th>
+                        <th>Type</th>
                         <th>Assigned To</th>
                         <th>Due Date</th>
                         <th>Status</th>
@@ -157,6 +158,14 @@
                         </td>
                         <td class="align-middle">
                             <input type="text" id="inline_title" name="title" form="inlineAddTaskForm" class="form-control form-control-sm font-weight-bold mb-1" placeholder="What needs to be done? (Press Enter to save)" required>
+                        </td>
+                        <td class="align-middle">
+                            <select name="type" form="inlineAddTaskForm" class="form-control form-control-sm">
+                                <option value="1" selected>Task</option>
+                                <option value="2">Bug</option>
+                                <option value="3">Feature</option>
+                                <option value="4">Improvement</option>
+                            </select>
                         </td>
                         <td class="align-middle">
                             <select name="assigned_to" form="inlineAddTaskForm" class="form-control form-control-sm">
@@ -234,6 +243,12 @@
                                 @endif
                             </td>
                             <td class="align-middle">
+                                <span class="badge {{ $task->getTypeBadgeClass() }} p-2 shadow-sm">
+                                    <i class="fas {{ $task->getTypeIcon() }} mr-1"></i>
+                                    {{ $task->getTypeName() }}
+                                </span>
+                            </td>
+                            <td class="align-middle">
                                 @if($task->assignedUser)
                                     <span class="badge badge-light p-2 border text-gray-800">
                                         <i class="fas fa-user fa-sm mr-1 text-primary"></i>
@@ -297,6 +312,7 @@
                                             data-assigned_to="{{ $task->assigned_to }}"
                                             data-status="{{ $task->status }}"
                                             data-priority="{{ $task->priority }}"
+                                            data-type="{{ $task->type }}"
                                             data-action="{{ route('tasks.update', $task) }}">
                                         <i class="fas fa-edit"></i>
                                     </button>
@@ -407,7 +423,7 @@
                         <textarea class="form-control" id="edit_task_description" name="description" rows="3"></textarea>
                     </div>
                     <div class="row">
-                        <div class="form-group col-md-6">
+                        <div class="form-group col-md-4">
                             <label for="edit_task_status" class="font-weight-bold text-gray-700">Status <span class="text-danger">*</span></label>
                             <select class="form-control" id="edit_task_status" name="status" required>
                                 <option value="1">To Do</option>
@@ -416,13 +432,22 @@
                                 <option value="4">On Hold</option>
                             </select>
                         </div>
-                        <div class="form-group col-md-6">
+                        <div class="form-group col-md-4">
                             <label for="edit_task_priority" class="font-weight-bold text-gray-700">Priority <span class="text-danger">*</span></label>
                             <select class="form-control" id="edit_task_priority" name="priority" required>
                                 <option value="1">Low</option>
                                 <option value="2">Medium</option>
                                 <option value="3">High</option>
                                 <option value="4">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="edit_task_type" class="font-weight-bold text-gray-700">Type <span class="text-danger">*</span></label>
+                            <select class="form-control" id="edit_task_type" name="type" required>
+                                <option value="1">Task</option>
+                                <option value="2">Bug</option>
+                                <option value="3">Feature</option>
+                                <option value="4">Improvement</option>
                             </select>
                         </div>
                     </div>
@@ -540,6 +565,7 @@
             var assigned_to = $(this).data('assigned_to');
             var status = $(this).data('status');
             var priority = $(this).data('priority');
+            var type = $(this).data('type');
             var action = $(this).data('action');
 
             $('#editTaskForm').attr('action', action);
@@ -549,6 +575,7 @@
             $('#edit_task_assigned_to').val(assigned_to);
             $('#edit_task_status').val(status);
             $('#edit_task_priority').val(priority);
+            $('#edit_task_type').val(type);
         });
 
         // Toggle Completed Tasks filtering logic
