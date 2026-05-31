@@ -1,0 +1,28 @@
+name: 🚀 CD Production Deployment
+
+on:
+  workflow_call:
+    secrets:
+      SSH_HOST: { required: true }
+      SSH_USER: { required: true }
+      SSH_PRIVATE_KEY: { required: true }
+
+jobs:
+  ssh_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute Remote SSH Commands via Production Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd /var/www/workhub.subhadip.online
+            git pull origin main
+            php artisan optimize:clear
+            composer install --no-dev --optimize-autoloader
+            php artisan migrate --force
+            php artisan config:cache
+            php artisan route:cache

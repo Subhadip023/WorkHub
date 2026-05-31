@@ -1,0 +1,121 @@
+name: 📢 Automated Notifications
+
+on:
+  workflow_call:
+    inputs:
+      qa_status: { required: true, type: string }
+      deploy_status: { required: true, type: string }
+      test_summary: { required: true, type: string }
+    secrets:
+      GMAIL_USERNAME: { required: true }
+      GMAIL_APP_PASSWORD: { required: true }
+      NOTIFICATION_EMAILS: { required: true }
+
+jobs:
+  send_report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Process Status Metrics & Dispatch SMTP Mail
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.GMAIL_USERNAME }}
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          subject: "WorkHub Pipeline Report Matrix Evaluation Notification"
+          to: ${{ secrets.NOTIFICATION_EMAILS }}
+          from: GitHub Pipelines Engine
+          html_body: |
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="utf-8">
+              <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+              <style>
+                body { font-family: 'Outfit', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; color: #334155; margin: 0; padding: 40px 20px; }
+                .card { max-width: 600px; background: #ffffff; margin: 0 auto; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; overflow: hidden; }
+                .header { background: ${{ (inputs.qa_status == 'success' && inputs.deploy_status == 'success') && 'linear-gradient(135deg, #4e73df 0%, #8f6cf0 100%)' || 'linear-gradient(135deg, #e74a3b 0%, #8f6cf0 100%)' }}; padding: 35px 20px; text-align: center; color: white; }
+                .header h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+                .content { padding: 35px; }
+                .welcome-text { font-size: 16px; margin-top: 0; line-height: 1.6; color: #475569; }
+                .status-badge { background: #f0f3fc; color: #2e59d9; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; display: inline-block; border: 1px solid #dbeafe; }
+                .meta-table { width: 100%; border-collapse: collapse; margin: 25px 0; }
+                .meta-table td { padding: 12px 0; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+                .meta-table td.label { font-weight: 600; color: #475569; width: 35%; }
+                .meta-table td.value { color: #0f172a; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; background: #f8fafc; padding: 6px 12px; border-radius: 6px; font-size: 13px; border: 1px solid #e2e8f0; }
+                .badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; display: inline-block; text-transform: uppercase; }
+                .badge-success { background: #dcffe4; color: #1a7f37; border: 1px solid #c8ffc9; }
+                .badge-danger { background: #ffebe9; color: #cf222e; border: 1px solid #ffc1c0; }
+                .commit-section { margin-top: 25px; }
+                .commit-title { margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; }
+                .commit-msg { background: #f8fafc; border-left: 4px solid ${{ (inputs.qa_status == 'success' && inputs.deploy_status == 'success') && '#4e73df' || '#e74a3b' }}; padding: 16px; border-radius: 0 8px 8px 0; font-style: italic; font-size: 14px; color: #334155; line-height: 1.5; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
+                .footer { text-align: center; padding: 25px; font-size: 12px; color: #94a3b8; background: #f8fafc; border-top: 1px solid #e2e8f0; }
+                .btn-container { text-align: center; margin-top: 25px; }
+                .btn { display: inline-block; padding: 12px 30px; background: ${{ (inputs.qa_status == 'success' && inputs.deploy_status == 'success') && 'linear-gradient(135deg, #4e73df 0%, #8f6cf0 100%)' || 'linear-gradient(135deg, #e74a3b 0%, #8f6cf0 100%)' }}; color: #ffffff !important; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 14px rgba(78, 115, 223, 0.3); transition: all 0.2s; }
+              </style>
+            </head>
+            <body>
+              <div class="card">
+                <div class="header">
+                  <h1>${{ (inputs.qa_status == 'success' && inputs.deploy_status == 'success') && '🚀 Pipeline Succeeded' || '❌ Pipeline Failure Detected' }}</h1>
+                </div>
+                <div class="content">
+                  <p class="welcome-text">Hi Team WorkHub, here is the automated execution matrix report for the latest pipeline run.</p>
+                  
+                  <div style="margin-bottom: 10px;">
+                    <span class="status-badge">✨ Test Summary: ${{ inputs.test_summary }}</span>
+                  </div>
+
+                  <table class="meta-table">
+                    <tr>
+                      <td class="label">Repository</td>
+                      <td class="value">${{ github.repository }}</td>
+                    </tr>
+                    <tr>
+                      <td class="label">Branch</td>
+                      <td class="value">${{ github.ref_name }}</td>
+                    </tr>
+                    <tr>
+                      <td class="label">Triggered By</td>
+                      <td class="value">${{ github.actor }}</td>
+                    </tr>
+                    <tr>
+                      <td class="label">Commit SHA</td>
+                      <td class="value" style="font-size: 12px;">${{ github.sha }}</td>
+                    </tr>
+                    <tr>
+                      <td class="label">Quality Gate (CI)</td>
+                      <td>
+                        <span class="badge ${{ inputs.qa_status == 'success' && 'badge-success' || 'badge-danger' }}">
+                          ${{ inputs.qa_status == 'success' && 'Passed' || 'Failed' }}
+                        </span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="label">Server Deploy (CD)</td>
+                      <td>
+                        <span class="badge ${{ inputs.deploy_status == 'success' && 'badge-success' || 'badge-danger' }}">
+                          ${{ inputs.deploy_status == 'success' && 'Passed' || 'Failed' }}
+                        </span>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <div class="commit-section">
+                    <div class="commit-title">Latest Commit Message</div>
+                    <div class="commit-msg">
+                      ${{ github.event.head_commit.message }}
+                    </div>
+                  </div>
+
+                  <div class="btn-container">
+                    <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" class="btn">View Pipeline Run</a>
+                  </div>
+                </div>
+                <div class="footer">
+                  This is an automated operational notification from WorkHub Deployment Engine.
+                </div>
+              </div>
+            </body>
+            </html>

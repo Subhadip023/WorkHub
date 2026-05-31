@@ -1,284 +1,32 @@
-name: Deploy to Server
+name: WorkHub Production Pipeline Orchestrator
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+  # Job A: Call QA Workflow
+  trigger_qa:
+    uses: ./.github/workflows/ci-quality.yml
 
-    env:
-      DB_CONNECTION: sqlite
-      DB_DATABASE: database/database.sqlite
+  # Job B: Call Deployment Workflow (Runs ONLY if QA Passes)
+  trigger_deploy:
+    needs: trigger_qa
+    uses: ./.github/workflows/cd-deploy.yml
+    secrets:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    steps:
-      # Checkout repository
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      # PHP
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.3"
-
-      # Node.js
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
-      # Validate composer.json
-      - name: Validate Composer
-        run: composer validate --no-check-publish
-
-      # Install PHP dependencies
-      - name: Install Dependencies
-        run: composer install --no-interaction --prefer-dist
-
-      # Create Laravel environment
-      - name: Copy Env File
-        run: cp .env.example .env
-
-      # Generate APP_KEY
-      - name: Generate App Key
-        run: php artisan key:generate
-
-      # Create SQLite database
-      - name: Create SQLite Database
-        run: |
-          mkdir -p database
-          touch database/database.sqlite
-
-      # Run migrations
-      - name: Run Migrations
-        run: php artisan migrate --force
-
-      # Install frontend dependencies
-      - name: Install NPM Dependencies
-        run: npm install
-
-      # Build assets
-      - name: Build Assets
-        run: npm run build
-
-      # Check Code Indentation & Coding Style (Laravel Pint)
-      - name: Check Code Indentation & Style
-        run: ./vendor/bin/pint --test
-
-      # Run Static Analysis (PHPStan)
-      - name: Run Static Analysis (PHPStan)
-        run: ./vendor/bin/phpstan analyse
-
-      # Run tests (Deployment stops here if tests fail)
-      - name: Execute Tests
-        shell: bash
-        run: |
-          set -o pipefail
-          php artisan test --colors=never | tee test-output.txt
-          TEST_SUMMARY=$(grep -E 'Tests:[[:space:]]+[0-9]+' test-output.txt | sed -E 's/[[:space:]]*Tests:[[:space:]]*//' | tail -n 1)
-          if [ -z "$TEST_SUMMARY" ]; then
-            TEST_SUMMARY="All tests passed successfully."
-          fi
-          echo "TEST_SUMMARY=$TEST_SUMMARY" >> $GITHUB_ENV
-
-      # Deploy to production server
-      - name: Executing remote ssh commands
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          script: |
-            cd /var/www/workhub.subhadip.online
-
-            git pull origin main
-
-            php artisan optimize:clear
-            php artisan view:clear
-
-            composer install --no-dev --optimize-autoloader
-
-            php artisan migrate --force
-
-            php artisan config:cache
-            php artisan route:cache
-
-      # Success email
-      - name: Send Email Notification
-        if: success()
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          secure: true
-          username: ${{ secrets.GMAIL_USERNAME }}
-          password: ${{ secrets.GMAIL_APP_PASSWORD }}
-          subject: "✅ WorkHub Deployment Successful"
-          to: ${{ secrets.NOTIFICATION_EMAILS }}
-          from: GitHub Actions
-          html_body: |
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <meta charset="utf-8">
-              <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-              <style>
-                body { font-family: 'Outfit', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; color: #334155; margin: 0; padding: 40px 20px; }
-                .card { max-width: 600px; background: #ffffff; margin: 0 auto; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; overflow: hidden; }
-                .header { background: linear-gradient(135deg, #4e73df 0%, #8f6cf0 100%); padding: 35px 20px; text-align: center; color: white; }
-                .header h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
-                .content { padding: 35px; }
-                .welcome-text { font-size: 16px; margin-top: 0; line-height: 1.6; color: #475569; }
-                .status-badge { background: #f0f3fc; color: #2e59d9; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; display: inline-block; border: 1px solid #dbeafe; }
-                .meta-table { width: 100%; border-collapse: collapse; margin: 25px 0; }
-                .meta-table td { padding: 12px 0; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
-                .meta-table td.label { font-weight: 600; color: #475569; width: 30%; }
-                .meta-table td.value { color: #0f172a; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; background: #f8fafc; padding: 6px 12px; border-radius: 6px; font-size: 13px; border: 1px solid #e2e8f0; }
-                .commit-section { margin-top: 25px; }
-                .commit-title { margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; }
-                .commit-msg { background: #f8fafc; border-left: 4px solid #4e73df; padding: 16px; border-radius: 0 8px 8px 0; font-style: italic; font-size: 14px; color: #334155; line-height: 1.5; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
-                .footer { text-align: center; padding: 25px; font-size: 12px; color: #94a3b8; background: #f8fafc; border-top: 1px solid #e2e8f0; }
-                .btn-container { text-align: center; margin-top: 25px; }
-                .btn { display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #4e73df 0%, #8f6cf0 100%); color: #ffffff !important; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 14px rgba(78, 115, 223, 0.3); transition: all 0.2s; }
-              </style>
-            </head>
-            <body>
-              <div class="card">
-                <div class="header">
-                  <h1>🚀 Deployed Successfully</h1>
-                </div>
-                <div class="content">
-                  <p class="welcome-text">Hi Team WorkHub, the production server pipeline deployment sequence executed cleanly without errors.</p>
-                  
-                  <div style="margin-bottom: 10px;">
-                    <span class="status-badge">✨ Test Summary: ${{ env.TEST_SUMMARY }}</span>
-                  </div>
-
-                  <table class="meta-table">
-                    <tr>
-                      <td class="label">Repository</td>
-                      <td class="value">${{ github.repository }}</td>
-                    </tr>
-                    <tr>
-                      <td class="label">Branch</td>
-                      <td class="value">${{ github.ref_name }}</td>
-                    </tr>
-                    <tr>
-                      <td class="label">Triggered By</td>
-                      <td class="value">${{ github.actor }}</td>
-                    </tr>
-                    <tr>
-                      <td class="label">Commit SHA</td>
-                      <td class="value" style="font-size: 12px;">${{ github.sha }}</td>
-                    </tr>
-                  </table>
-
-                  <div class="commit-section">
-                    <div class="commit-title">Latest Commit Message</div>
-                    <div class="commit-msg">
-                      ${{ github.event.head_commit.message }}
-                    </div>
-                  </div>
-
-                  <div class="btn-container">
-                    <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" class="btn">View Workflow Run</a>
-                  </div>
-                </div>
-                <div class="footer">
-                  This is an automated operational notification from WorkHub Deployment Engine.
-                </div>
-              </div>
-            </body>
-            </html>
-
-      # Failure email
-      - name: Send Deployment Failure Email
-        if: failure()
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          secure: true
-          username: ${{ secrets.GMAIL_USERNAME }}
-          password: ${{ secrets.GMAIL_APP_PASSWORD }}
-          subject: "❌ WorkHub Deployment Failed"
-          to: code88068@gmail.com
-          from: GitHub Actions
-          html_body: |
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <meta charset="utf-8">
-              <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-              <style>
-                body { font-family: 'Outfit', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; color: #334155; margin: 0; padding: 40px 20px; }
-                .card { max-width: 600px; background: #ffffff; margin: 0 auto; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; overflow: hidden; }
-                .header { background: linear-gradient(135deg, #e74a3b 0%, #8f6cf0 100%); padding: 35px 20px; text-align: center; color: white; }
-                .header h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
-                .content { padding: 35px; }
-                .welcome-text { font-size: 16px; margin-top: 0; line-height: 1.6; color: #475569; }
-                .status-badge { background: #ffebe9; color: #cf222e; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; display: inline-block; border: 1px solid #ffc1c0; }
-                .meta-table { width: 100%; border-collapse: collapse; margin: 25px 0; }
-                .meta-table td { padding: 12px 0; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
-                .meta-table td.label { font-weight: 600; color: #475569; width: 30%; }
-                .meta-table td.value { color: #0f172a; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; background: #f8fafc; padding: 6px 12px; border-radius: 6px; font-size: 13px; border: 1px solid #e2e8f0; }
-                .commit-section { margin-top: 25px; }
-                .commit-title { margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; }
-                .commit-msg { background: #f8fafc; border-left: 4px solid #e74a3b; padding: 16px; border-radius: 0 8px 8px 0; font-style: italic; font-size: 14px; color: #334155; line-height: 1.5; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
-                .footer { text-align: center; padding: 25px; font-size: 12px; color: #94a3b8; background: #f8fafc; border-top: 1px solid #e2e8f0; }
-                .btn-container { text-align: center; margin-top: 25px; }
-                .btn { display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #e74a3b 0%, #8f6cf0 100%); color: #ffffff !important; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 14px rgba(231, 74, 59, 0.3); transition: all 0.2s; }
-              </style>
-            </head>
-            <body>
-              <div class="card">
-                <div class="header">
-                  <h1>❌ Deployment Failed</h1>
-                </div>
-                <div class="content">
-                  <p class="welcome-text">Hi Team WorkHub, the production server pipeline deployment sequence failed to complete. Please review the workflow logs.</p>
-                  
-                  <div style="margin-bottom: 10px;">
-                    <span class="status-badge">⚠️ Pipeline Error Detected</span>
-                  </div>
-
-                  <table class="meta-table">
-                    <tr>
-                      <td class="label">Repository</td>
-                      <td class="value">${{ github.repository }}</td>
-                    </tr>
-                    <tr>
-                      <td class="label">Branch</td>
-                      <td class="value">${{ github.ref_name }}</td>
-                    </tr>
-                    <tr>
-                      <td class="label">Triggered By</td>
-                      <td class="value">${{ github.actor }}</td>
-                    </tr>
-                    <tr>
-                      <td class="label">Commit SHA</td>
-                      <td class="value" style="font-size: 12px;">${{ github.sha }}</td>
-                    </tr>
-                  </table>
-
-                  <div class="commit-section">
-                    <div class="commit-title">Latest Commit Message</div>
-                    <div class="commit-msg">
-                      ${{ github.event.head_commit.message }}
-                    </div>
-                  </div>
-
-                  <div class="btn-container">
-                    <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" class="btn">Inspect Failed Build</a>
-                  </div>
-                </div>
-                <div class="footer">
-                  This is an automated operational notification from WorkHub Deployment Engine.
-                </div>
-              </div>
-            </body>
-            </html>
+  # Job C: Universal Notifications (Runs ALWAYS at the end)
+  trigger_notifications:
+    needs: [trigger_qa, trigger_deploy]
+    if: always()
+    uses: ./.github/workflows/notify.yml
+    with:
+      qa_status: ${{ needs.trigger_qa.result }}
+      deploy_status: ${{ needs.trigger_deploy.result }}
+      test_summary: ${{ needs.trigger_qa.outputs.test_summary || 'No test metrics evaluations returned.' }}
+    secrets:
+      GMAIL_USERNAME: ${{ secrets.GMAIL_USERNAME }}
+      GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}

@@ -1,0 +1,59 @@
+name: 🧪 CI Quality Gate
+
+on:
+  workflow_call:
+    outputs:
+      test_summary:
+        description: "Summary statement of passing tests metrics"
+        value: ${{ jobs.validate.outputs.test_summary }}
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      DB_CONNECTION: sqlite
+      DB_DATABASE: database/database.sqlite
+    outputs:
+      test_summary: ${{ steps.test_exec.outputs.summary }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # ------------------------------------------------------------------
+      # FIXED: Standard action caching strategy syntax mapping for PHP
+      # ------------------------------------------------------------------
+      - name: Setup Environments (PHP)
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          tools: composer:v2
+          cache: composer # Official and universal way to cache composer dependencies
+
+      - name: Setup Environments (Node)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: 'npm'
+
+      - name: Install & Bootstrap Stacks
+        run: |
+          composer install --no-interaction --prefer-dist
+          cp .env.example .env
+          php artisan key:generate
+          mkdir -p database && touch database/database.sqlite
+          php artisan migrate --force
+          npm install && npm run build
+
+      - name: 🏷️ Run Linting (Pint) & Static Analysis (Larastan)
+        run: |
+          ./vendor/bin/pint --test
+          ./vendor/bin/phpstan analyse
+
+      - name: 🧪 Execute Logical Test Suites
+        id: test_exec
+        shell: bash
+        run: |
+          set -o pipefail
+          php artisan test --colors=never | tee test-output.txt
+          SUMMARY=$(grep -E 'Tests:[[:space:]]+[0-9]+' test-output.txt | sed -E 's/[[:space:]]*Tests:[[:space:]]*//' | tail -n 1)
+          [ -z "$SUMMARY" ] && SUMMARY="All tests passed successfully."
+          echo "summary=$SUMMARY" >> $GITHUB_OUTPUT
