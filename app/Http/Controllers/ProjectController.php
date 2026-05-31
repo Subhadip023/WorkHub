@@ -17,11 +17,19 @@ class ProjectController extends Controller
         $user = auth()->user();
         $companyIds = $user->companies()->pluck('company_id')->toArray();
 
-        $projects = Project::whereIn('company_id', $companyIds)
+        $projects = Project::select('id', 'name', 'slug', 'theme', 'status', 'priority', 'user_id', 'company_id')
+            ->whereIn('company_id', $companyIds)
             ->orWhere(function ($query) use ($user) {
                 $query->whereNull('company_id')->where('user_id', $user->id);
             })
-            ->with('tasks')
+            ->with([
+                'company' => function ($query) {
+                    $query->select('id', 'name');
+                },
+                'tasks' => function ($query) {
+                    $query->select('id', 'project_id', 'status');
+                },
+            ])
             ->paginate(10);
 
         return view('projects.index')->with('projects', $projects);

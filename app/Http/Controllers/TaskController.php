@@ -20,7 +20,7 @@ class TaskController extends Controller
         $companyIds = $user->companies()->pluck('company_id')->toArray();
 
         // Fetch all projects (both personal and organizational)
-        $projects = Project::whereIn('company_id', $companyIds)
+        $projects = Project::select('id', 'name')->whereIn('company_id', $companyIds)
             ->orWhere(function ($query) use ($user) {
                 $query->whereNull('company_id')->where('user_id', $user->id);
             })

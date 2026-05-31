@@ -124,7 +124,7 @@
         <h6 class="m-0 font-weight-bold text-primary mb-0">Project Tasks</h6>
         <div class="custom-control custom-checkbox">
             <input type="checkbox" class="custom-control-input" id="toggleCompletedTasks">
-            <label class="custom-control-label font-weight-bold text-gray-700 small" for="toggleCompletedTasks" style="cursor: pointer; user-select: none;">
+            <label class="custom-control-label font-weight-bold text-gray-700 small" for="toggleCompletedTasks" style="cursor: pointer; user-select: none;padding-top: 3px">
                 Show Completed Tasks
             </label>
         </div>
@@ -238,9 +238,7 @@
                                         {{ $task->title }}
                                     </a>
                                 </div>
-                                @if($task->description)
-                                    <div class="text-gray-500 small mt-1">{!! Str::limit(strip_tags($task->description), 100) !!}</div>
-                                @endif
+                           
                             </td>
                             <td class="align-middle">
                                 <span class="badge {{ $task->getTypeBadgeClass() }} p-2 shadow-sm">
@@ -302,20 +300,9 @@
                             </td>
                             <td class="text-center align-middle">
                                 @if($canMutate)
-                                    <button class="btn btn-sm btn-info edit-task-btn" 
-                                            data-toggle="modal" 
-                                            data-target="#editTaskModal"
-                                            data-id="{{ $task->id }}"
-                                            data-title="{{ $task->title }}"
-                                            data-description="{{ $task->description }}"
-                                            data-due_date="{{ $task->due_date }}"
-                                            data-assigned_to="{{ $task->assigned_to }}"
-                                            data-status="{{ $task->status }}"
-                                            data-priority="{{ $task->priority }}"
-                                            data-type="{{ $task->type }}"
-                                            data-action="{{ route('tasks.update', $task) }}">
+                                    <a class="btn btn-sm btn-info" href="{{ route('tasks.show', $task) }}">
                                         <i class="fas fa-edit"></i>
-                                    </button>
+                                    </a>
                                     <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="d-inline ml-1" onsubmit="return confirm('Are you sure you want to delete this task?');">
                                         @csrf
                                         @method('DELETE')

@@ -24,8 +24,16 @@ class DashboardController extends Controller
             }
 
             // Filter to selected company
-            $projects = Project::where('company_id', $company->id)
-                ->with(['tasks', 'company'])
+            $projects = Project::select('id', 'name', 'theme', 'company_id')
+                ->where('company_id', $company->id)
+                ->with([
+                    'tasks' => function ($query) {
+                        $query->select('id', 'project_id', 'status');
+                    },
+                    'company' => function ($query) {
+                        $query->select('id', 'name');
+                    },
+                ])
                 ->get();
 
             $teamMembers = CompanyUsers::where('company_id', $company->id)
@@ -36,11 +44,19 @@ class DashboardController extends Controller
             $currentWorkspaceName = $company->name;
         } else {
             // Fetch all projects (both personal and organizational)
-            $projects = Project::whereIn('company_id', $companyIds)
+            $projects = Project::select('id', 'name', 'theme', 'company_id', 'user_id')
+                ->whereIn('company_id', $companyIds)
                 ->orWhere(function ($query) use ($auth_user) {
                     $query->whereNull('company_id')->where('user_id', $auth_user->id);
                 })
-                ->with(['tasks', 'company'])
+                ->with([
+                    'tasks' => function ($query) {
+                        $query->select('id', 'project_id', 'status');
+                    },
+                    'company' => function ($query) {
+                        $query->select('id', 'name');
+                    },
+                ])
                 ->get();
 
             // Fetch all team members from all companies they belong to

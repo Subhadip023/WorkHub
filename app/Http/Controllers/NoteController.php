@@ -49,15 +49,17 @@ class NoteController extends Controller
         $user = auth()->user();
         $companyIds = $user->companies->pluck('company_id')->toArray();
 
-        $projects = Project::where(function ($q) use ($user, $companyIds) {
+        $projects = Project::select('id', 'name')->where(function ($q) use ($user, $companyIds) {
             $q->whereNull('company_id')
                 ->where('user_id', $user->id)
                 ->orWhereIn('company_id', $companyIds);
         })->get();
 
         $projectIds = $projects->pluck('id')->toArray();
-        $tasks = Task::whereIn('project_id', $projectIds)->get();
-        $organizations = $user->companies()->with('company')->get()->pluck('company')->filter();
+        $tasks = Task::select('id', 'title', 'project_id')->whereIn('project_id', $projectIds)->get();
+        $organizations = $user->companies()->with(['company' => function ($query) {
+            $query->select('id', 'name');
+        }])->get()->pluck('company')->filter();
 
         // Optional query parameters for pre-population
         $defaultType = $request->query('note_type', Note::TYPE_PERSONAL);
@@ -154,15 +156,17 @@ class NoteController extends Controller
         $this->authorizeNoteAccess($note, $user);
 
         $companyIds = $user->companies->pluck('company_id')->toArray();
-        $projects = Project::where(function ($q) use ($user, $companyIds) {
+        $projects = Project::select('id', 'name')->where(function ($q) use ($user, $companyIds) {
             $q->whereNull('company_id')
                 ->where('user_id', $user->id)
                 ->orWhereIn('company_id', $companyIds);
         })->get();
 
         $projectIds = $projects->pluck('id')->toArray();
-        $tasks = Task::whereIn('project_id', $projectIds)->get();
-        $organizations = $user->companies()->with('company')->get()->pluck('company')->filter();
+        $tasks = Task::select('id', 'title', 'project_id')->whereIn('project_id', $projectIds)->get();
+        $organizations = $user->companies()->with(['company' => function ($query) {
+            $query->select('id', 'name');
+        }])->get()->pluck('company')->filter();
 
         return view('notes.edit', compact('note', 'projects', 'tasks', 'organizations'));
     }
