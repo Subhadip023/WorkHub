@@ -401,10 +401,33 @@ it('logs task status history and displays it on the task details page', function
         'new_status' => 2,
     ]);
 
-    // 3. View detail page and see logs
+    // 3. Log priority update
+    $task->update([
+        'priority' => 3,
+        'title' => 'Test Task History Updated',
+    ]);
+
+    $this->assertDatabaseHas('task_histories', [
+        'task_id' => $task->id,
+        'field' => 'priority',
+        'old_value' => '1',
+        'new_value' => '3',
+    ]);
+
+    $this->assertDatabaseHas('task_histories', [
+        'task_id' => $task->id,
+        'field' => 'title',
+        'old_value' => 'Test Task History',
+        'new_value' => 'Test Task History Updated',
+    ]);
+
+    // 4. View detail page and see logs
     $response = $this->get(route('tasks.show', $task));
     $response->assertStatus(200);
-    $response->assertSee('Task Created');
+    $response->assertSee('Task created with status');
     $response->assertSee('Status changed to');
     $response->assertSee('In Progress');
+    $response->assertSee('Priority changed to');
+    $response->assertSee('High');
+    $response->assertSee('Title changed to');
 });

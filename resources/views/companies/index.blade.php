@@ -37,7 +37,11 @@
                                 @foreach($companies as $cu)
                                     @if($cu->company)
                                         <tr>
-                                            <td class="font-weight-bold align-middle">{{ $cu->company->name }}</td>
+                                            <td class="font-weight-bold align-middle">
+                                                <a href="{{ route('companies.show', $cu->company) }}" class="text-primary">
+                                                    {{ $cu->company->name }}
+                                                </a>
+                                            </td>
                                             <td class="align-middle">
                                                 <div class="d-flex align-items-center">
                                                     <span class="badge badge-light p-2 font-weight-bold text-monospace mr-2" style="font-size: 0.9rem;">

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Task extends Model
 {
@@ -19,23 +20,46 @@ class Task extends Model
             TaskHistory::create([
                 'task_id' => $task->id,
                 'user_id' => auth()->id(),
+                'field' => 'status',
+                'old_value' => null,
+                'new_value' => (string) ($task->status ?? 1),
                 'old_status' => null,
                 'new_status' => $task->status ?? 1,
             ]);
+
+            if ($task->priority) {
+                TaskHistory::create([
+                    'task_id' => $task->id,
+                    'user_id' => auth()->id(),
+                    'field' => 'priority',
+                    'old_value' => null,
+                    'new_value' => (string) $task->priority,
+                ]);
+            }
         });
 
         static::updating(function ($task) {
-            if ($task->isDirty('status')) {
-                $oldStatus = $task->getOriginal('status');
-                $newStatus = $task->status;
+            $trackedFields = ['status', 'priority', 'title', 'description', 'due_date', 'assigned_to'];
+            foreach ($trackedFields as $field) {
+                if ($task->isDirty($field)) {
+                    $oldVal = $task->getOriginal($field);
+                    $newVal = $task->getAttribute($field);
+                    if ($oldVal != $newVal) {
+                        $data = [
+                            'task_id' => $task->id,
+                            'user_id' => auth()->id(),
+                            'field' => $field,
+                            'old_value' => $oldVal === null ? null : (string) $oldVal,
+                            'new_value' => $newVal === null ? null : (string) $newVal,
+                        ];
 
-                if ($oldStatus != $newStatus) {
-                    TaskHistory::create([
-                        'task_id' => $task->id,
-                        'user_id' => auth()->id(),
-                        'old_status' => $oldStatus,
-                        'new_status' => $newStatus,
-                    ]);
+                        if ($field === 'status') {
+                            $data['old_status'] = $oldVal !== null ? (int) $oldVal : null;
+                            $data['new_status'] = $newVal !== null ? (int) $newVal : null;
+                        }
+
+                        TaskHistory::create($data);
+                    }
                 }
             }
         });
@@ -79,5 +103,13 @@ class Task extends Model
     public function histories(): HasMany
     {
         return $this->hasMany(TaskHistory::class)->latest();
+    }
+
+    /**
+     * @return MorphMany<Comment, $this>
+     */
+    public function comments(): MorphMany
+    {
+        return $this->morphMany(Comment::class, 'commentable');
     }
 }

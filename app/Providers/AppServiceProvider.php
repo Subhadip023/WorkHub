@@ -2,7 +2,12 @@
 
 namespace App\Providers;
 
+use App\Models\Company;
+use App\Models\Note;
+use App\Models\Project;
+use App\Models\Task;
 use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\URL;
@@ -26,6 +31,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::useBootstrapFour();
+
+        Relation::morphMap([
+            'task' => Task::class,
+            'project' => Project::class,
+            'company' => Company::class,
+            'note' => Note::class,
+        ]);
 
         VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
             return (new MailMessage)

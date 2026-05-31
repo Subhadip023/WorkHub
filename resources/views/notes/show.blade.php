@@ -54,6 +54,13 @@
                 </div>
             </div>
         </div>
+
+        <!-- Comments Section -->
+        @include('partials.comments', [
+            'comments' => $note->comments()->with('user')->latest()->get(),
+            'commentableType' => 'note',
+            'commentableId' => $note->id
+        ])
     </div>
 
     <!-- Side Metadata Column -->

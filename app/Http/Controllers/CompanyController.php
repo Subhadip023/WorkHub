@@ -59,7 +59,29 @@ class CompanyController extends Controller
      */
     public function show(Company $company)
     {
-        abort(404);
+        $user = auth()->user();
+        if (! $user) {
+            abort(401);
+        }
+
+        // Verify membership access
+        $isMember = CompanyUsers::where('company_id', $company->id)
+            ->where('user_id', $user->id)
+            ->exists();
+
+        if (! $isMember) {
+            abort(403, 'Unauthorized.');
+        }
+
+        // Load members
+        $members = CompanyUsers::where('company_id', $company->id)
+            ->with('user')
+            ->get();
+
+        // Load comments
+        $comments = $company->comments()->with('user')->latest()->get();
+
+        return view('companies.show', compact('company', 'members', 'comments'));
     }
 
     /**

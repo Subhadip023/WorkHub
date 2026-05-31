@@ -377,6 +377,13 @@
     </div>
 </div>
 
+<!-- Comments Section -->
+@include('partials.comments', [
+    'comments' => $project->comments()->with('user')->latest()->get(),
+    'commentableType' => 'project',
+    'commentableId' => $project->id
+])
+
 {{-- Edit Task Modal --}}
 <div class="modal fade" id="editTaskModal" tabindex="-1" role="dialog" aria-labelledby="editTaskModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">

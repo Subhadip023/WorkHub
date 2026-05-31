@@ -34,8 +34,12 @@
 @endpush
 
 @section('content')
+@php
+    $canMutate = ($user_role == 1) || ($task->assigned_to === auth()->id());
+@endphp
+
 <!-- Page Heading -->
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
+<div class="d-sm-flex align-items-center justify-content-between mb-4 flex-wrap">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb mb-0 bg-transparent p-0">
             <li class="breadcrumb-item"><a href="{{ route('tasks.index') }}" class="font-weight-bold">Tasks</a></li>
@@ -43,16 +47,31 @@
             <li class="breadcrumb-item active" aria-current="page">{{ Str::limit($task->title, 30) }}</li>
         </ol>
     </nav>
-    <div>
+    <div class="d-flex align-items-center flex-wrap">
+        @if($canMutate)
+            <form action="{{ route('tasks.toggle', $task) }}" method="POST" class="mr-2 mb-0">
+                @csrf
+                @method('PATCH')
+                <button type="submit" class="btn {{ $task->status == 3 ? 'btn-outline-warning' : 'btn-success' }} btn-sm shadow-sm">
+                    <i class="fas {{ $task->status == 3 ? 'fa-undo' : 'fa-check' }} mr-1"></i>
+                    Mark as {{ $task->status == 3 ? 'Pending' : 'Completed' }}
+                </button>
+            </form>
+            
+            <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="mr-2 mb-0" onsubmit="return confirm('Are you sure you want to delete this task?');">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-danger btn-sm shadow-sm">
+                    <i class="fas fa-trash fa-sm mr-1"></i> Delete Task
+                </button>
+            </form>
+        @endif
+
         <a href="{{ route('projects.show', $task->project) }}" class="btn btn-secondary btn-sm shadow-sm">
             <i class="fas fa-arrow-left fa-sm mr-1"></i> Back to Project
         </a>
     </div>
 </div>
-
-@php
-    $canMutate = ($user_role == 1) || ($task->assigned_to === auth()->id());
-@endphp
 
 <div class="row">
     <!-- Left Column: Task Header, Description & Image Gallery -->
@@ -296,106 +315,14 @@
 
     </div>
 
-    <!-- Right Column: Status & Sidebar Meta -->
+    <!-- Right Column: Discussion & History -->
     <div class="col-lg-4">
-        <!-- Status Card -->
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Task Properties</h6>
-            </div>
-            <div class="card-body">
-                <div class="text-center mb-4">
-                    @if($task->status == 3)
-                        <div class="mb-2">
-                            <i class="fas fa-check-circle fa-4x text-success"></i>
-                        </div>
-                        <h4 class="font-weight-bold text-success">Completed</h4>
-                    @else
-                        <div class="mb-2">
-                            <i class="far fa-circle fa-4x text-warning"></i>
-                        </div>
-                        <h4 class="font-weight-bold text-warning">Pending</h4>
-                    @endif
-                </div>
-
-                @if($canMutate)
-                    <form action="{{ route('tasks.toggle', $task) }}" method="POST" class="mb-3">
-                        @csrf
-                        @method('PATCH')
-                        <button type="submit" class="btn {{ $task->status == 3 ? 'btn-warning' : 'btn-success' }} btn-block shadow-sm">
-                            <i class="fas {{ $task->status == 3 ? 'fa-undo' : 'fa-check' }} mr-1"></i>
-                            Mark as {{ $task->status == 3 ? 'Pending' : 'Completed' }}
-                        </button>
-                    </form>
-                    
-                    <form action="{{ route('tasks.destroy', $task) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this task?');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger btn-block btn-sm shadow-sm">
-                            <i class="fas fa-trash mr-1"></i> Delete Task
-                        </button>
-                    </form>
-                @endif
-
-                <hr class="my-4">
-
-                <div class="text-xs font-weight-bold text-gray-700 text-uppercase mb-2">Status</div>
-                <div class="mb-3">
-                    @if($task->status == 1)
-                        <span class="badge badge-secondary p-2" style="font-size: 0.85rem;">To Do</span>
-                    @elseif($task->status == 2)
-                        <span class="badge badge-warning p-2" style="font-size: 0.85rem;">In Progress</span>
-                    @elseif($task->status == 3)
-                        <span class="badge badge-success p-2" style="font-size: 0.85rem;">Completed</span>
-                    @elseif($task->status == 4)
-                        <span class="badge badge-danger p-2" style="font-size: 0.85rem;">On Hold</span>
-                    @else
-                        <span class="badge badge-light p-2" style="font-size: 0.85rem;">To Do</span>
-                    @endif
-                </div>
-
-                <div class="text-xs font-weight-bold text-gray-700 text-uppercase mb-2">Priority</div>
-                <div class="mb-3">
-                    @if($task->priority == 1)
-                        <span class="badge badge-secondary p-2" style="font-size: 0.85rem;">Low</span>
-                    @elseif($task->priority == 2)
-                        <span class="badge badge-info p-2" style="font-size: 0.85rem;">Medium</span>
-                    @elseif($task->priority == 3)
-                        <span class="badge badge-warning p-2" style="font-size: 0.85rem;">High</span>
-                    @elseif($task->priority == 4)
-                        <span class="badge badge-danger p-2" style="font-size: 0.85rem;">Urgent</span>
-                    @else
-                        <span class="badge badge-info p-2" style="font-size: 0.85rem;">Medium</span>
-                    @endif
-                </div>
-
-                <div class="text-xs font-weight-bold text-gray-700 text-uppercase mb-2">Project</div>
-                <div class="mb-3">
-                    <a href="{{ route('projects.show', $task->project) }}" class="badge text-white p-2 shadow-sm" style="background-color: {{ $task->project->theme }}; font-size: 0.85rem;">
-                        <i class="fas fa-project-diagram mr-1"></i>
-                        {{ $task->project->name }}
-                    </a>
-                </div>
-
-                <div class="text-xs font-weight-bold text-gray-700 text-uppercase mb-2">Timeline</div>
-                <div>
-                    @if($task->due_date)
-                        @php
-                            $isOverdue = $task->status != 3 && \Carbon\Carbon::parse($task->due_date)->isPast();
-                        @endphp
-                        <span class="badge {{ $isOverdue ? 'badge-danger' : 'badge-secondary' }} p-2" style="font-size: 0.85rem;">
-                            <i class="far fa-calendar-alt mr-1"></i>
-                            {{ \Carbon\Carbon::parse($task->due_date)->format('M d, Y') }}
-                            @if($isOverdue)
-                                (Overdue)
-                            @endif
-                        </span>
-                    @else
-                        <span class="text-muted font-italic">No due date set</span>
-                    @endif
-                </div>
-            </div>
-        </div>
+        <!-- Comments Section -->
+        @include('partials.comments', [
+            'comments' => $task->comments()->with('user')->latest()->get(),
+            'commentableType' => 'task',
+            'commentableId' => $task->id
+        ])
 
         <!-- Task History Card -->
         <div class="card shadow mb-4">
@@ -406,27 +333,23 @@
                 @if($task->histories && $task->histories->isNotEmpty())
                     <div class="timeline-history">
                         @foreach($task->histories as $history)
-                            <div class="mb-3 pl-3" style="border-left: 3px solid #36b9cc !important;">
+                            <div class="mb-3 pl-3" style="border-left: 3px solid #4e73df !important;">
                                 <div class="font-weight-bold text-gray-800" style="font-size: 0.85rem;">
-                                    @if($history->old_status === null)
-                                        Task Created
-                                    @else
-                                        Status changed to <span class="badge badge-light text-gray-800 border" style="font-size: 0.75rem;">{{ \App\Models\TaskHistory::getStatusName($history->new_status) }}</span>
-                                    @endif
+                                    {{ $history->getDescription() }}
                                 </div>
                                 <div class="text-xs text-gray-500">
                                     by {{ $history->user ? $history->user->name : 'System/Unknown' }} &bull; {{ $history->created_at->diffForHumans() }}
                                 </div>
-                                @if($history->old_status !== null)
+                                @if($history->getOldValueDetails())
                                     <div class="text-xs text-muted">
-                                        From: {{ \App\Models\TaskHistory::getStatusName($history->old_status) }}
+                                        {{ $history->getOldValueDetails() }}
                                     </div>
                                 @endif
                             </div>
                         @endforeach
                     </div>
                 @else
-                    <p class="text-muted small mb-0 font-italic">No status history available for this task.</p>
+                    <p class="text-muted small mb-0 font-italic">No history available for this task.</p>
                 @endif
             </div>
         </div>
