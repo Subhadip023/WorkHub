@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use App\Models\CompanyUsers;
+use App\Models\Project;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -22,11 +24,11 @@ class DashboardController extends Controller
             }
 
             // Filter to selected company
-            $projects = \App\Models\Project::where('company_id', $company->id)
+            $projects = Project::where('company_id', $company->id)
                 ->with(['tasks', 'company'])
                 ->get();
 
-            $teamMembers = \App\Models\CompanyUsers::where('company_id', $company->id)
+            $teamMembers = CompanyUsers::where('company_id', $company->id)
                 ->with(['user', 'company'])
                 ->get()
                 ->unique('user_id');
@@ -34,7 +36,7 @@ class DashboardController extends Controller
             $currentWorkspaceName = $company->name;
         } else {
             // Fetch all projects (both personal and organizational)
-            $projects = \App\Models\Project::whereIn('company_id', $companyIds)
+            $projects = Project::whereIn('company_id', $companyIds)
                 ->orWhere(function ($query) use ($auth_user) {
                     $query->whereNull('company_id')->where('user_id', $auth_user->id);
                 })
@@ -42,7 +44,7 @@ class DashboardController extends Controller
                 ->get();
 
             // Fetch all team members from all companies they belong to
-            $teamMembers = \App\Models\CompanyUsers::whereIn('company_id', $companyIds)
+            $teamMembers = CompanyUsers::whereIn('company_id', $companyIds)
                 ->with(['user', 'company'])
                 ->get()
                 ->unique('user_id');

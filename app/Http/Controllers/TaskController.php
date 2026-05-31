@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CompanyUsers;
 use App\Models\Project;
 use App\Models\Task;
+use App\Models\TaskImage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class TaskController extends Controller
 {
@@ -29,7 +32,7 @@ class TaskController extends Controller
         $tasksQuery = Task::whereIn('project_id', $projectIds);
 
         // Fetch all unique team members from all companies the user belongs to
-        $companyUsers = \App\Models\CompanyUsers::whereIn('company_id', $companyIds)
+        $companyUsers = CompanyUsers::whereIn('company_id', $companyIds)
             ->with('user')
             ->get()
             ->map(function ($cu) {
@@ -114,7 +117,7 @@ class TaskController extends Controller
                 abort(403);
             }
         } else {
-            $membership = \App\Models\CompanyUsers::where('company_id', $project->company_id)
+            $membership = CompanyUsers::where('company_id', $project->company_id)
                 ->where('user_id', $user_id)
                 ->exists();
             if (! $membership) {
@@ -142,7 +145,7 @@ class TaskController extends Controller
                 abort(403);
             }
         } else {
-            $belongs = \App\Models\CompanyUsers::where('company_id', $project->company_id)
+            $belongs = CompanyUsers::where('company_id', $project->company_id)
                 ->where('user_id', $user_id)
                 ->exists();
             if (! $belongs) {
@@ -181,7 +184,7 @@ class TaskController extends Controller
                 abort(403);
             }
         } else {
-            $membership = \App\Models\CompanyUsers::where('company_id', $project->company_id)
+            $membership = CompanyUsers::where('company_id', $project->company_id)
                 ->where('user_id', $user_id)
                 ->first();
 
@@ -254,7 +257,7 @@ class TaskController extends Controller
                 abort(403);
             }
         } else {
-            $belongs = \App\Models\CompanyUsers::where('company_id', $project->company_id)
+            $belongs = CompanyUsers::where('company_id', $project->company_id)
                 ->where('user_id', $user_id)
                 ->exists();
             if (! $belongs) {
@@ -317,7 +320,7 @@ class TaskController extends Controller
             $companyUsers = collect([auth()->user()]);
             $user_role = 1;
         } else {
-            $membership = \App\Models\CompanyUsers::where('company_id', $project->company_id)
+            $membership = CompanyUsers::where('company_id', $project->company_id)
                 ->where('user_id', $user_id)
                 ->first();
 
@@ -325,7 +328,7 @@ class TaskController extends Controller
                 abort(403);
             }
 
-            $companyUsers = \App\Models\CompanyUsers::where('company_id', $project->company_id)
+            $companyUsers = CompanyUsers::where('company_id', $project->company_id)
                 ->with('user')
                 ->get()
                 ->map(function ($cu) {
@@ -380,7 +383,7 @@ class TaskController extends Controller
     /**
      * Delete a task image.
      */
-    public function deleteImage(Request $request, \App\Models\TaskImage $image)
+    public function deleteImage(Request $request, TaskImage $image)
     {
         $task = $image->task;
         $current_company = session('current_company_id');
@@ -396,8 +399,8 @@ class TaskController extends Controller
 
         $this->checkTaskOwnership($task);
 
-        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($image->image_path)) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($image->image_path);
+        if (Storage::disk('public')->exists($image->image_path)) {
+            Storage::disk('public')->delete($image->image_path);
         }
 
         $image->delete();

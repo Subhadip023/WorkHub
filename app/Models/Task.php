@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Task extends Model
 {
@@ -14,7 +16,7 @@ class Task extends Model
     protected static function booted()
     {
         static::created(function ($task) {
-            \App\Models\TaskHistory::create([
+            TaskHistory::create([
                 'task_id' => $task->id,
                 'user_id' => auth()->id(),
                 'old_status' => null,
@@ -28,7 +30,7 @@ class Task extends Model
                 $newStatus = $task->status;
 
                 if ($oldStatus != $newStatus) {
-                    \App\Models\TaskHistory::create([
+                    TaskHistory::create([
                         'task_id' => $task->id,
                         'user_id' => auth()->id(),
                         'old_status' => $oldStatus,
@@ -40,41 +42,41 @@ class Task extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<Project, $this>
+     * @return BelongsTo<Project, $this>
      */
-    public function project(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<User, $this>
+     * @return BelongsTo<User, $this>
      */
-    public function assignedUser(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function assignedUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_to');
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany<TaskImage, $this>
+     * @return HasMany<TaskImage, $this>
      */
-    public function images(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function images(): HasMany
     {
         return $this->hasMany(TaskImage::class);
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany<Note, $this>
+     * @return HasMany<Note, $this>
      */
-    public function notes(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function notes(): HasMany
     {
         return $this->hasMany(Note::class, 'note_type_id')->where('note_type', Note::TYPE_TASK);
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany<TaskHistory, $this>
+     * @return HasMany<TaskHistory, $this>
      */
-    public function histories(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function histories(): HasMany
     {
         return $this->hasMany(TaskHistory::class)->latest();
     }

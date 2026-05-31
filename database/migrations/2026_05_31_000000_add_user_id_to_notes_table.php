@@ -28,7 +28,7 @@ return new class extends Migration
                 // Drop foreign key first depending on db support
                 try {
                     $table->dropForeign(['user_id']);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     // Fail-safe
                 }
                 $table->dropColumn('user_id');

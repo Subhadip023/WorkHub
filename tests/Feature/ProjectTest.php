@@ -3,6 +3,7 @@
 use App\Models\Company;
 use App\Models\CompanyUsers;
 use App\Models\Project;
+use App\Models\Task;
 use App\Models\User;
 
 it('allows authenticated user to create a project in personal space', function () {
@@ -121,7 +122,7 @@ it('sorts tasks in project details page by due_date ascending and priority desce
 
     // Create tasks with different due dates and priorities
     // Task A: No due date, priority Urgent
-    $taskA = \App\Models\Task::create([
+    $taskA = Task::create([
         'title' => 'Task A',
         'project_id' => $project->id,
         'due_date' => null,
@@ -130,7 +131,7 @@ it('sorts tasks in project details page by due_date ascending and priority desce
     ]);
 
     // Task B: Later due date, priority Medium
-    $taskB = \App\Models\Task::create([
+    $taskB = Task::create([
         'title' => 'Task B',
         'project_id' => $project->id,
         'due_date' => '2026-06-05',
@@ -139,7 +140,7 @@ it('sorts tasks in project details page by due_date ascending and priority desce
     ]);
 
     // Task C: Earlier due date, priority Low
-    $taskC = \App\Models\Task::create([
+    $taskC = Task::create([
         'title' => 'Task C',
         'project_id' => $project->id,
         'due_date' => '2026-06-01',
@@ -148,7 +149,7 @@ it('sorts tasks in project details page by due_date ascending and priority desce
     ]);
 
     // Task D: Earlier due date, priority Urgent (same due date as C, higher priority)
-    $taskD = \App\Models\Task::create([
+    $taskD = Task::create([
         'title' => 'Task D',
         'project_id' => $project->id,
         'due_date' => '2026-06-01',
@@ -157,7 +158,7 @@ it('sorts tasks in project details page by due_date ascending and priority desce
     ]);
 
     // Task E: Completed Task
-    $taskE = \App\Models\Task::create([
+    $taskE = Task::create([
         'title' => 'Task E',
         'project_id' => $project->id,
         'due_date' => '2026-06-10',

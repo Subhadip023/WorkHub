@@ -3,6 +3,8 @@
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 it('allows authenticated user to create a task in a personal project with status and priority', function () {
     $user = User::factory()->create();
@@ -265,7 +267,7 @@ it('allows user to import tasks from JSON format', function () {
 });
 
 it('allows user to upload and delete task images', function () {
-    \Illuminate\Support\Facades\Storage::fake('public');
+    Storage::fake('public');
 
     $user = User::factory()->create();
     $project = Project::create([
@@ -288,7 +290,7 @@ it('allows user to upload and delete task images', function () {
     $this->actingAs($user);
     session(['current_company_id' => 'personal']);
 
-    $file = \Illuminate\Http\UploadedFile::fake()->image('task_attachment.png', 100, 100);
+    $file = UploadedFile::fake()->image('task_attachment.png', 100, 100);
 
     $response = $this->post(route('tasks.images.store', $task), [
         'image' => $file,
@@ -300,7 +302,7 @@ it('allows user to upload and delete task images', function () {
     ]);
 
     $taskImage = $task->images()->first();
-    \Illuminate\Support\Facades\Storage::disk('public')->assertExists($taskImage->image_path);
+    Storage::disk('public')->assertExists($taskImage->image_path);
 
     // Delete the image
     $deleteResponse = $this->delete(route('tasks.images.destroy', $taskImage));
@@ -308,7 +310,7 @@ it('allows user to upload and delete task images', function () {
     $this->assertDatabaseMissing('task_images', [
         'id' => $taskImage->id,
     ]);
-    \Illuminate\Support\Facades\Storage::disk('public')->assertMissing($taskImage->image_path);
+    Storage::disk('public')->assertMissing($taskImage->image_path);
 });
 
 it('filters tasks by project, status, and assignee', function () {

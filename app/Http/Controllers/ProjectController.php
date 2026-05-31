@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
+use App\Models\CompanyUsers;
 use App\Models\Project;
 
 class ProjectController extends Controller
@@ -51,7 +52,7 @@ class ProjectController extends Controller
             $data['company_id'] = null;
         } else {
             // Verify user belongs to this company
-            $belongs = \App\Models\CompanyUsers::where('company_id', $company_id)
+            $belongs = CompanyUsers::where('company_id', $company_id)
                 ->where('user_id', auth()->id())
                 ->exists();
             if (! $belongs) {
@@ -84,7 +85,7 @@ class ProjectController extends Controller
             $companyUsers = collect([auth()->user()]);
             $user_role = 1; // Admin of their personal space
         } else {
-            $membership = \App\Models\CompanyUsers::where('company_id', $project->company_id)
+            $membership = CompanyUsers::where('company_id', $project->company_id)
                 ->where('user_id', $user_id)
                 ->first();
 
@@ -96,7 +97,7 @@ class ProjectController extends Controller
                 $query->orderByRaw('due_date IS NULL, due_date ASC')->orderBy('priority', 'desc');
             }, 'tasks.assignedUser']);
 
-            $companyUsers = \App\Models\CompanyUsers::where('company_id', $project->company_id)
+            $companyUsers = CompanyUsers::where('company_id', $project->company_id)
                 ->with('user')
                 ->get()
                 ->map(function ($cu) {
@@ -122,7 +123,7 @@ class ProjectController extends Controller
                 abort(403);
             }
         } else {
-            $membership = \App\Models\CompanyUsers::where('company_id', $project->company_id)
+            $membership = CompanyUsers::where('company_id', $project->company_id)
                 ->where('user_id', $user_id)
                 ->exists();
             if (! $membership) {
@@ -148,7 +149,7 @@ class ProjectController extends Controller
                 abort(403);
             }
         } else {
-            $membership = \App\Models\CompanyUsers::where('company_id', $project->company_id)
+            $membership = CompanyUsers::where('company_id', $project->company_id)
                 ->where('user_id', $user_id)
                 ->exists();
             if (! $membership) {
@@ -164,7 +165,7 @@ class ProjectController extends Controller
             $data['company_id'] = null;
         } else {
             // Verify user belongs to this company
-            $belongs = \App\Models\CompanyUsers::where('company_id', $company_id)
+            $belongs = CompanyUsers::where('company_id', $company_id)
                 ->where('user_id', auth()->id())
                 ->exists();
             if (! $belongs) {
@@ -189,7 +190,7 @@ class ProjectController extends Controller
                 abort(403);
             }
         } else {
-            $membership = \App\Models\CompanyUsers::where('company_id', $project->company_id)
+            $membership = CompanyUsers::where('company_id', $project->company_id)
                 ->where('user_id', $user_id)
                 ->first();
             if (! $membership || $membership->role !== 1) {

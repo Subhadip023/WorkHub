@@ -8,6 +8,7 @@ use App\Models\Task;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use JoyPixels\Client;
 
 class NoteController extends Controller
 {
@@ -78,7 +79,7 @@ class NoteController extends Controller
         $user = auth()->user();
         $this->authorizeNoteAccess($note, $user);
 
-        $joyPixels = new \JoyPixels\Client;
+        $joyPixels = new Client;
         $noteDescription = $joyPixels->toImage($note->description);
 
         $pdf = Pdf::loadView('notes.pdf', compact('note', 'noteDescription'))
