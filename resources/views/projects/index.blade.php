@@ -64,11 +64,6 @@
                         @endif
                     </div>
 
-                    <!-- Description -->
-                    <p class="text-gray-600 small mb-3 flex-grow-1" style="min-height: 40px;">
-                        {!! Str::limit(strip_tags($project->description), 90) !!}
-                    </p>
-
                     @php
                         $pTotal = $project->tasks->count();
                         $pCompleted = $project->tasks->where('status', 3)->count();
