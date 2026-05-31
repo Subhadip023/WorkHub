@@ -7,6 +7,7 @@ use App\Models\Project;
 use App\Models\Task;
 use App\Models\TaskImage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class TaskController extends Controller
@@ -353,10 +354,20 @@ class TaskController extends Controller
         $current_company = session('current_company_id');
         if ($current_company === 'personal') {
             if ($task->project->company_id !== null || $task->project->user_id !== auth()->id()) {
+                Log::warning('Upload failed at condition 1 (Personal Block)', [
+                    'current_company' => $current_company,
+                    'project_company_id' => $task->project->company_id,
+                    'project_user_id' => $task->project->user_id,
+                    'auth_id' => auth()->id(),
+                ]);
                 abort(403);
             }
         } else {
             if ($task->project->company_id != $current_company) {
+                Log::warning('Upload failed at condition 2 (Company Mismatch Block)', [
+                    'current_company' => $current_company,
+                    'project_company_id' => $task->project->company_id,
+                ]);
                 abort(403);
             }
         }
