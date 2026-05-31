@@ -20,9 +20,17 @@ jobs:
           port: 22
           script: |
             cd /var/www/workhub.subhadip.online
+
+            # 1. Temporarily change ownership so GitHub runner can execute commands without permission barrier
+            sudo chown -R $USER:www-data storage bootstrap/cache
+
             git pull origin main
             php artisan optimize:clear
             composer install --no-dev --optimize-autoloader
             php artisan migrate --force
             php artisan config:cache
             php artisan route:cache
+
+            # 2. Re-assign strict standard web-server group rights after build completes
+            sudo chown -R www-data:www-data storage bootstrap/cache
+            sudo chmod -R 775 storage bootstrap/cache
