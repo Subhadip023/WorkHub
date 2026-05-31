@@ -105,26 +105,32 @@
 <div class="row">
     <div class="col-lg-6 mb-4">
 
-        <!-- Illustrations -->
+        <!-- Illustrations / Getting Started -->
         <div class="card shadow mb-4">
             <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Instractions</h6>
+                <h6 class="m-0 font-weight-bold text-primary">Get Started with WorkHub</h6>
             </div>
             <div class="card-body">
                 <div class="text-center">
-                    <img class="img-fluid px-3 px-sm-4 mt-3 mb-4" style="width: 25rem;"
-                        src="{{ asset('asset/img/undraw_posting_photo.svg') }}" alt="...">
+                    <img class="img-fluid px-3 px-sm-4 mt-1 mb-4" style="width: 18rem;"
+                        src="{{ asset('asset/img/undraw_posting_photo.svg') }}" alt="WorkHub Workspace Illustration">
                 </div>
-                <p>
-                    Welcome to your <strong>Task & Project Management System</strong>.
-                    Here you can easily manage your projects, assign tasks,
-                    track progress, and collaborate with your team — all in one place.
+                <p class="text-gray-700">
+                    Welcome to <strong>WorkHub</strong>! This collaborative platform streamlines your projects, task classifications, and documentation.
                 </p>
-
-                <a target="_blank" rel="nofollow" href="https://your-project-link.com">
-                    Learn more about this project →
+                <hr class="my-3">
+                <div class="small text-gray-600">
+                    <h6 class="font-weight-bold text-gray-800 mb-2"><i class="fas fa-rocket mr-1 text-primary"></i> Quick Guide:</h6>
+                    <ul class="pl-3 mb-3">
+                        <li class="mb-2"><strong>Context Switching:</strong> Toggle between <em>Personal Space</em> and different <em>Organizations</em> using the top filter.</li>
+                        <li class="mb-2"><strong>Projects & Tasks:</strong> Create projects, then add tasks classified as <strong>Bug, Feature, Task, or Improvement</strong> with status/priority settings.</li>
+                        <li class="mb-2"><strong>Rich Documentation:</strong> Create notes under projects, tasks, or personal space, and download them as high-quality PDFs.</li>
+                        <li class="mb-2"><strong>Collaborate:</strong> Invite team members to organizations, assign tasks, and comment in real-time.</li>
+                    </ul>
+                </div>
+                <a href="{{ route('projects.index') }}" class="btn btn-sm btn-primary shadow-sm btn-block mt-3">
+                    <i class="fas fa-folder-open mr-1"></i> Go to Projects
                 </a>
-
             </div>
         </div>
 

@@ -485,6 +485,35 @@
                 text-align: center;
             }
         }
+
+        @media (max-width: 768px) {
+            .nav-wrapper {
+                flex-direction: column;
+                height: auto;
+                padding: 15px 0;
+                gap: 15px;
+            }
+            .nav-links {
+                display: none;
+            }
+            .hero {
+                padding: 140px 0 60px;
+            }
+            .hero-title {
+                font-size: 36px;
+            }
+            .hero-actions {
+                flex-direction: column;
+                width: 100%;
+                gap: 12px;
+            }
+            .hero-actions .btn {
+                width: 100%;
+            }
+            .cta-box h2 {
+                font-size: 32px;
+            }
+        }
     </style>
 </head>
 <body>

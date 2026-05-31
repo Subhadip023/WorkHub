@@ -142,11 +142,11 @@
                     <tr>
                         <th style="width: 60px;" class="text-center">Done</th>
                         <th>Task Details</th>
-                        <th>Type</th>
-                        <th>Assigned To</th>
-                        <th>Due Date</th>
-                        <th>Status</th>
-                        <th>Priority</th>
+                        <th class="d-none d-md-table-cell">Type</th>
+                        <th class="d-none d-md-table-cell">Assigned To</th>
+                        <th class="d-none d-md-table-cell">Due Date</th>
+                        <th class="d-none d-md-table-cell">Status</th>
+                        <th class="d-none d-md-table-cell">Priority</th>
                         <th style="width: 120px;" class="text-center">Actions</th>
                     </tr>
                 </thead>
@@ -159,7 +159,7 @@
                         <td class="align-middle">
                             <input type="text" id="inline_title" name="title" form="inlineAddTaskForm" class="form-control form-control-sm font-weight-bold mb-1" placeholder="What needs to be done? (Press Enter to save)" required>
                         </td>
-                        <td class="align-middle">
+                        <td class="align-middle d-none d-md-table-cell">
                             <select name="type" form="inlineAddTaskForm" class="form-control form-control-sm">
                                 <option value="1" selected>Task</option>
                                 <option value="2">Bug</option>
@@ -167,7 +167,7 @@
                                 <option value="4">Improvement</option>
                             </select>
                         </td>
-                        <td class="align-middle">
+                        <td class="align-middle d-none d-md-table-cell">
                             <select name="assigned_to" form="inlineAddTaskForm" class="form-control form-control-sm">
                                 <option value="">-- Unassigned --</option>
                                 @foreach($companyUsers as $user)
@@ -175,10 +175,10 @@
                                 @endforeach
                             </select>
                         </td>
-                        <td class="align-middle">
+                        <td class="align-middle d-none d-md-table-cell">
                             <input type="date" name="due_date" form="inlineAddTaskForm" class="form-control form-control-sm">
                         </td>
-                        <td class="align-middle">
+                        <td class="align-middle d-none d-md-table-cell">
                             <select name="status" form="inlineAddTaskForm" class="form-control form-control-sm">
                                 <option value="1" selected>To Do</option>
                                 <option value="2">In Progress</option>
@@ -186,7 +186,7 @@
                                 <option value="4">On Hold</option>
                             </select>
                         </td>
-                        <td class="align-middle">
+                        <td class="align-middle d-none d-md-table-cell">
                             <select name="priority" form="inlineAddTaskForm" class="form-control form-control-sm">
                                 <option value="1">Low</option>
                                 <option value="2" selected>Medium</option>
@@ -238,15 +238,65 @@
                                         {{ $task->title }}
                                     </a>
                                 </div>
-                           
+
+                                <!-- Compact details for mobile views -->
+                                <div class="d-block d-md-none mt-2">
+                                    <div class="d-flex flex-wrap align-items-center" style="gap: 6px;">
+                                        <!-- Type -->
+                                        <span class="badge {{ $task->getTypeBadgeClass() }} px-2 py-1 shadow-sm text-xs">
+                                            <i class="fas {{ $task->getTypeIcon() }} mr-1"></i>{{ $task->getTypeName() }}
+                                        </span>
+
+                                        <!-- Status -->
+                                        @if($task->status == 1)
+                                            <span class="badge badge-secondary px-2 py-1 text-xs">To Do</span>
+                                        @elseif($task->status == 2)
+                                            <span class="badge badge-warning px-2 py-1 text-xs">In Progress</span>
+                                        @elseif($task->status == 3)
+                                            <span class="badge badge-success px-2 py-1 text-xs">Completed</span>
+                                        @elseif($task->status == 4)
+                                            <span class="badge badge-danger px-2 py-1 text-xs">On Hold</span>
+                                        @endif
+
+                                        <!-- Priority -->
+                                        @if($task->priority == 1)
+                                            <span class="badge badge-secondary px-2 py-1 text-xs">Low</span>
+                                        @elseif($task->priority == 2)
+                                            <span class="badge badge-info px-2 py-1 text-xs">Medium</span>
+                                        @elseif($task->priority == 3)
+                                            <span class="badge badge-warning px-2 py-1 text-xs">High</span>
+                                        @elseif($task->priority == 4)
+                                            <span class="badge badge-danger px-2 py-1 text-xs">Urgent</span>
+                                        @endif
+
+                                        <!-- Assigned User -->
+                                        @if($task->assignedUser)
+                                            <span class="badge badge-light border text-gray-800 px-2 py-1 text-xs">
+                                                <i class="fas fa-user mr-1 text-primary"></i>{{ $task->assignedUser->name }}
+                                            </span>
+                                        @else
+                                            <span class="badge badge-light border text-muted px-2 py-1 text-xs font-italic">Unassigned</span>
+                                        @endif
+
+                                        <!-- Due Date -->
+                                        @if($task->due_date)
+                                            @php
+                                                $isOverdue = $task->status != 3 && \Carbon\Carbon::parse($task->due_date)->isPast();
+                                            @endphp
+                                            <span class="badge {{ $isOverdue ? 'badge-danger' : 'badge-light border text-gray-800' }} px-2 py-1 text-xs">
+                                                <i class="far fa-calendar-alt mr-1 text-danger"></i>{{ \Carbon\Carbon::parse($task->due_date)->format('M d') }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
                             </td>
-                            <td class="align-middle">
+                            <td class="align-middle d-none d-md-table-cell">
                                 <span class="badge {{ $task->getTypeBadgeClass() }} p-2 shadow-sm">
                                     <i class="fas {{ $task->getTypeIcon() }} mr-1"></i>
                                     {{ $task->getTypeName() }}
                                 </span>
                             </td>
-                            <td class="align-middle">
+                            <td class="align-middle d-none d-md-table-cell">
                                 @if($task->assignedUser)
                                     <span class="badge badge-light p-2 border text-gray-800">
                                         <i class="fas fa-user fa-sm mr-1 text-primary"></i>
@@ -256,7 +306,7 @@
                                     <span class="text-muted small font-italic">Unassigned</span>
                                 @endif
                             </td>
-                            <td class="align-middle">
+                            <td class="align-middle d-none d-md-table-cell">
                                 @if($task->due_date)
                                     @php
                                         $isOverdue = $task->status != 3 && \Carbon\Carbon::parse($task->due_date)->isPast();
@@ -272,7 +322,7 @@
                                     <span class="text-muted small">-</span>
                                 @endif
                             </td>
-                            <td class="align-middle">
+                            <td class="align-middle d-none d-md-table-cell">
                                 @if($task->status == 1)
                                     <span class="badge badge-secondary p-2">To Do</span>
                                 @elseif($task->status == 2)
@@ -285,7 +335,7 @@
                                     <span class="badge badge-light p-2">To Do</span>
                                 @endif
                             </td>
-                            <td class="align-middle">
+                            <td class="align-middle d-none d-md-table-cell">
                                 @if($task->priority == 1)
                                     <span class="badge badge-secondary p-2">Low</span>
                                 @elseif($task->priority == 2)

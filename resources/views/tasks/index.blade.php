@@ -7,6 +7,12 @@
     .text-line-through {
         text-decoration: line-through;
     }
+    @media (max-width: 576px) {
+        .btn-block-xs {
+            display: block;
+            width: 100%;
+        }
+    }
 </style>
 @endpush
 
@@ -130,8 +136,8 @@
                     <option value="4" {{ request('type') == '4' ? 'selected' : '' }}>Improvement</option>
                 </select>
             </div>
-            <div class="col-md-3 text-right pt-4">
-                <button id="resetFilters" class="btn btn-sm btn-secondary">
+            <div class="col-md-3 text-left text-md-right mt-3 mt-md-0 pt-md-4">
+                <button id="resetFilters" class="btn btn-sm btn-secondary btn-block-xs">
                     <i class="fas fa-undo fa-xs mr-1"></i> Reset Filters
                 </button>
             </div>
@@ -157,12 +163,12 @@
                     <tr>
                         <th style="width: 60px;" class="text-center">Done</th>
                         <th>Task Details</th>
-                        <th>Type</th>
-                        <th>Project</th>
-                        <th>Assigned To</th>
-                        <th>Due Date</th>
-                        <th>Status</th>
-                        <th>Priority</th>
+                        <th class="d-none d-md-table-cell">Type</th>
+                        <th class="d-none d-md-table-cell">Project</th>
+                        <th class="d-none d-md-table-cell">Assigned To</th>
+                        <th class="d-none d-md-table-cell">Due Date</th>
+                        <th class="d-none d-md-table-cell">Status</th>
+                        <th class="d-none d-md-table-cell">Priority</th>
                         <th style="width: 120px;" class="text-center">Actions</th>
                     </tr>
                 </thead>
@@ -213,20 +219,76 @@
                                 @if($task->description)
                                     <div class="text-gray-500 small mt-1">{!! Str::limit(strip_tags($task->description), 100) !!}</div>
                                 @endif
+
+                                <!-- Compact details for mobile views -->
+                                <div class="d-block d-md-none mt-2">
+                                    <div class="d-flex flex-wrap align-items-center" style="gap: 6px;">
+                                        <!-- Type -->
+                                        <span class="badge {{ $task->getTypeBadgeClass() }} px-2 py-1 shadow-sm text-xs">
+                                            <i class="fas {{ $task->getTypeIcon() }} mr-1"></i>{{ $task->getTypeName() }}
+                                        </span>
+
+                                        <!-- Project -->
+                                        <a href="{{ route('projects.show', $task->project) }}" class="badge text-white px-2 py-1 shadow-sm text-xs" style="background-color: {{ $task->project->theme }}">
+                                            <i class="fas fa-folder mr-1"></i>{{ $task->project->name }}
+                                        </a>
+
+                                        <!-- Status -->
+                                        @if($task->status == 1)
+                                            <span class="badge badge-secondary px-2 py-1 text-xs">To Do</span>
+                                        @elseif($task->status == 2)
+                                            <span class="badge badge-warning px-2 py-1 text-xs">In Progress</span>
+                                        @elseif($task->status == 3)
+                                            <span class="badge badge-success px-2 py-1 text-xs">Completed</span>
+                                        @elseif($task->status == 4)
+                                            <span class="badge badge-danger px-2 py-1 text-xs">On Hold</span>
+                                        @endif
+
+                                        <!-- Priority -->
+                                        @if($task->priority == 1)
+                                            <span class="badge badge-secondary px-2 py-1 text-xs">Low</span>
+                                        @elseif($task->priority == 2)
+                                            <span class="badge badge-info px-2 py-1 text-xs">Medium</span>
+                                        @elseif($task->priority == 3)
+                                            <span class="badge badge-warning px-2 py-1 text-xs">High</span>
+                                        @elseif($task->priority == 4)
+                                            <span class="badge badge-danger px-2 py-1 text-xs">Urgent</span>
+                                        @endif
+
+                                        <!-- Assigned User -->
+                                        @if($task->assignedUser)
+                                            <span class="badge badge-light border text-gray-800 px-2 py-1 text-xs">
+                                                <i class="fas fa-user mr-1 text-primary"></i>{{ $task->assignedUser->name }}
+                                            </span>
+                                        @else
+                                            <span class="badge badge-light border text-muted px-2 py-1 text-xs font-italic">Unassigned</span>
+                                        @endif
+
+                                        <!-- Due Date -->
+                                        @if($task->due_date)
+                                            @php
+                                                $isOverdue = $task->status != 3 && \Carbon\Carbon::parse($task->due_date)->isPast();
+                                            @endphp
+                                            <span class="badge {{ $isOverdue ? 'badge-danger' : 'badge-light border text-gray-800' }} px-2 py-1 text-xs">
+                                                <i class="far fa-calendar-alt mr-1 text-danger"></i>{{ \Carbon\Carbon::parse($task->due_date)->format('M d') }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
                             </td>
-                            <td class="align-middle">
+                            <td class="align-middle d-none d-md-table-cell">
                                 <span class="badge {{ $task->getTypeBadgeClass() }} p-2 shadow-sm">
                                     <i class="fas {{ $task->getTypeIcon() }} mr-1"></i>
                                     {{ $task->getTypeName() }}
                                 </span>
                             </td>
-                            <td class="align-middle">
+                            <td class="align-middle d-none d-md-table-cell">
                                 <a href="{{ route('projects.show', $task->project) }}" class="badge text-white p-2 shadow-sm" style="background-color: {{ $task->project->theme }}">
                                     <i class="fas fa-project-diagram mr-1"></i>
                                     {{ $task->project->name }}
                                 </a>
                             </td>
-                            <td class="align-middle">
+                            <td class="align-middle d-none d-md-table-cell">
                                 @if($task->assignedUser)
                                     <span class="badge badge-light p-2 border text-gray-800">
                                         <i class="fas fa-user fa-sm mr-1 text-primary"></i>
@@ -236,7 +298,7 @@
                                     <span class="text-muted small font-italic">Unassigned</span>
                                 @endif
                             </td>
-                            <td class="align-middle">
+                            <td class="align-middle d-none d-md-table-cell">
                                 @if($task->due_date)
                                     @php
                                         $isOverdue = $task->status != 3 && \Carbon\Carbon::parse($task->due_date)->isPast();
@@ -252,7 +314,7 @@
                                     <span class="text-muted small">-</span>
                                 @endif
                             </td>
-                            <td class="align-middle">
+                            <td class="align-middle d-none d-md-table-cell">
                                 @if($task->status == 1)
                                     <span class="badge badge-secondary p-2">To Do</span>
                                 @elseif($task->status == 2)
@@ -265,7 +327,7 @@
                                     <span class="badge badge-light p-2">To Do</span>
                                 @endif
                             </td>
-                            <td class="align-middle">
+                            <td class="align-middle d-none d-md-table-cell">
                                 @if($task->priority == 1)
                                     <span class="badge badge-secondary p-2">Low</span>
                                 @elseif($task->priority == 2)
