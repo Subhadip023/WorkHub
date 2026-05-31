@@ -12,7 +12,7 @@ class UpdateCompanyRequest extends FormRequest
     public function authorize(): bool
     {
         $company = $this->route('company');
-        if (!$company) {
+        if (! $company) {
             return false;
         }
 

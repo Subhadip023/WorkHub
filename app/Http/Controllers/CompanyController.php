@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Company;
 use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Requests\UpdateCompanyRequest;
+use App\Models\Company;
 use App\Models\CompanyUsers;
 use Illuminate\Http\Request;
 
@@ -16,6 +16,7 @@ class CompanyController extends Controller
     public function index()
     {
         $companies = auth()->user()->companies()->with('company')->get();
+
         return view('companies.index', compact('companies'));
     }
 
@@ -32,7 +33,7 @@ class CompanyController extends Controller
      */
     public function store(StoreCompanyRequest $request)
     {
-        if($request->has('code')) {
+        if ($request->has('code')) {
             dd($request->all());
         }
         $name = $request->input('name');
@@ -46,10 +47,10 @@ class CompanyController extends Controller
         ]);
         $company_id = $company->id;
         $user_id = auth()->user()->id;
-        CompanyUsers::create(['company_id' => $company_id, 'user_id' => $user_id, 'role' => 1,]);
-        
+        CompanyUsers::create(['company_id' => $company_id, 'user_id' => $user_id, 'role' => 1]);
+
         session(['current_company_id' => $company_id]);
-        
+
         return redirect()->route('dashboard')->with('success', 'Company created successfully');
     }
 
@@ -75,12 +76,12 @@ class CompanyController extends Controller
     public function update(UpdateCompanyRequest $request, Company $company)
     {
         $company->update([
-            'name' => $request->input('name')
+            'name' => $request->input('name'),
         ]);
 
         if (session('current_company_id') == $company->id) {
             session([
-                'current_company_data' => $company
+                'current_company_data' => $company,
             ]);
         }
 
@@ -98,7 +99,7 @@ class CompanyController extends Controller
             ->where('role', 1)
             ->exists();
 
-        if (!$is_admin) {
+        if (! $is_admin) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -118,6 +119,7 @@ class CompanyController extends Controller
             } else {
                 session(['current_company_id' => 'personal']);
             }
+
             return redirect()->route('dashboard')->with('success', 'Organization deleted successfully');
         }
 
@@ -129,7 +131,7 @@ class CompanyController extends Controller
         $request->validate(['code' => 'required|string|exists:companies,code']);
         $code = $request->input('code');
         $company = Company::where('code', $code)->first();
-        if($company) {
+        if ($company) {
             $company_id = $company->id;
             $user_id = auth()->user()->id;
 
@@ -137,13 +139,16 @@ class CompanyController extends Controller
             $exists = CompanyUsers::where('company_id', $company_id)->where('user_id', $user_id)->exists();
             if ($exists) {
                 session(['current_company_id' => $company_id]);
+
                 return redirect()->route('dashboard')->with('info', "You are already a member of {$company->name}. Active company switched.");
             }
 
-            CompanyUsers::create(['company_id' => $company_id, 'user_id' => $user_id, 'role' => 0,]);
+            CompanyUsers::create(['company_id' => $company_id, 'user_id' => $user_id, 'role' => 0]);
             session(['current_company_id' => $company_id]);
+
             return redirect()->route('dashboard')->with('success', 'Company joined successfully');
         }
+
         return back()->with('error', 'Company not found');
     }
 
@@ -154,11 +159,12 @@ class CompanyController extends Controller
     {
         $user_id = auth()->user()->id;
         $belongs = CompanyUsers::where('company_id', $company->id)->where('user_id', $user_id)->exists();
-        if (!$belongs) {
+        if (! $belongs) {
             abort(403);
         }
 
         session(['current_company_id' => $company->id]);
+
         return redirect()->route('dashboard')->with('success', "Switched to {$company->name}");
     }
 
@@ -168,6 +174,7 @@ class CompanyController extends Controller
     public function switchToPersonal()
     {
         session(['current_company_id' => 'personal']);
+
         return redirect()->route('dashboard')->with('success', 'Switched to Personal Space');
     }
 }

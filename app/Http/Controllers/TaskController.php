@@ -39,7 +39,7 @@ class TaskController extends Controller
             ->unique('id')
             ->values();
 
-        if (!$companyUsers->contains('id', $user->id)) {
+        if (! $companyUsers->contains('id', $user->id)) {
             $companyUsers->push($user);
         }
 
@@ -80,13 +80,13 @@ class TaskController extends Controller
         $user_role = 1;
 
         return view('tasks.index', compact(
-            'tasks', 
-            'projects', 
-            'companyUsers', 
-            'user_role', 
-            'totalCount', 
-            'completedCount', 
-            'pendingCount', 
+            'tasks',
+            'projects',
+            'companyUsers',
+            'user_role',
+            'totalCount',
+            'completedCount',
+            'pendingCount',
             'overdueCount'
         ));
     }
@@ -117,7 +117,7 @@ class TaskController extends Controller
             $membership = \App\Models\CompanyUsers::where('company_id', $project->company_id)
                 ->where('user_id', $user_id)
                 ->exists();
-            if (!$membership) {
+            if (! $membership) {
                 abort(403);
             }
         }
@@ -145,7 +145,7 @@ class TaskController extends Controller
             $belongs = \App\Models\CompanyUsers::where('company_id', $project->company_id)
                 ->where('user_id', $user_id)
                 ->exists();
-            if (!$belongs) {
+            if (! $belongs) {
                 abort(403);
             }
         }
@@ -185,7 +185,7 @@ class TaskController extends Controller
                 ->where('user_id', $user_id)
                 ->first();
 
-            if (!$membership) {
+            if (! $membership) {
                 abort(403, 'You are not a member of this organization.');
             }
 
@@ -257,7 +257,7 @@ class TaskController extends Controller
             $belongs = \App\Models\CompanyUsers::where('company_id', $project->company_id)
                 ->where('user_id', $user_id)
                 ->exists();
-            if (!$belongs) {
+            if (! $belongs) {
                 abort(403);
             }
         }
@@ -269,7 +269,7 @@ class TaskController extends Controller
         $data = json_decode($request->input('json_data'), true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            return redirect()->back()->with('error', 'Invalid JSON format: ' . json_last_error_msg());
+            return redirect()->back()->with('error', 'Invalid JSON format: '.json_last_error_msg());
         }
 
         // Normalize to array of objects if a single object was passed
@@ -277,13 +277,13 @@ class TaskController extends Controller
             $data = [$data];
         }
 
-        if (!is_array($data)) {
+        if (! is_array($data)) {
             return redirect()->back()->with('error', 'JSON must be an array of tasks or a single task object.');
         }
 
         $count = 0;
         foreach ($data as $item) {
-            if (!empty($item['title'])) {
+            if (! empty($item['title'])) {
                 $status = $item['status'] ?? (($item['is_completed'] ?? false) ? 3 : 1);
                 $priority = $item['priority'] ?? 2;
                 $project->tasks()->create([
@@ -321,7 +321,7 @@ class TaskController extends Controller
                 ->where('user_id', $user_id)
                 ->first();
 
-            if (!$membership) {
+            if (! $membership) {
                 abort(403);
             }
 

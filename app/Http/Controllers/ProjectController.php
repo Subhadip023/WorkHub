@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Project;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
+use App\Models\Project;
 
 class ProjectController extends Controller
 {
@@ -45,7 +45,7 @@ class ProjectController extends Controller
     {
         $data = $request->validated();
         $data['slug'] = str_replace(' ', '-', strtolower($data['name']));
-        
+
         $company_id = $request->input('company_id');
         if ($company_id === 'personal' || empty($company_id)) {
             $data['company_id'] = null;
@@ -54,7 +54,7 @@ class ProjectController extends Controller
             $belongs = \App\Models\CompanyUsers::where('company_id', $company_id)
                 ->where('user_id', auth()->id())
                 ->exists();
-            if (!$belongs) {
+            if (! $belongs) {
                 abort(403);
             }
             $data['company_id'] = $company_id;
@@ -62,6 +62,7 @@ class ProjectController extends Controller
         $data['user_id'] = auth()->id();
 
         Project::create($data);
+
         return redirect()->route('projects.index')->with('success', 'Project created successfully');
     }
 
@@ -71,12 +72,12 @@ class ProjectController extends Controller
     public function show(Project $project)
     {
         $user_id = auth()->id();
-        
+
         if ($project->company_id === null) {
             if ($project->user_id !== $user_id) {
                 abort(403);
             }
-            
+
             $project->load(['tasks' => function ($query) {
                 $query->orderByRaw('due_date IS NULL, due_date ASC')->orderBy('priority', 'desc');
             }, 'tasks.assignedUser']);
@@ -87,7 +88,7 @@ class ProjectController extends Controller
                 ->where('user_id', $user_id)
                 ->first();
 
-            if (!$membership) {
+            if (! $membership) {
                 abort(403);
             }
 
@@ -124,7 +125,7 @@ class ProjectController extends Controller
             $membership = \App\Models\CompanyUsers::where('company_id', $project->company_id)
                 ->where('user_id', $user_id)
                 ->exists();
-            if (!$membership) {
+            if (! $membership) {
                 abort(403);
             }
         }
@@ -150,7 +151,7 @@ class ProjectController extends Controller
             $membership = \App\Models\CompanyUsers::where('company_id', $project->company_id)
                 ->where('user_id', $user_id)
                 ->exists();
-            if (!$membership) {
+            if (! $membership) {
                 abort(403);
             }
         }
@@ -166,7 +167,7 @@ class ProjectController extends Controller
             $belongs = \App\Models\CompanyUsers::where('company_id', $company_id)
                 ->where('user_id', auth()->id())
                 ->exists();
-            if (!$belongs) {
+            if (! $belongs) {
                 abort(403);
             }
             $data['company_id'] = $company_id;
@@ -191,12 +192,13 @@ class ProjectController extends Controller
             $membership = \App\Models\CompanyUsers::where('company_id', $project->company_id)
                 ->where('user_id', $user_id)
                 ->first();
-            if (!$membership || $membership->role !== 1) {
+            if (! $membership || $membership->role !== 1) {
                 abort(403, 'Only organization admins can delete projects.');
             }
         }
 
         $project->delete();
+
         return redirect()->route('projects.index')->with('success', 'Project deleted successfully');
     }
 }

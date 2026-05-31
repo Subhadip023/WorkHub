@@ -4,21 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Models\Company;
 use Illuminate\Http\Request;
-use App\Models\CompanyUsers;
 
 class DashboardController extends Controller
 {
     /**
      * Handle the incoming request.
      */
-    public function __invoke(Request $request, Company $company = null)
+    public function __invoke(Request $request, ?Company $company = null)
     {
         $auth_user = auth()->user();
         $companyIds = $auth_user->companies()->pluck('company_id')->toArray();
 
         if ($company) {
             // Verify membership
-            if (!in_array($company->id, $companyIds)) {
+            if (! in_array($company->id, $companyIds)) {
                 abort(403, 'You are not a member of this organization.');
             }
 

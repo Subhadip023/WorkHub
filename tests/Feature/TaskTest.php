@@ -1,10 +1,8 @@
 <?php
 
-use App\Models\User;
 use App\Models\Project;
 use App\Models\Task;
-use App\Models\Company;
-use App\Models\CompanyUsers;
+use App\Models\User;
 
 it('allows authenticated user to create a task in a personal project with status and priority', function () {
     $user = User::factory()->create();
@@ -246,7 +244,7 @@ it('allows user to import tasks from JSON format', function () {
             'description' => 'Second imported description.',
             'status' => 3,
             'priority' => 1,
-        ]
+        ],
     ]);
 
     $response = $this->post(route('projects.tasks.import', $project), [

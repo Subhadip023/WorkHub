@@ -5,9 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Note;
 use App\Models\Project;
 use App\Models\Task;
-use App\Models\Company;
-use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class NoteController extends Controller
@@ -15,29 +14,29 @@ class NoteController extends Controller
     public function index()
     {
         $user = auth()->user();
-        
+
         $companyIds = $user->companies->pluck('company_id')->toArray();
         $projectIds = Project::whereNull('company_id')
             ->where('user_id', $user->id)
             ->orWhereIn('company_id', $companyIds)
             ->pluck('id')
             ->toArray();
-            
+
         $taskIds = Task::whereIn('project_id', $projectIds)->pluck('id')->toArray();
 
         $notes = Note::where(function ($query) use ($user, $projectIds, $taskIds, $companyIds) {
             $query->where(function ($q) use ($projectIds) {
                 $q->where('note_type', Note::TYPE_PROJECT)
-                  ->whereIn('note_type_id', $projectIds);
+                    ->whereIn('note_type_id', $projectIds);
             })->orWhere(function ($q) use ($taskIds) {
                 $q->where('note_type', Note::TYPE_TASK)
-                  ->whereIn('note_type_id', $taskIds);
+                    ->whereIn('note_type_id', $taskIds);
             })->orWhere(function ($q) use ($companyIds) {
                 $q->where('note_type', Note::TYPE_ORGANIZATION)
-                  ->whereIn('note_type_id', $companyIds);
+                    ->whereIn('note_type_id', $companyIds);
             })->orWhere(function ($q) use ($user) {
                 $q->where('note_type', Note::TYPE_PERSONAL)
-                  ->where('note_type_id', $user->id);
+                    ->where('note_type_id', $user->id);
             });
         })->latest()->paginate(10);
 
@@ -48,13 +47,13 @@ class NoteController extends Controller
     {
         $user = auth()->user();
         $companyIds = $user->companies->pluck('company_id')->toArray();
-        
-        $projects = Project::where(function($q) use ($user, $companyIds) {
+
+        $projects = Project::where(function ($q) use ($user, $companyIds) {
             $q->whereNull('company_id')
-              ->where('user_id', $user->id)
-              ->orWhereIn('company_id', $companyIds);
+                ->where('user_id', $user->id)
+                ->orWhereIn('company_id', $companyIds);
         })->get();
-            
+
         $projectIds = $projects->pluck('id')->toArray();
         $tasks = Task::whereIn('project_id', $projectIds)->get();
         $organizations = $user->companies()->with('company')->get()->pluck('company')->filter();
@@ -79,13 +78,13 @@ class NoteController extends Controller
         $user = auth()->user();
         $this->authorizeNoteAccess($note, $user);
 
-        $joyPixels = new \JoyPixels\Client();
+        $joyPixels = new \JoyPixels\Client;
         $noteDescription = $joyPixels->toImage($note->description);
 
         $pdf = Pdf::loadView('notes.pdf', compact('note', 'noteDescription'))
             ->setOption('isRemoteEnabled', true);
-        
-        return $pdf->stream(Str::slug($note->title) . '.pdf');
+
+        return $pdf->stream(Str::slug($note->title).'.pdf');
     }
 
     public function store(Request $request)
@@ -106,7 +105,7 @@ class NoteController extends Controller
         } elseif ($noteType === Note::TYPE_PROJECT) {
             $project = Project::findOrFail($noteTypeId);
             if ($project->company_id) {
-                if (!$user->companies->contains('company_id', $project->company_id)) {
+                if (! $user->companies->contains('company_id', $project->company_id)) {
                     abort(403);
                 }
             } else {
@@ -118,7 +117,7 @@ class NoteController extends Controller
             $task = Task::findOrFail($noteTypeId);
             $project = $task->project;
             if ($project->company_id) {
-                if (!$user->companies->contains('company_id', $project->company_id)) {
+                if (! $user->companies->contains('company_id', $project->company_id)) {
                     abort(403);
                 }
             } else {
@@ -127,7 +126,7 @@ class NoteController extends Controller
                 }
             }
         } elseif ($noteType === Note::TYPE_ORGANIZATION) {
-            if (!$user->companies->contains('company_id', $noteTypeId)) {
+            if (! $user->companies->contains('company_id', $noteTypeId)) {
                 abort(403);
             }
         }
@@ -154,12 +153,12 @@ class NoteController extends Controller
         $this->authorizeNoteAccess($note, $user);
 
         $companyIds = $user->companies->pluck('company_id')->toArray();
-        $projects = Project::where(function($q) use ($user, $companyIds) {
+        $projects = Project::where(function ($q) use ($user, $companyIds) {
             $q->whereNull('company_id')
-              ->where('user_id', $user->id)
-              ->orWhereIn('company_id', $companyIds);
+                ->where('user_id', $user->id)
+                ->orWhereIn('company_id', $companyIds);
         })->get();
-            
+
         $projectIds = $projects->pluck('id')->toArray();
         $tasks = Task::whereIn('project_id', $projectIds)->get();
         $organizations = $user->companies()->with('company')->get()->pluck('company')->filter();
@@ -211,7 +210,7 @@ class NoteController extends Controller
         } elseif ($noteType === Note::TYPE_PROJECT) {
             $project = Project::findOrFail($noteTypeId);
             if ($project->company_id) {
-                if (!$user->companies->contains('company_id', $project->company_id)) {
+                if (! $user->companies->contains('company_id', $project->company_id)) {
                     abort(403);
                 }
             } else {
@@ -223,7 +222,7 @@ class NoteController extends Controller
             $task = Task::findOrFail($noteTypeId);
             $project = $task->project;
             if ($project->company_id) {
-                if (!$user->companies->contains('company_id', $project->company_id)) {
+                if (! $user->companies->contains('company_id', $project->company_id)) {
                     abort(403);
                 }
             } else {
@@ -232,7 +231,7 @@ class NoteController extends Controller
                 }
             }
         } elseif ($noteType === Note::TYPE_ORGANIZATION) {
-            if (!$user->companies->contains('company_id', $noteTypeId)) {
+            if (! $user->companies->contains('company_id', $noteTypeId)) {
                 abort(403);
             }
         }

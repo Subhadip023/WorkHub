@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\User;
-use App\Models\Project;
 use App\Models\Company;
 use App\Models\CompanyUsers;
+use App\Models\Project;
+use App\Models\User;
 
 it('allows authenticated user to create a project in personal space', function () {
     $user = User::factory()->create();
@@ -63,7 +63,7 @@ it('allows authenticated user to create a project in their organization', functi
 it('prevents authenticated user from creating a project in an organization they do not belong to', function () {
     $user = User::factory()->create();
     $otherCompany = Company::create(['name' => 'Other Org', 'slug' => 'other-org']);
-    
+
     $this->actingAs($user);
 
     $response = $this->post(route('projects.store'), [

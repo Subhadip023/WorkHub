@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\User;
 use App\Models\Company;
 use App\Models\CompanyUsers;
+use App\Models\User;
 
 it('allows authenticated user to list their companies', function () {
     $user = User::factory()->create();

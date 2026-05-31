@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\User;
 use App\Models\Company;
 use App\Models\CompanyUsers;
+use App\Models\User;
 
 it('loads public pages successfully', function () {
     $this->get('/')->assertStatus(200);

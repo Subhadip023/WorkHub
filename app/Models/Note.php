@@ -19,8 +19,11 @@ class Note extends Model
 
     // Note types constants
     const TYPE_PROJECT = 1;
+
     const TYPE_TASK = 2;
+
     const TYPE_ORGANIZATION = 3;
+
     const TYPE_PERSONAL = 4;
 
     /**

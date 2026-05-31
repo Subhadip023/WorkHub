@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\User;
 use App\Models\Company;
 use App\Models\CompanyUsers;
 use App\Models\Project;
+use App\Models\User;
 
 it('loads default dashboard successfully showing all workspaces', function () {
     $user = User::factory()->create(['email_verified_at' => now()]);

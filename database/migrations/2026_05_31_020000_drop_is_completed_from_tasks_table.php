@@ -23,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (!Schema::hasColumn('tasks', 'is_completed')) {
+        if (! Schema::hasColumn('tasks', 'is_completed')) {
             Schema::table('tasks', function (Blueprint $table) {
                 $table->boolean('is_completed')->default(false)->after('due_date');
             });

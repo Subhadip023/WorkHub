@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasColumn('notes', 'user_id')) {
+        if (! Schema::hasColumn('notes', 'user_id')) {
             Schema::table('notes', function (Blueprint $table) {
                 $table->foreignId('user_id')->nullable()->after('id')->constrained()->onDelete('cascade');
             });

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CompanyUsers;
 use App\Http\Requests\StoreCompanyUsersRequest;
 use App\Http\Requests\UpdateCompanyUsersRequest;
+use App\Models\CompanyUsers;
 
 class CompanyUsersController extends Controller
 {

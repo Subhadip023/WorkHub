@@ -10,7 +10,7 @@ class CompanyUsers extends Model
     /** @use HasFactory<\Database\Factories\CompanyUsersFactory> */
     use HasFactory;
 
-    protected $fillable = ['role','company_id','user_id'];
+    protected $fillable = ['role', 'company_id', 'user_id'];
 
     public function company()
     {
