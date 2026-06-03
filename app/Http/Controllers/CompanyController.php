@@ -149,7 +149,7 @@ class CompanyController extends Controller
                 session(['current_company_id' => 'personal']);
             }
 
-            return redirect()->route('dashboard')->with('success', 'Organization deleted successfully');
+            return redirect()->route('companies.index')->with('success', 'Organization deleted successfully');
         }
 
         return redirect()->route('companies.index')->with('success', 'Organization deleted successfully');
