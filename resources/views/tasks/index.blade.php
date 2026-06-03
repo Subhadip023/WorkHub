@@ -20,7 +20,7 @@
 <!-- Page Heading -->
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <h1 class="h3 mb-0 text-gray-800 font-weight-bold">Tasks</h1>
-    <button class="btn btn-primary shadow-sm" data-toggle="modal" data-target="#addTaskModal">
+    <button class="btn btn-primary shadow-sm" id="btnShowInlineAdd">
         <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Add Task
     </button>
 </div>
@@ -173,6 +173,67 @@
                     </tr>
                 </thead>
                 <tbody>
+                    <!-- Notion-like Inline Add Row -->
+                    <tr id="inlineAddRow" style="display: none; background-color: rgba(78, 115, 223, 0.05);">
+                        <td class="text-center align-middle">
+                            <i class="far fa-square fa-2x text-gray-300"></i>
+                        </td>
+                        <td class="align-middle">
+                            <input type="text" id="inline_title" name="title" form="inlineAddTaskForm" class="form-control form-control-sm font-weight-bold mb-1" placeholder="What needs to be done? (Press Enter to save)" required>
+                        </td>
+                        <td class="align-middle d-none d-md-table-cell">
+                            <select name="type" form="inlineAddTaskForm" class="form-control form-control-sm">
+                                <option value="1" selected>Task</option>
+                                <option value="2">Bug</option>
+                                <option value="3">Feature</option>
+                                <option value="4">Improvement</option>
+                            </select>
+                        </td>
+                        <td class="align-middle d-none d-md-table-cell">
+                            <select name="project_id" form="inlineAddTaskForm" class="form-control form-control-sm" required>
+                                <option value="">-- Select Project --</option>
+                                @foreach($projects as $proj)
+                                    <option value="{{ $proj->id }}" {{ request('project') == $proj->id ? 'selected' : '' }}>{{ $proj->name }}</option>
+                                @endforeach
+                            </select>
+                        </td>
+                        <td class="align-middle d-none d-md-table-cell">
+                            <select name="assigned_to" form="inlineAddTaskForm" class="form-control form-control-sm">
+                                <option value="">-- Unassigned --</option>
+                                @foreach($companyUsers as $user)
+                                    <option value="{{ $user->id }}" {{ $user->id == auth()->id() ? 'selected' : '' }}>{{ $user->name }}</option>
+                                @endforeach
+                            </select>
+                        </td>
+                        <td class="align-middle d-none d-md-table-cell">
+                            <input type="date" name="due_date" form="inlineAddTaskForm" class="form-control form-control-sm">
+                        </td>
+                        <td class="align-middle d-none d-md-table-cell">
+                            <select name="status" form="inlineAddTaskForm" class="form-control form-control-sm">
+                                <option value="1" selected>To Do</option>
+                                <option value="2">In Progress</option>
+                                <option value="3">Completed</option>
+                                <option value="4">On Hold</option>
+                            </select>
+                        </td>
+                        <td class="align-middle d-none d-md-table-cell">
+                            <select name="priority" form="inlineAddTaskForm" class="form-control form-control-sm">
+                                <option value="1">Low</option>
+                                <option value="2" selected>Medium</option>
+                                <option value="3">High</option>
+                                <option value="4">Urgent</option>
+                            </select>
+                        </td>
+                        <td class="text-center align-middle">
+                            <button type="submit" form="inlineAddTaskForm" class="btn btn-sm btn-success shadow-sm" title="Save Todo">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-secondary shadow-sm ml-1" id="cancelInlineAdd" title="Cancel">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </td>
+                    </tr>
+
                     @foreach($tasks as $task)
                         @php
                             $canMutate = false;
@@ -380,87 +441,9 @@
     </div>
 </div>
 
-{{-- Add Task Modal --}}
-<div class="modal fade" id="addTaskModal" tabindex="-1" role="dialog" aria-labelledby="addTaskModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title text-primary font-weight-bold" id="addTaskModalLabel">Add New Task</h5>
-                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">×</span>
-                </button>
-            </div>
-            <form action="{{ route('tasks.store') }}" method="POST">
-                @csrf
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label for="project_id" class="font-weight-bold text-gray-700">Project <span class="text-danger">*</span></label>
-                        <select class="form-control" id="project_id" name="project_id" required>
-                            <option value="">-- Select Project --</option>
-                            @foreach($projects as $project)
-                                <option value="{{ $project->id }}">{{ $project->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="task_title" class="font-weight-bold text-gray-700">Task Title <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="task_title" name="title" required placeholder="What needs to be done?">
-                    </div>
-                    <div class="form-group">
-                        <label for="task_description" class="font-weight-bold text-gray-700">Description</label>
-                        <textarea class="form-control" id="task_description" name="description" rows="3" placeholder="Add optional details..."></textarea>
-                    </div>
-                    <div class="row">
-                        <div class="form-group col-md-4">
-                            <label for="task_status" class="font-weight-bold text-gray-700">Status <span class="text-danger">*</span></label>
-                            <select class="form-control" id="task_status" name="status" required>
-                                <option value="1" selected>To Do</option>
-                                <option value="2">In Progress</option>
-                                <option value="3">Completed</option>
-                                <option value="4">On Hold</option>
-                            </select>
-                        </div>
-                        <div class="form-group col-md-4">
-                            <label for="task_priority" class="font-weight-bold text-gray-700">Priority <span class="text-danger">*</span></label>
-                            <select class="form-control" id="task_priority" name="priority" required>
-                                <option value="1">Low</option>
-                                <option value="2" selected>Medium</option>
-                                <option value="3">High</option>
-                                <option value="4">Urgent</option>
-                            </select>
-                        </div>
-                        <div class="form-group col-md-4">
-                            <label for="task_type" class="font-weight-bold text-gray-700">Type <span class="text-danger">*</span></label>
-                            <select class="form-control" id="task_type" name="type" required>
-                                <option value="1" selected>Task</option>
-                                <option value="2">Bug</option>
-                                <option value="3">Feature</option>
-                                <option value="4">Improvement</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="task_assigned_to" class="font-weight-bold text-gray-700">Assign To</label>
-                        <select class="form-control" id="task_assigned_to" name="assigned_to">
-                            <option value="">-- Unassigned --</option>
-                            @foreach($companyUsers as $user)
-                                <option value="{{ $user->id }}" {{ $user->id == auth()->id() ? 'selected' : '' }}>{{ $user->name }} ({{ $user->email }})</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="task_due_date" class="font-weight-bold text-gray-700">Due Date</label>
-                        <input type="date" class="form-control" id="task_due_date" name="due_date">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Create Task</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+        <form action="{{ route('tasks.store') }}" method="POST" id="inlineAddTaskForm" style="display:none;">
+            @csrf
+        </form>
 
 {{-- Edit Task Modal --}}
 <div class="modal fade" id="editTaskModal" tabindex="-1" role="dialog" aria-labelledby="editTaskModalLabel" aria-hidden="true">
@@ -612,6 +595,44 @@
             $('#edit_task_status').val(status);
             $('#edit_task_priority').val(priority);
             $('#edit_task_type').val(type);
+        });
+
+        // Toggle inline add row visibility
+        $('#btnShowInlineAdd').click(function(e) {
+            e.preventDefault();
+            $('#noTasksContainer').hide();
+            $('#tasksTableContainer').show();
+            $('#inlineAddRow').show();
+            $('#inline_title').focus();
+        });
+
+        // Cancel inline add
+        $('#cancelInlineAdd').click(function() {
+            $('#inlineAddRow').hide();
+            
+            // If there are no other tasks, restore the "No tasks found" state
+            var taskCount = $('#tasksTable tbody tr').length - 1; // subtract 1 for the inline row itself
+            if (taskCount <= 0) {
+                $('#tasksTableContainer').hide();
+                $('#noTasksContainer').show();
+            }
+
+            // Clear values
+            $('#inlineAddRow input').val('');
+            $('#inlineAddRow select').val('');
+            // Set default values back
+            $('#inlineAddRow select[name="type"]').val('1');
+            $('#inlineAddRow select[name="assigned_to"]').val('{{ auth()->id() }}');
+            $('#inlineAddRow select[name="status"]').val('1');
+            $('#inlineAddRow select[name="priority"]').val('2');
+        });
+
+        // Submit inline form on Enter in the title input
+        $('#inline_title').keypress(function(e) {
+            if (e.which === 13) {
+                e.preventDefault();
+                $('#inlineAddTaskForm').submit();
+            }
         });
     });
 </script>
