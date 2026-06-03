@@ -1,9 +1,11 @@
 <?php
 
+use App\Mail\InviteMember;
 use App\Models\Company;
 use App\Models\CompanyUsers;
 use App\Models\Project;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 
 it('allows authenticated user to list their companies', function () {
     $user = User::factory()->create();
@@ -313,7 +315,7 @@ it('prevents admin from removing themselves', function () {
 });
 
 it('allows company admin to invite a team member via email', function () {
-    \Illuminate\Support\Facades\Mail::fake();
+    Mail::fake();
 
     $admin = User::factory()->create();
     $company = Company::create(['name' => 'Invite Org', 'code' => 'INVT']);
@@ -334,7 +336,7 @@ it('allows company admin to invite a team member via email', function () {
     $response->assertRedirect();
     $response->assertSessionHas('success');
 
-    \Illuminate\Support\Facades\Mail::assertSent(function (\App\Mail\InviteMember $mail) {
+    Mail::assertSent(function (InviteMember $mail) {
         return $mail->hasTo('invitee@example.com') && $mail->companyName === 'Invite Org';
     });
 });

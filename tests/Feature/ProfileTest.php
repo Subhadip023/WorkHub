@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 test('profile page is displayed', function () {
     $user = User::factory()->create();
@@ -85,7 +87,7 @@ test('correct password must be provided to delete account', function () {
 });
 
 test('profile image can be uploaded', function () {
-    \Illuminate\Support\Facades\Storage::fake('public');
+    Storage::fake('public');
 
     $user = User::factory()->create();
 
@@ -94,7 +96,7 @@ test('profile image can be uploaded', function () {
         ->patch('/profile', [
             'name' => $user->name,
             'email' => $user->email,
-            'profile_image' => \Illuminate\Http\UploadedFile::fake()->image('avatar.jpg'),
+            'profile_image' => UploadedFile::fake()->image('avatar.jpg'),
         ]);
 
     $response
@@ -104,11 +106,11 @@ test('profile image can be uploaded', function () {
     $user->refresh();
 
     $this->assertNotNull($user->profile_image);
-    \Illuminate\Support\Facades\Storage::disk('public')->assertExists($user->profile_image);
+    Storage::disk('public')->assertExists($user->profile_image);
 });
 
 test('profile image can be uploaded as base64', function () {
-    \Illuminate\Support\Facades\Storage::fake('public');
+    Storage::fake('public');
 
     $user = User::factory()->create();
     $base64Image = 'data:image/png;base64,iVBORw0KGgoAAAANSAT....';
@@ -128,5 +130,5 @@ test('profile image can be uploaded as base64', function () {
     $user->refresh();
 
     $this->assertNotNull($user->profile_image);
-    \Illuminate\Support\Facades\Storage::disk('public')->assertExists($user->profile_image);
+    Storage::disk('public')->assertExists($user->profile_image);
 });

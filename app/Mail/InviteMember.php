@@ -13,9 +13,13 @@ class InviteMember extends Mailable
     use Queueable, SerializesModels;
 
     public $companyName;
+
     public $adminName;
+
     public $expiry;
+
     public $joinLink;
+
     public $customMessage;
 
     /**

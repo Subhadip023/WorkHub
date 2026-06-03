@@ -4,9 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Requests\UpdateCompanyRequest;
+use App\Mail\InviteMember;
 use App\Models\Company;
 use App\Models\CompanyUsers;
+use App\Models\Task;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class CompanyController extends Controller
 {
@@ -210,16 +214,16 @@ class CompanyController extends Controller
     /**
      * Remove a member from the company.
      */
-    public function removeMember(Company $company, \App\Models\User $user)
+    public function removeMember(Company $company, User $user)
     {
         $auth_user = auth()->user();
-        
+
         $isAdmin = CompanyUsers::where('company_id', $company->id)
             ->where('user_id', $auth_user->id)
             ->where('role', 1)
             ->exists();
 
-        if (!$isAdmin) {
+        if (! $isAdmin) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -231,12 +235,12 @@ class CompanyController extends Controller
             ->where('user_id', $user->id)
             ->first();
 
-        if (!$memberRelation) {
+        if (! $memberRelation) {
             return back()->with('error', 'Member not found in this organization.');
         }
 
         // Unassign member's tasks in this company
-        \App\Models\Task::where('assigned_to', $user->id)
+        Task::where('assigned_to', $user->id)
             ->whereHas('project', function ($query) use ($company) {
                 $query->where('company_id', $company->id);
             })
@@ -265,7 +269,7 @@ class CompanyController extends Controller
             ->where('role', 1)
             ->exists();
 
-        if (!$isAdmin) {
+        if (! $isAdmin) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -274,7 +278,7 @@ class CompanyController extends Controller
         $expiry = now()->addDays(7)->format('F d, Y h:i A'); // 7 days from now
 
         try {
-            \Illuminate\Support\Facades\Mail::to($email)->send(new \App\Mail\InviteMember(
+            Mail::to($email)->send(new InviteMember(
                 $company->name,
                 $auth_user->name,
                 $expiry,
@@ -284,7 +288,7 @@ class CompanyController extends Controller
 
             return back()->with('success', "Invitation sent successfully to {$email}.");
         } catch (\Exception $e) {
-            return back()->with('error', 'Failed to send invitation email: ' . $e->getMessage());
+            return back()->with('error', 'Failed to send invitation email: '.$e->getMessage());
         }
     }
 }
