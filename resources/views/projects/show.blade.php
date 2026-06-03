@@ -152,7 +152,7 @@
                 </thead>
                 <tbody>
                     <!-- Notion-like Inline Add Row -->
-                    <tr id="inlineAddRow" style="display: none; background-color: rgba(78, 115, 223, 0.05);">
+                    <tr id="inlineAddRow" data-user-id="{{ auth()->id() }}" style="display: none; background-color: rgba(78, 115, 223, 0.05);">
                         <td class="text-center align-middle">
                             <i class="far fa-square fa-2x text-gray-300"></i>
                         </td>
@@ -420,7 +420,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
             @empty
                 <div class="col-12 text-center py-4">
                     <p class="text-muted mb-0">No notes found for this project. Add one to document project info!</p>
@@ -437,79 +436,7 @@
     'commentableId' => $project->id
 ])
 
-{{-- Edit Task Modal --}}
-<div class="modal fade" id="editTaskModal" tabindex="-1" role="dialog" aria-labelledby="editTaskModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title text-info font-weight-bold" id="editTaskModalLabel">Edit Task</h5>
-                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">×</span>
-                </button>
-            </div>
-            <form action="" method="POST" id="editTaskForm">
-                @csrf
-                @method('PATCH')
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label for="edit_task_title" class="font-weight-bold text-gray-700">Task Title <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="edit_task_title" name="title" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit_task_description" class="font-weight-bold text-gray-700">Description</label>
-                        <textarea class="form-control" id="edit_task_description" name="description" rows="3"></textarea>
-                    </div>
-                    <div class="row">
-                        <div class="form-group col-md-4">
-                            <label for="edit_task_status" class="font-weight-bold text-gray-700">Status <span class="text-danger">*</span></label>
-                            <select class="form-control" id="edit_task_status" name="status" required>
-                                <option value="1">To Do</option>
-                                <option value="2">In Progress</option>
-                                <option value="3">Completed</option>
-                                <option value="4">On Hold</option>
-                            </select>
-                        </div>
-                        <div class="form-group col-md-4">
-                            <label for="edit_task_priority" class="font-weight-bold text-gray-700">Priority <span class="text-danger">*</span></label>
-                            <select class="form-control" id="edit_task_priority" name="priority" required>
-                                <option value="1">Low</option>
-                                <option value="2">Medium</option>
-                                <option value="3">High</option>
-                                <option value="4">Urgent</option>
-                            </select>
-                        </div>
-                        <div class="form-group col-md-4">
-                            <label for="edit_task_type" class="font-weight-bold text-gray-700">Type <span class="text-danger">*</span></label>
-                            <select class="form-control" id="edit_task_type" name="type" required>
-                                <option value="1">Task</option>
-                                <option value="2">Bug</option>
-                                <option value="3">Feature</option>
-                                <option value="4">Improvement</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit_task_assigned_to" class="font-weight-bold text-gray-700">Assign To</label>
-                        <select class="form-control" id="edit_task_assigned_to" name="assigned_to">
-                            <option value="">-- Unassigned --</option>
-                            @foreach($companyUsers as $user)
-                                <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit_task_due_date" class="font-weight-bold text-gray-700">Due Date</label>
-                        <input type="date" class="form-control" id="edit_task_due_date" name="due_date">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-info">Save Changes</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+@include('partials.edit_task_modal')
 
 {{-- Import JSON Modal --}}
 <div class="modal fade" id="importJsonModal" tabindex="-1" role="dialog" aria-labelledby="importJsonModalLabel" aria-hidden="true">
@@ -550,70 +477,14 @@
         </div>
     </div>
 </div>
+
 @endsection
 
 @push('scripts')
+<script src="{{ asset('asset/js/tasks.js') }}"></script>
 <script>
     $(document).ready(function() {
-        var applyFilter;
-        // Toggle inline add row visibility
-        $('#btnShowInlineAdd').click(function(e) {
-            e.preventDefault();
-            $('#noTasksContainer').hide();
-            $('#tasksTableContainer').show();
-            $('#inlineAddRow').show();
-            $('#inline_title').focus();
-        });
-
-        // Cancel inline add
-        $('#cancelInlineAdd').click(function() {
-            $('#inlineAddRow').hide();
-            
-            if (typeof applyFilter === 'function') {
-                applyFilter();
-            } else {
-                // If there are no other tasks, restore the "No tasks found" state
-                var taskCount = $('#tasksTable tbody tr').length - 1; // subtract 1 for the inline row itself
-                if (taskCount <= 0) {
-                    $('#tasksTableContainer').hide();
-                    $('#noTasksContainer').show();
-                }
-            }
-
-            // Clear values
-            $('#inlineAddRow input').val('');
-            $('#inlineAddRow select').val('{{ auth()->id() }}');
-        });
-
-        // Submit inline form on Enter in the title input
-        $('#inline_title').keypress(function(e) {
-            if (e.which === 13) {
-                e.preventDefault();
-                $('#inlineAddTaskForm').submit();
-            }
-        });
-
-        // Populate edit modal values
-        $('.edit-task-btn').click(function() {
-            var id = $(this).data('id');
-            var title = $(this).data('title');
-            var description = $(this).data('description');
-            var due_date = $(this).data('due_date');
-            var assigned_to = $(this).data('assigned_to');
-            var status = $(this).data('status');
-            var priority = $(this).data('priority');
-            var type = $(this).data('type');
-            var action = $(this).data('action');
-
-            $('#editTaskForm').attr('action', action);
-            $('#edit_task_title').val(title);
-            $('#edit_task_description').val(description);
-            $('#edit_task_due_date').val(due_date);
-            $('#edit_task_assigned_to').val(assigned_to);
-            $('#edit_task_status').val(status);
-            $('#edit_task_priority').val(priority);
-            $('#edit_task_type').val(type);
-        });
+        // Edit task modal populating is handled in the partial
 
         // Toggle Completed Tasks filtering logic
         var toggleCheckbox = document.getElementById('toggleCompletedTasks');
@@ -622,7 +493,7 @@
             var showCompleted = localStorage.getItem('showCompletedTasks') === 'true';
             toggleCheckbox.checked = showCompleted;
 
-            applyFilter = function() {
+            window.applyFilter = function() {
                 var show = toggleCheckbox.checked;
                 localStorage.setItem('showCompletedTasks', show);
                 
@@ -671,10 +542,10 @@
                 }
             };
 
-            toggleCheckbox.addEventListener('change', applyFilter);
+            toggleCheckbox.addEventListener('change', window.applyFilter);
 
             // Initial run
-            applyFilter();
+            window.applyFilter();
         }
     });
 </script>
