@@ -8,9 +8,7 @@ use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
-    public function __construct(private readonly NotificationService $notificationService)
-    {
-    }
+    public function __construct(private readonly NotificationService $notificationService) {}
 
     /**
      * Display a listing of unread notifications for the authenticated user.

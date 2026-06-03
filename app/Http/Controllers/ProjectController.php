@@ -10,10 +10,7 @@ use App\Services\NotificationService;
 
 class ProjectController extends Controller
 {
-    public function __construct(private readonly NotificationService $notificationService)
-    {
-    }
-
+    public function __construct(private readonly NotificationService $notificationService) {}
 
     public function index()
     {

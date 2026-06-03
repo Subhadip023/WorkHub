@@ -11,7 +11,7 @@ class NotificationService
     /**
      * Send/create a new notification for a user.
      *
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     public function send(
         User $user,

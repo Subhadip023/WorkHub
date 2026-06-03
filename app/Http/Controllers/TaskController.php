@@ -13,9 +13,7 @@ use Illuminate\Support\Facades\Storage;
 
 class TaskController extends Controller
 {
-    public function __construct(private readonly NotificationService $notificationService)
-    {
-    }
+    public function __construct(private readonly NotificationService $notificationService) {}
 
     /**
      * Display a listing of the resource.
@@ -278,7 +276,7 @@ class TaskController extends Controller
         if ($task->due_date !== $oldDueDate) {
             $assignee = $task->assignedUser ?? User::find($task->assigned_to);
             if ($assignee) {
-                $message = $task->due_date 
+                $message = $task->due_date
                     ? "The deadline for task '{$task->title}' has been set/updated to {$task->due_date}."
                     : "The deadline for task '{$task->title}' has been removed.";
 

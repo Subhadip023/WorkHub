@@ -1,8 +1,12 @@
 <?php
 
 use App\Models\Company;
+use App\Models\CompanyUsers;
 use App\Models\Notification;
+use App\Models\Project;
+use App\Models\Task;
 use App\Models\User;
+use App\Services\NotificationService;
 
 it('can create a notification and persist it to database', function () {
     $user = User::factory()->create();
@@ -65,7 +69,7 @@ it('supports marking notifications as read', function () {
 });
 
 it('correctly uses NotificationService to manage notifications', function () {
-    $service = new \App\Services\NotificationService();
+    $service = new NotificationService;
     $user = User::factory()->create();
     $company = Company::factory()->create();
 
@@ -122,7 +126,7 @@ it('sends notifications when a project is created', function () {
     $user = User::factory()->create();
     $company = Company::factory()->create();
     // Add user to company
-    \App\Models\CompanyUsers::create([
+    CompanyUsers::create([
         'company_id' => $company->id,
         'user_id' => $user->id,
         'role' => 1,
@@ -148,7 +152,7 @@ it('sends notifications when a project is created', function () {
     // Since user was the only member, we won't notify anyone else in the organization.
     // Let's add another member to test notifications are sent to others.
     $otherUser = User::factory()->create();
-    \App\Models\CompanyUsers::create([
+    CompanyUsers::create([
         'company_id' => $company->id,
         'user_id' => $otherUser->id,
         'role' => 0,
@@ -177,18 +181,18 @@ it('sends notifications when a task is created or its deadline is updated', func
     $assignee = User::factory()->create();
     $company = Company::factory()->create();
 
-    \App\Models\CompanyUsers::create([
+    CompanyUsers::create([
         'company_id' => $company->id,
         'user_id' => $user->id,
         'role' => 1,
     ]);
-    \App\Models\CompanyUsers::create([
+    CompanyUsers::create([
         'company_id' => $company->id,
         'user_id' => $assignee->id,
         'role' => 0,
     ]);
 
-    $project = \App\Models\Project::create([
+    $project = Project::create([
         'name' => 'Company Project',
         'slug' => 'company-project',
         'description' => 'Project description',
@@ -210,7 +214,7 @@ it('sends notifications when a task is created or its deadline is updated', func
     ]);
     $response->assertRedirect();
 
-    $task = \App\Models\Task::where('title', 'Task A')->firstOrFail();
+    $task = Task::where('title', 'Task A')->firstOrFail();
 
     $this->assertDatabaseHas('notifications', [
         'user_id' => $assignee->id,
@@ -240,14 +244,14 @@ it('provides endpoints to fetch and mark notifications as read', function () {
     $user = User::factory()->create();
     $company = Company::factory()->create();
     // Add user to company
-    \App\Models\CompanyUsers::create([
+    CompanyUsers::create([
         'company_id' => $company->id,
         'user_id' => $user->id,
         'role' => 1,
     ]);
 
     // Create a couple of notifications for this user and company
-    $service = new \App\Services\NotificationService();
+    $service = new NotificationService;
     $notif1 = $service->send($user, 'task_created', 'Task 1 Created', 'Desc 1', $company->id);
     $notif2 = $service->send($user, 'task_created', 'Task 2 Created', 'Desc 2', $company->id);
 
@@ -294,18 +298,18 @@ it('sends notifications on all task CRUD events including status, priority, assi
     $assignee = User::factory()->create();
     $company = Company::factory()->create();
 
-    \App\Models\CompanyUsers::create([
+    CompanyUsers::create([
         'company_id' => $company->id,
         'user_id' => $user->id,
         'role' => 1,
     ]);
-    \App\Models\CompanyUsers::create([
+    CompanyUsers::create([
         'company_id' => $company->id,
         'user_id' => $assignee->id,
         'role' => 0,
     ]);
 
-    $project = \App\Models\Project::create([
+    $project = Project::create([
         'name' => 'Company Project 2',
         'slug' => 'company-project-2',
         'description' => 'Project description 2',
@@ -316,7 +320,7 @@ it('sends notifications on all task CRUD events including status, priority, assi
         'company_id' => $company->id,
     ]);
 
-    $task = \App\Models\Task::create([
+    $task = Task::create([
         'project_id' => $project->id,
         'title' => 'Task B',
         'description' => 'Initial desc',
@@ -373,7 +377,7 @@ it('sends notifications on all task CRUD events including status, priority, assi
 
     // 4. Update assignee
     $anotherAssignee = User::factory()->create();
-    \App\Models\CompanyUsers::create([
+    CompanyUsers::create([
         'company_id' => $company->id,
         'user_id' => $anotherAssignee->id,
         'role' => 0,
