@@ -2,6 +2,7 @@
 
 use App\Models\Company;
 use App\Models\CompanyUsers;
+use App\Models\Project;
 use App\Models\User;
 
 it('allows authenticated user to list their companies', function () {
@@ -154,4 +155,57 @@ it('allows user to switch back to personal space', function () {
     $response = $this->get(route('personal.switch'));
     $response->assertRedirect(route('dashboard'));
     expect(session('current_company_id'))->toBe('personal');
+});
+
+it('displays the company show page with correct member task counts', function () {
+    $user = User::factory()->create();
+    $company = Company::create(['name' => 'Metrics Org', 'code' => 'METR']);
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $user->id,
+        'role' => 1,
+    ]);
+
+    $project = Project::create([
+        'name' => 'Company Project',
+        'slug' => 'company-project',
+        'company_id' => $company->id,
+        'user_id' => $user->id,
+    ]);
+
+    // Task 1: Completed (status 3)
+    $project->tasks()->create([
+        'title' => 'Completed Task',
+        'assigned_to' => $user->id,
+        'status' => 3,
+    ]);
+
+    // Task 2: Pending (status 1)
+    $project->tasks()->create([
+        'title' => 'Pending Task',
+        'assigned_to' => $user->id,
+        'status' => 1,
+    ]);
+
+    // Create another company and a task in it (should not be counted)
+    $otherCompany = Company::create(['name' => 'Other Org', 'code' => 'OTHR']);
+    $otherProject = Project::create([
+        'name' => 'Other Project',
+        'slug' => 'other-project',
+        'company_id' => $otherCompany->id,
+        'user_id' => $user->id,
+    ]);
+    $otherProject->tasks()->create([
+        'title' => 'Other Task',
+        'assigned_to' => $user->id,
+        'status' => 3,
+    ]);
+
+    $this->actingAs($user);
+    $response = $this->get(route('companies.show', $company));
+
+    $response->assertStatus(200);
+    // It should display '1/2' (1 completed out of 2 total)
+    $response->assertSee('1/2');
+    $response->assertSee('50%');
 });

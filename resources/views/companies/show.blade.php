@@ -69,6 +69,7 @@
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Role</th>
+                                <th>Tasks</th>
                                 <th>Joined</th>
                             </tr>
                         </thead>
@@ -92,6 +93,36 @@
                                             <span class="badge badge-secondary"><i class="fas fa-user mr-1"></i>Member</span>
                                         @endif
                                     </td>
+                                    <td class="align-middle">
+                                        <div class="d-flex align-items-center" style="min-width: 150px;">
+                                            <span class="mr-2 font-weight-bold text-gray-800" style="font-size: 0.85rem;">{{ $member->completed_tasks_count }}/{{ $member->total_tasks_count }}</span>
+                                            @if($member->total_tasks_count > 0)
+                                                @php
+                                                    $percentage = round(($member->completed_tasks_count / $member->total_tasks_count) * 100);
+                                                    $barClass = 'bg-danger';
+                                                    if ($percentage >= 80) {
+                                                        $barClass = 'bg-success';
+                                                    } elseif ($percentage >= 50) {
+                                                        $barClass = 'bg-primary';
+                                                    } elseif ($percentage >= 20) {
+                                                        $barClass = 'bg-info';
+                                                    }
+                                                @endphp
+                                                <div class="progress progress-sm flex-grow-1 mr-2" style="height: 6px;">
+                                                    <div class="progress-bar {{ $barClass }}" role="progressbar" 
+                                                         style="width: {{ $percentage }}%" aria-valuenow="{{ $percentage }}" 
+                                                         aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+                                                <span class="text-xs text-gray-600 font-weight-bold">{{ $percentage }}%</span>
+                                            @else
+                                                <div class="progress progress-sm flex-grow-1 mr-2" style="height: 6px; background-color: #eaecf4;">
+                                                    <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                                </div>
+                                                <span class="text-xs text-gray-400 font-weight-bold">0%</span>
+                                            @endif
+                                        </div>
+                                    </td>
+    
                                     <td class="align-middle text-muted small">{{ $member->created_at->diffForHumans() }}</td>
                                 </tr>
                             @endforeach

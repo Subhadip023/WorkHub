@@ -73,9 +73,14 @@ class CompanyController extends Controller
             abort(403, 'Unauthorized.');
         }
 
-        // Load members
+        // Load members with company-scoped task counts
         $members = CompanyUsers::where('company_id', $company->id)
             ->with('user')
+            ->withCount([
+                'pendingTasks as pending_tasks_count',
+                'completedTasks as completed_tasks_count',
+                'totalTasks as total_tasks_count',
+            ])
             ->get();
 
         // Load comments

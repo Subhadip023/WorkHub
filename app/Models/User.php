@@ -71,4 +71,19 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(Notification::class);
     }
+
+    public function tasks(): HasMany
+    {
+        return $this->hasMany(Task::class, 'assigned_to');
+    }
+
+    public function pendingTasksCount(): int
+    {
+        return $this->tasks()->where('status', 'pending')->count();
+    }
+
+    public function completedTasksCount(): int
+    {
+        return $this->tasks()->where('status', 'completed')->count();
+    }
 }
