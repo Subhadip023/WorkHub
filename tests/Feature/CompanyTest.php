@@ -209,3 +209,132 @@ it('displays the company show page with correct member task counts', function ()
     $response->assertSee('1/2');
     $response->assertSee('50%');
 });
+
+it('allows company admin to remove a member and unassign their tasks', function () {
+    $admin = User::factory()->create();
+    $member = User::factory()->create();
+    $company = Company::create(['name' => 'Test Org', 'code' => 'TEST']);
+
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $admin->id,
+        'role' => 1, // Admin
+    ]);
+
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $member->id,
+        'role' => 0, // Member
+    ]);
+
+    $project = Project::create([
+        'name' => 'Project',
+        'slug' => 'project',
+        'company_id' => $company->id,
+        'user_id' => $admin->id,
+    ]);
+
+    $task = $project->tasks()->create([
+        'title' => 'Assigned Task',
+        'assigned_to' => $member->id,
+        'status' => 1,
+    ]);
+
+    $this->actingAs($admin);
+
+    $response = $this->delete(route('companies.members.destroy', [$company, $member]));
+
+    $response->assertRedirect();
+    $this->assertDatabaseMissing('company_users', [
+        'company_id' => $company->id,
+        'user_id' => $member->id,
+    ]);
+
+    $this->assertDatabaseHas('tasks', [
+        'id' => $task->id,
+        'assigned_to' => null,
+    ]);
+});
+
+it('prevents non-admin from removing a member', function () {
+    $admin = User::factory()->create();
+    $member1 = User::factory()->create();
+    $member2 = User::factory()->create();
+    $company = Company::create(['name' => 'Test Org', 'code' => 'TEST']);
+
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $admin->id,
+        'role' => 1,
+    ]);
+
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $member1->id,
+        'role' => 0,
+    ]);
+
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $member2->id,
+        'role' => 0,
+    ]);
+
+    $this->actingAs($member1);
+
+    $response = $this->delete(route('companies.members.destroy', [$company, $member2]));
+
+    $response->assertStatus(403);
+    $this->assertDatabaseHas('company_users', [
+        'company_id' => $company->id,
+        'user_id' => $member2->id,
+    ]);
+});
+
+it('prevents admin from removing themselves', function () {
+    $admin = User::factory()->create();
+    $company = Company::create(['name' => 'Test Org', 'code' => 'TEST']);
+
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $admin->id,
+        'role' => 1,
+    ]);
+
+    $this->actingAs($admin);
+
+    $response = $this->delete(route('companies.members.destroy', [$company, $admin]));
+
+    $response->assertRedirect();
+    $this->assertDatabaseHas('company_users', [
+        'company_id' => $company->id,
+        'user_id' => $admin->id,
+    ]);
+});
+
+it('allows company admin to invite a team member via email', function () {
+    \Illuminate\Support\Facades\Mail::fake();
+
+    $admin = User::factory()->create();
+    $company = Company::create(['name' => 'Invite Org', 'code' => 'INVT']);
+
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $admin->id,
+        'role' => 1, // Admin
+    ]);
+
+    $this->actingAs($admin);
+
+    $response = $this->post(route('companies.invite', $company), [
+        'email' => 'invitee@example.com',
+        'message' => 'Join our awesome team!',
+    ]);
+
+    $response->assertRedirect();
+    $response->assertSessionHas('success');
+
+    \Illuminate\Support\Facades\Mail::assertSent(function (\App\Mail\InviteMember $mail) {
+        return $mail->hasTo('invitee@example.com') && $mail->companyName === 'Invite Org';
+    });
+});

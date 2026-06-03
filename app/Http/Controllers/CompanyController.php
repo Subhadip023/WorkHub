@@ -33,9 +33,6 @@ class CompanyController extends Controller
      */
     public function store(StoreCompanyRequest $request)
     {
-        if ($request->has('code')) {
-            dd($request->all());
-        }
         $name = $request->input('name');
         do {
             $code = strtoupper(substr(str_shuffle('ABCDEFGHJKLMNPQRSTUVWXYZ23456789'), 0, 4));
@@ -86,7 +83,12 @@ class CompanyController extends Controller
         // Load comments
         $comments = $company->comments()->with('user')->latest()->get();
 
-        return view('companies.show', compact('company', 'members', 'comments'));
+        $isAdmin = CompanyUsers::where('company_id', $company->id)
+            ->where('user_id', $user->id)
+            ->where('role', 1)
+            ->exists();
+
+        return view('companies.show', compact('company', 'members', 'comments', 'isAdmin'));
     }
 
     /**
@@ -203,5 +205,86 @@ class CompanyController extends Controller
         session(['current_company_id' => 'personal']);
 
         return redirect()->route('dashboard')->with('success', 'Switched to Personal Space');
+    }
+
+    /**
+     * Remove a member from the company.
+     */
+    public function removeMember(Company $company, \App\Models\User $user)
+    {
+        $auth_user = auth()->user();
+        
+        $isAdmin = CompanyUsers::where('company_id', $company->id)
+            ->where('user_id', $auth_user->id)
+            ->where('role', 1)
+            ->exists();
+
+        if (!$isAdmin) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($auth_user->id == $user->id) {
+            return back()->with('error', 'You cannot remove yourself from the organization.');
+        }
+
+        $memberRelation = CompanyUsers::where('company_id', $company->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$memberRelation) {
+            return back()->with('error', 'Member not found in this organization.');
+        }
+
+        // Unassign member's tasks in this company
+        \App\Models\Task::where('assigned_to', $user->id)
+            ->whereHas('project', function ($query) use ($company) {
+                $query->where('company_id', $company->id);
+            })
+            ->update(['assigned_to' => null]);
+
+        $memberRelation->delete();
+
+        return back()->with('success', 'Member removed successfully.');
+    }
+
+    /**
+     * Invite a new member to the company.
+     */
+    public function invite(Request $request, Company $company)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'message' => 'nullable|string|max:1000',
+        ]);
+
+        $auth_user = auth()->user();
+
+        // Verify current user is admin of this company
+        $isAdmin = CompanyUsers::where('company_id', $company->id)
+            ->where('user_id', $auth_user->id)
+            ->where('role', 1)
+            ->exists();
+
+        if (!$isAdmin) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $email = $request->input('email');
+        $customMessage = $request->input('message');
+        $expiry = now()->addDays(7)->format('F d, Y h:i A'); // 7 days from now
+
+        try {
+            \Illuminate\Support\Facades\Mail::to($email)->send(new \App\Mail\InviteMember(
+                $company->name,
+                $auth_user->name,
+                $expiry,
+                route('companies.index', ['code' => $company->code]),
+                $customMessage
+            ));
+
+            return back()->with('success', "Invitation sent successfully to {$email}.");
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to send invitation email: ' . $e->getMessage());
+        }
     }
 }

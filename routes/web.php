@@ -27,6 +27,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('companies', CompanyController::class);
     Route::post('/companies/join', [CompanyController::class, 'join'])->name('companies.join');
     Route::get('/companies/{company}/switch', [CompanyController::class, 'switch'])->name('companies.switch');
+    Route::delete('/companies/{company}/members/{user}', [CompanyController::class, 'removeMember'])->name('companies.members.destroy');
+    Route::post('/companies/{company}/invite', [CompanyController::class, 'invite'])->name('companies.invite');
     Route::get('/personal/switch', [CompanyController::class, 'switchToPersonal'])->name('personal.switch');
 
     Route::resource('projects', ProjectController::class);

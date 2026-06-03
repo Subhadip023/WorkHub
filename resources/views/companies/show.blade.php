@@ -60,6 +60,11 @@
         <div class="card shadow mb-4">
             <div class="card-header py-3 d-flex justify-content-between align-items-center">
                 <h6 class="m-0 font-weight-bold text-primary">Team Members</h6>
+                @if($isAdmin)
+                    <button type="button" class="btn btn-primary btn-sm shadow-sm" data-toggle="modal" data-target="#inviteMemberModal">
+                        <i class="fas fa-user-plus fa-sm text-white-50 mr-1"></i> Invite Member
+                    </button>
+                @endif
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -71,6 +76,9 @@
                                 <th>Role</th>
                                 <th>Tasks</th>
                                 <th>Joined</th>
+                                @if($isAdmin)
+                                    <th>Actions</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -124,6 +132,24 @@
                                     </td>
     
                                     <td class="align-middle text-muted small">{{ $member->created_at->diffForHumans() }}</td>
+                                    @if($isAdmin)
+                                        <td class="align-middle text-center">
+                                            @if($member->user_id !== auth()->id())
+                                                <form action="{{ route('companies.members.destroy', [$company, $member->user]) }}" method="POST" class="d-inline remove-member-form">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" 
+                                                            class="btn btn-danger btn-sm btn-circle" 
+                                                            title="Remove Member"
+                                                            onclick="return confirm('Are you sure you want to remove this member from the organization? All their assigned tasks in this workspace will be unassigned.');">
+                                                        <i class="fas fa-user-minus"></i>
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <span class="text-muted small">N/A</span>
+                                            @endif
+                                        </td>
+                                    @endif
                                 </tr>
                             @endforeach
                         </tbody>
@@ -142,6 +168,41 @@
         ])
     </div>
 </div>
+
+<!-- Invite Member Modal -->
+@if($isAdmin)
+<div class="modal fade" id="inviteMemberModal" tabindex="-1" role="dialog" aria-labelledby="inviteMemberModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form action="{{ route('companies.invite', $company) }}" method="POST">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title text-primary font-weight-bold" id="inviteMemberModalLabel">Invite Team Member</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label for="inviteEmail" class="text-xs font-weight-bold text-gray-600 uppercase">Email Address <span class="text-danger">*</span></label>
+                        <input type="email" name="email" id="inviteEmail" class="form-control" placeholder="member@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="inviteMessage" class="text-xs font-weight-bold text-gray-600 uppercase">Personal Message (Optional)</label>
+                        <textarea name="message" id="inviteMessage" class="form-control" rows="4" placeholder="Say hello and invite them to join your workspace..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane mr-1"></i> Send Invitation
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
 @endsection
 
 @push('scripts')

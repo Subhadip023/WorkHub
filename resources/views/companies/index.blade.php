@@ -8,6 +8,59 @@
 </div>
 
 <div class="row">
+@if($companies->isEmpty())
+    <div class="col-lg-12">
+        <div class="row justify-content-center">
+            <!-- Join Organization Card -->
+            <div class="col-md-5 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Join an Organization</h6>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ route('companies.join') }}">
+                            @csrf
+                            <div class="form-group">
+                                <label for="joinCode" class="text-xs font-weight-bold text-gray-600 uppercase">Organization Code</label>
+                                <input type="text" name="code" id="joinCode" class="form-control" placeholder="Enter Code (e.g. ABCD)" value="{{ request('code') }}" required>
+                                @error('code')
+                                    <span class="text-danger small">{{ $message }}</span>
+                                @enderror
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <i class="fas fa-sign-in-alt mr-1"></i>Join Organization
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Organization Card -->
+            <div class="col-md-5 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Create an Organization</h6>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ route('companies.store') }}">
+                            @csrf
+                            <div class="form-group">
+                                <label for="createName" class="text-xs font-weight-bold text-gray-600 uppercase">Organization Name</label>
+                                <input type="text" name="name" id="createName" class="form-control" placeholder="Enter Organization Name" required>
+                                @error('name')
+                                    <span class="text-danger small">{{ $message }}</span>
+                                @enderror
+                            </div>
+                            <button type="submit" class="btn btn-success btn-block">
+                                <i class="fas fa-plus mr-1"></i>Create Organization
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@else
     <!-- Left column: list of organizations -->
     <div class="col-lg-8 mb-4">
         <div class="card shadow mb-4">
@@ -15,93 +68,85 @@
                 <h6 class="m-0 font-weight-bold text-primary">Your Organizations</h6>
             </div>
             <div class="card-body">
-                @if($companies->isEmpty())
-                    <div class="text-center py-5">
-                        <img class="img-fluid px-3 px-sm-4 mb-4" style="width: 15rem;"
-                             src="{{ asset('asset/img/undraw_factory.svg') }}" alt="...">
-                        <p class="text-gray-500">You don't belong to any organizations yet. Create one or join using a code.</p>
-                    </div>
-                @else
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover" id="companiesTable" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Invitation Code</th>
-                                    <th>Role</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($companies as $cu)
-                                    @if($cu->company)
-                                        <tr>
-                                            <td class="font-weight-bold align-middle">
-                                                <a href="{{ route('companies.show', $cu->company) }}" class="text-primary">
-                                                    {{ $cu->company->name }}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover" id="companiesTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Invitation Code</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($companies as $cu)
+                                @if($cu->company)
+                                    <tr>
+                                        <td class="font-weight-bold align-middle">
+                                            <a href="{{ route('companies.show', $cu->company) }}" class="text-primary">
+                                                {{ $cu->company->name }}
+                                            </a>
+                                        </td>
+                                        <td class="align-middle">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge badge-light p-2 font-weight-bold text-monospace mr-2" style="font-size: 0.9rem;">
+                                                    {{ $cu->company->code }}
+                                                </span>
+                                                <button class="btn btn-sm btn-link text-primary p-0 copy-code" data-code="{{ $cu->company->code }}" title="Copy Code">
+                                                    <i class="far fa-copy text-secondary"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td class="align-middle">
+                                            @if($cu->role == 1)
+                                                <span class="badge badge-success"><i class="fas fa-user-shield mr-1"></i>Admin</span>
+                                            @else
+                                                <span class="badge badge-secondary"><i class="fas fa-user mr-1"></i>Member</span>
+                                            @endif
+                                        </td>
+                                        <td class="align-middle">
+                                            @if($cu->company_id == session('current_company_id'))
+                                                <span class="badge badge-primary p-2"><i class="fas fa-check-circle mr-1"></i>Active</span>
+                                            @else
+                                                <a href="{{ route('companies.switch', $cu->company) }}" class="btn btn-outline-primary btn-sm">
+                                                    <i class="fas fa-exchange-alt mr-1"></i>Switch
                                                 </a>
-                                            </td>
-                                            <td class="align-middle">
-                                                <div class="d-flex align-items-center">
-                                                    <span class="badge badge-light p-2 font-weight-bold text-monospace mr-2" style="font-size: 0.9rem;">
-                                                        {{ $cu->company->code }}
-                                                    </span>
-                                                    <button class="btn btn-sm btn-link text-primary p-0 copy-code" data-code="{{ $cu->company->code }}" title="Copy Code">
-                                                        <i class="far fa-copy text-secondary"></i>
+                                            @endif
+                                        </td>
+                                        <td class="align-middle">
+                                            @if($cu->role == 1)
+                                                <button type="button" 
+                                                        class="btn btn-info btn-sm btn-circle edit-company-btn" 
+                                                        data-toggle="modal" 
+                                                        data-target="#editCompanyModal" 
+                                                        data-id="{{ $cu->company->id }}" 
+                                                        data-name="{{ $cu->company->name }}"
+                                                        data-url="{{ route('companies.update', $cu->company) }}"
+                                                        title="Edit Name">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                
+                                                <form action="{{ route('companies.destroy', $cu->company) }}" method="POST" class="d-inline delete-company-form">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" 
+                                                            class="btn btn-danger btn-sm btn-circle" 
+                                                            title="Delete Organization"
+                                                            onclick="return confirm('Warning: Deleting this organization will permanently remove all of its projects and tasks. This action cannot be undone. Are you sure you want to proceed?');">
+                                                        <i class="fas fa-trash"></i>
                                                     </button>
-                                                </div>
-                                            </td>
-                                            <td class="align-middle">
-                                                @if($cu->role == 1)
-                                                    <span class="badge badge-success"><i class="fas fa-user-shield mr-1"></i>Admin</span>
-                                                @else
-                                                    <span class="badge badge-secondary"><i class="fas fa-user mr-1"></i>Member</span>
-                                                @endif
-                                            </td>
-                                            <td class="align-middle">
-                                                @if($cu->company_id == session('current_company_id'))
-                                                    <span class="badge badge-primary p-2"><i class="fas fa-check-circle mr-1"></i>Active</span>
-                                                @else
-                                                    <a href="{{ route('companies.switch', $cu->company) }}" class="btn btn-outline-primary btn-sm">
-                                                        <i class="fas fa-exchange-alt mr-1"></i>Switch
-                                                    </a>
-                                                @endif
-                                            </td>
-                                            <td class="align-middle">
-                                                @if($cu->role == 1)
-                                                    <button type="button" 
-                                                            class="btn btn-info btn-sm btn-circle edit-company-btn" 
-                                                            data-toggle="modal" 
-                                                            data-target="#editCompanyModal" 
-                                                            data-id="{{ $cu->company->id }}" 
-                                                            data-name="{{ $cu->company->name }}"
-                                                            data-url="{{ route('companies.update', $cu->company) }}"
-                                                            title="Edit Name">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    
-                                                    <form action="{{ route('companies.destroy', $cu->company) }}" method="POST" class="d-inline delete-company-form">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" 
-                                                                class="btn btn-danger btn-sm btn-circle" 
-                                                                title="Delete Organization"
-                                                                onclick="return confirm('Warning: Deleting this organization will permanently remove all of its projects and tasks. This action cannot be undone. Are you sure you want to proceed?');">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </form>
-                                                @else
-                                                    <span class="text-muted small">No management actions</span>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                    @endif
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @endif
+                                                </form>
+                                            @else
+                                                <span class="text-muted small">No management actions</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endif
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -118,7 +163,7 @@
                     @csrf
                     <div class="form-group">
                         <label for="joinCode" class="text-xs font-weight-bold text-gray-600 uppercase">Organization Code</label>
-                        <input type="text" name="code" id="joinCode" class="form-control" placeholder="Enter Code (e.g. ABCD)" required>
+                        <input type="text" name="code" id="joinCode" class="form-control" placeholder="Enter Code (e.g. ABCD)" value="{{ request('code') }}" required>
                         @error('code')
                             <span class="text-danger small">{{ $message }}</span>
                         @enderror
@@ -152,6 +197,7 @@
             </div>
         </div>
     </div>
+@endif
 </div>
 
 <!-- Edit Organization Modal -->
