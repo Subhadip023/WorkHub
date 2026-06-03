@@ -6,11 +6,17 @@ use App\Models\CompanyUsers;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\TaskImage;
+use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class TaskController extends Controller
 {
+    public function __construct(private readonly NotificationService $notificationService)
+    {
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -134,7 +140,20 @@ class TaskController extends Controller
             $validated['assigned_to'] = $user_id;
         }
 
-        $project->tasks()->create($validated);
+        $task = $project->tasks()->create($validated);
+
+        // Send notification
+        $assignee = $task->assignedUser ?? User::find($task->assigned_to);
+        if ($assignee) {
+            $this->notificationService->send(
+                $assignee,
+                'task_created',
+                'Task Assigned',
+                "You have been assigned the task '{$task->title}' in project '{$project->name}'.",
+                $project->company_id,
+                ['task_id' => $task->id, 'project_id' => $project->id]
+            );
+        }
 
         return redirect()->route('tasks.index')->with('success', 'Task created successfully');
     }
@@ -172,7 +191,20 @@ class TaskController extends Controller
             $validated['assigned_to'] = $user_id;
         }
 
-        $project->tasks()->create($validated);
+        $task = $project->tasks()->create($validated);
+
+        // Send notification
+        $assignee = $task->assignedUser ?? User::find($task->assigned_to);
+        if ($assignee) {
+            $this->notificationService->send(
+                $assignee,
+                'task_created',
+                'Task Assigned',
+                "You have been assigned the task '{$task->title}' in project '{$project->name}'.",
+                $project->company_id,
+                ['task_id' => $task->id, 'project_id' => $project->id]
+            );
+        }
 
         return redirect()->route('projects.show', $project)->with('success', 'Task created successfully');
     }
@@ -236,7 +268,76 @@ class TaskController extends Controller
             'type' => 'nullable|integer|in:1,2,3,4',
         ]);
 
+        $oldDueDate = $task->due_date;
+        $oldAssigneeId = $task->assigned_to;
+        $oldStatus = $task->status;
+        $oldPriority = $task->priority;
+
         $task->update($validated);
+
+        if ($task->due_date !== $oldDueDate) {
+            $assignee = $task->assignedUser ?? User::find($task->assigned_to);
+            if ($assignee) {
+                $message = $task->due_date 
+                    ? "The deadline for task '{$task->title}' has been set/updated to {$task->due_date}."
+                    : "The deadline for task '{$task->title}' has been removed.";
+
+                $this->notificationService->send(
+                    $assignee,
+                    'task_deadline_updated',
+                    'Task Deadline Updated',
+                    $message,
+                    $task->project->company_id,
+                    ['task_id' => $task->id, 'project_id' => $task->project_id, 'due_date' => $task->due_date]
+                );
+            }
+        }
+
+        if ($task->assigned_to !== $oldAssigneeId) {
+            $newAssignee = User::find($task->assigned_to);
+            if ($newAssignee && $task->assigned_to !== auth()->id()) {
+                $this->notificationService->send(
+                    $newAssignee,
+                    'task_assigned',
+                    'Task Assigned',
+                    "You have been assigned the task '{$task->title}' in project '{$task->project->name}'.",
+                    $task->project->company_id,
+                    ['task_id' => $task->id, 'project_id' => $task->project_id]
+                );
+            }
+        }
+
+        if ($task->status !== $oldStatus) {
+            $assignee = $task->assignedUser ?? User::find($task->assigned_to);
+            if ($assignee && $task->assigned_to !== auth()->id()) {
+                $statusNames = [1 => 'To Do', 2 => 'In Progress', 3 => 'Completed', 4 => 'On Hold'];
+                $statusStr = $statusNames[$task->status] ?? 'Unknown';
+                $this->notificationService->send(
+                    $assignee,
+                    'task_status_updated',
+                    'Task Status Updated',
+                    "The status of task '{$task->title}' has been updated to '{$statusStr}'.",
+                    $task->project->company_id,
+                    ['task_id' => $task->id, 'project_id' => $task->project_id, 'status' => $task->status]
+                );
+            }
+        }
+
+        if ($task->priority !== $oldPriority) {
+            $assignee = $task->assignedUser ?? User::find($task->assigned_to);
+            if ($assignee && $task->assigned_to !== auth()->id()) {
+                $priorityNames = [1 => 'Low', 2 => 'Medium', 3 => 'High', 4 => 'Urgent'];
+                $priorityStr = $priorityNames[$task->priority] ?? 'Unknown';
+                $this->notificationService->send(
+                    $assignee,
+                    'task_priority_updated',
+                    'Task Priority Updated',
+                    "The priority of task '{$task->title}' has been set to '{$priorityStr}'.",
+                    $task->project->company_id,
+                    ['task_id' => $task->id, 'project_id' => $task->project_id, 'priority' => $task->priority]
+                );
+            }
+        }
 
         return redirect()->back()->with('success', 'Task updated successfully');
     }
@@ -247,6 +348,19 @@ class TaskController extends Controller
     public function destroy(Task $task)
     {
         $this->checkTaskOwnership($task);
+
+        // Notify assignee before deleting
+        $assignee = $task->assignedUser ?? User::find($task->assigned_to);
+        if ($assignee && $task->assigned_to !== auth()->id()) {
+            $this->notificationService->send(
+                $assignee,
+                'task_deleted',
+                'Task Deleted',
+                "The task '{$task->title}' in project '{$task->project->name}' has been deleted.",
+                $task->project->company_id,
+                ['project_id' => $task->project_id]
+            );
+        }
 
         $task->delete();
 

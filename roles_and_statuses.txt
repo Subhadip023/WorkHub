@@ -1,0 +1,23 @@
+WorkHub Roles and Statuses Guide
+
+1. Organization Member Roles (company_users table, role column)
+- 0 = User/Member: Standard team member with access to view and participate in projects/tasks within the organization.
+- 1 = Admin: Workspace owner or administrator with permissions to manage settings, invite members, and edit organization resources.
+
+2. Task Statuses (tasks table, status column)
+- 1 = To Do: Default status for newly created tasks.
+- 2 = In Progress: The task is currently being worked on.
+- 3 = Completed: The task is finished.
+- 4 = On Hold: The task is temporarily paused.
+
+3. Task Priorities (tasks table, priority column)
+- 1 = Low
+- 2 = Medium
+- 3 = High
+- 4 = Urgent
+
+4. Task Types (tasks table, type column)
+- 1 = Feature
+- 2 = Bug
+- 3 = Documentation
+- 4 = Research

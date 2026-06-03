@@ -6,12 +6,15 @@ use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\CompanyUsers;
 use App\Models\Project;
+use App\Services\NotificationService;
 
 class ProjectController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct(private readonly NotificationService $notificationService)
+    {
+    }
+
+
     public function index()
     {
         $user = auth()->user();
@@ -70,7 +73,36 @@ class ProjectController extends Controller
         }
         $data['user_id'] = auth()->id();
 
-        Project::create($data);
+        $project = Project::create($data);
+
+        // Send notification
+        if ($project->company_id) {
+            $members = CompanyUsers::where('company_id', $project->company_id)
+                ->where('user_id', '!=', auth()->id())
+                ->with('user')
+                ->get();
+            foreach ($members as $member) {
+                if ($member->user) {
+                    $this->notificationService->send(
+                        $member->user,
+                        'project_created',
+                        'New Project Created',
+                        "A new project '{$project->name}' has been created in your organization.",
+                        $project->company_id,
+                        ['project_id' => $project->id]
+                    );
+                }
+            }
+        } else {
+            $this->notificationService->send(
+                auth()->user(),
+                'project_created',
+                'New Personal Project',
+                "You created a new personal project '{$project->name}'.",
+                null,
+                ['project_id' => $project->id]
+            );
+        }
 
         return redirect()->route('projects.index')->with('success', 'Project created successfully');
     }

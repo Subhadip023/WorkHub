@@ -161,6 +161,137 @@
             $('.alert').alert('close');
         }, 3000);
     </script>
+    <script>
+        $(document).ready(function() {
+            function fetchNotifications() {
+                $.ajax({
+                    url: "{{ route('notifications.index') }}",
+                    type: "GET",
+                    dataType: "json",
+                    success: function(response) {
+                        renderNotifications(response.notifications);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Failed to fetch notifications:", error);
+                    }
+                });
+            }
+
+            function renderNotifications(notifications) {
+                var container = $('#alertsDropdownContainer');
+                var counter = $('#alertsCounter');
+                var markAllBtn = $('#markAllReadBtn');
+
+                container.empty();
+
+                if (!notifications || notifications.length === 0) {
+                    counter.hide().text('0');
+                    markAllBtn.hide();
+                    container.append('<div class="dropdown-item text-center small text-gray-500 py-3">No new notifications</div>');
+                    return;
+                }
+
+                // Show counter and mark all button
+                counter.text(notifications.length).show();
+                markAllBtn.show();
+
+                notifications.forEach(function(notif) {
+                    var iconClass = 'fa-bell';
+                    var iconBgClass = 'bg-primary';
+
+                    if (notif.type === 'project_created') {
+                        iconClass = 'fa-folder-plus';
+                        iconBgClass = 'bg-primary';
+                    } else if (notif.type === 'task_created') {
+                        iconClass = 'fa-tasks';
+                        iconBgClass = 'bg-success';
+                    } else if (notif.type === 'task_assigned') {
+                        iconClass = 'fa-user-check';
+                        iconBgClass = 'bg-info';
+                    } else if (notif.type === 'task_status_updated') {
+                        iconClass = 'fa-check-circle';
+                        iconBgClass = 'bg-info';
+                    } else if (notif.type === 'task_priority_updated') {
+                        iconClass = 'fa-exclamation-circle';
+                        iconBgClass = 'bg-warning';
+                    } else if (notif.type === 'task_deadline_updated') {
+                        iconClass = 'fa-calendar-alt';
+                        iconBgClass = 'bg-warning';
+                    } else if (notif.type === 'task_deleted') {
+                        iconClass = 'fa-trash-alt';
+                        iconBgClass = 'bg-danger';
+                    }
+
+                    var dateStr = new Date(notif.created_at).toLocaleString();
+
+                    var itemHtml = `
+                        <a class="dropdown-item d-flex align-items-center notification-item" href="#" data-id="${notif.id}">
+                            <div class="mr-3">
+                                <div class="icon-circle ${iconBgClass}">
+                                    <i class="fas ${iconClass} text-white"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="small text-gray-500">${dateStr}</div>
+                                <span class="font-weight-bold text-gray-800">${notif.title}</span>
+                                <div class="text-gray-600 small">${notif.message}</div>
+                            </div>
+                        </a>
+                    `;
+                    container.append(itemHtml);
+                });
+
+                // Click handler to mark individual notification as read
+                $('.notification-item').off('click').on('click', function(e) {
+                    e.preventDefault();
+                    var notifId = $(this).data('id');
+                    var item = $(this);
+
+                    $.ajax({
+                        url: `/notifications/${notifId}/read`,
+                        type: "PATCH",
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function() {
+                            item.fadeOut(300, function() {
+                                item.remove();
+                                fetchNotifications();
+                            });
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("Failed to mark notification as read:", error);
+                        }
+                    });
+                });
+            }
+
+            // Mark all as read click handler
+            $('#markAllReadBtn').off('click').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation(); // prevent closing dropdown instantly
+                $.ajax({
+                    url: "{{ route('notifications.readAll') }}",
+                    type: "POST",
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function() {
+                        fetchNotifications();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Failed to mark all notifications as read:", error);
+                    }
+                });
+            });
+
+            // Fetch immediately on load
+            fetchNotifications();
+
+            // Poll every 30 seconds (30000ms)
+            setInterval(fetchNotifications, 30000);
+        });
+    </script>
     @stack('scripts')
 </body>
 
