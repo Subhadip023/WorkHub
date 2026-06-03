@@ -83,3 +83,50 @@ test('correct password must be provided to delete account', function () {
 
     $this->assertNotNull($user->fresh());
 });
+
+test('profile image can be uploaded', function () {
+    \Illuminate\Support\Facades\Storage::fake('public');
+
+    $user = User::factory()->create();
+
+    $response = $this
+        ->actingAs($user)
+        ->patch('/profile', [
+            'name' => $user->name,
+            'email' => $user->email,
+            'profile_image' => \Illuminate\Http\UploadedFile::fake()->image('avatar.jpg'),
+        ]);
+
+    $response
+        ->assertSessionHasNoErrors()
+        ->assertRedirect('/profile');
+
+    $user->refresh();
+
+    $this->assertNotNull($user->profile_image);
+    \Illuminate\Support\Facades\Storage::disk('public')->assertExists($user->profile_image);
+});
+
+test('profile image can be uploaded as base64', function () {
+    \Illuminate\Support\Facades\Storage::fake('public');
+
+    $user = User::factory()->create();
+    $base64Image = 'data:image/png;base64,iVBORw0KGgoAAAANSAT....';
+
+    $response = $this
+        ->actingAs($user)
+        ->patch('/profile', [
+            'name' => $user->name,
+            'email' => $user->email,
+            'cropped_image' => 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+        ]);
+
+    $response
+        ->assertSessionHasNoErrors()
+        ->assertRedirect('/profile');
+
+    $user->refresh();
+
+    $this->assertNotNull($user->profile_image);
+    \Illuminate\Support\Facades\Storage::disk('public')->assertExists($user->profile_image);
+});

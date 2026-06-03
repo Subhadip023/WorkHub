@@ -26,13 +26,36 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $data = $request->validated();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if ($request->filled('cropped_image')) {
+            $base64_image = $request->input('cropped_image');
+            if (preg_match('/^data:image\/(\w+);base64,/', $base64_image, $type)) {
+                $image_base64 = base64_decode(substr($base64_image, strpos($base64_image, ',') + 1));
+                $image_type = strtolower($type[1]);
+                $fileName = 'profile-images/' . uniqid() . '.' . $image_type;
+                \Illuminate\Support\Facades\Storage::disk('public')->put($fileName, $image_base64);
+                if ($user->profile_image) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($user->profile_image);
+                }
+                $data['profile_image'] = $fileName;
+            }
+        } elseif ($request->hasFile('profile_image')) {
+            if ($user->profile_image) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->profile_image);
+            }
+            $path = $request->file('profile_image')->store('profile-images', 'public');
+            $data['profile_image'] = $path;
         }
 
-        $request->user()->save();
+        $user->fill($data);
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+
+        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
