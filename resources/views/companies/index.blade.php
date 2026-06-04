@@ -84,9 +84,15 @@
                                 @if($cu->company)
                                     <tr>
                                         <td class="font-weight-bold align-middle">
-                                            <a href="{{ route('companies.show', $cu->company) }}" class="text-primary">
-                                                {{ $cu->company->name }}
-                                            </a>
+                                            @if($cu->is_approved)
+                                                <a href="{{ route('companies.show', $cu->company) }}" class="text-primary">
+                                                    {{ $cu->company->name }}
+                                                </a>
+                                            @else
+                                                <span class="text-secondary" title="Pending Approval from Administrator">
+                                                    {{ $cu->company->name }} <small class="text-warning font-weight-normal">(Pending)</small>
+                                                </span>
+                                            @endif
                                         </td>
                                         <td class="align-middle">
                                             <div class="d-flex align-items-center">
@@ -106,7 +112,9 @@
                                             @endif
                                         </td>
                                         <td class="align-middle">
-                                            @if($cu->company_id == session('current_company_id'))
+                                            @if(!$cu->is_approved)
+                                                <span class="badge badge-warning p-2"><i class="fas fa-hourglass-half mr-1"></i>Pending Approval</span>
+                                            @elseif($cu->company_id == session('current_company_id'))
                                                 <span class="badge badge-primary p-2"><i class="fas fa-check-circle mr-1"></i>Active</span>
                                             @else
                                                 <a href="{{ route('companies.switch', $cu->company) }}" class="btn btn-outline-primary btn-sm">
@@ -115,7 +123,9 @@
                                             @endif
                                         </td>
                                         <td class="align-middle">
-                                            @if($cu->role == 1)
+                                            @if(!$cu->is_approved)
+                                                <span class="text-muted small">Awaiting Admin Approval</span>
+                                            @elseif($cu->role == 1)
                                                 <button type="button" 
                                                         class="btn btn-info btn-sm btn-circle edit-company-btn" 
                                                         data-toggle="modal" 

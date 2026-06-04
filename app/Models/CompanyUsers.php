@@ -13,7 +13,7 @@ class CompanyUsers extends Model
     /** @use HasFactory<CompanyUsersFactory> */
     use HasFactory;
 
-    protected $fillable = ['role', 'company_id', 'user_id'];
+    protected $fillable = ['role', 'company_id', 'user_id', 'is_approved'];
 
     /**
      * @return BelongsTo<Company, $this>

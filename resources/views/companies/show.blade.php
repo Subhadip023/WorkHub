@@ -10,13 +10,24 @@
         </a>
         <h1 class="h3 mb-0 text-gray-800">{{ $company->name }}</h1>
     </div>
-    @if(session('current_company_id') == $company->id)
-        <span class="badge badge-primary p-2"><i class="fas fa-check-circle mr-1"></i> Active Workspace</span>
-    @else
-        <a href="{{ route('companies.switch', $company) }}" class="btn btn-primary btn-sm">
-            <i class="fas fa-exchange-alt mr-1"></i> Switch to this Workspace
-        </a>
-    @endif
+    <div class="d-flex align-items-center">
+        @if(session('current_company_id') == $company->id)
+            <span class="badge badge-primary p-2 mr-3"><i class="fas fa-check-circle mr-1"></i> Active Workspace</span>
+        @else
+            <a href="{{ route('companies.switch', $company) }}" class="btn btn-primary btn-sm mr-3">
+                <i class="fas fa-exchange-alt mr-1"></i> Switch to this Workspace
+            </a>
+        @endif
+
+        @if(!$isAdmin)
+            <form action="{{ route('companies.leave', $company) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to leave this organization? All your assigned tasks in this workspace will be unassigned.');">
+                @csrf
+                <button type="submit" class="btn btn-danger btn-sm">
+                    <i class="fas fa-sign-out-alt mr-1"></i> Leave Organization
+                </button>
+            </form>
+        @endif
+    </div>
 </div>
 
 <div class="row">
@@ -157,6 +168,63 @@
                 </div>
             </div>
         </div>
+
+        @if($isAdmin && count($pendingRequests) > 0)
+            <!-- Pending Join Requests Card -->
+            <div class="card shadow mb-4 border-left-warning">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning d-flex align-items-center">
+                        <i class="fas fa-user-clock mr-2 fa-lg"></i>
+                        Pending Join Requests
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Requested</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($pendingRequests as $req)
+                                    <tr>
+                                        <td class="font-weight-bold align-middle">
+                                            <div class="d-flex align-items-center">
+                                                <div class="mr-2 rounded-circle bg-warning text-white d-flex align-items-center justify-content-center font-weight-bold" 
+                                                     style="width: 32px; height: 32px; font-size: 0.85rem;">
+                                                    {{ strtoupper(substr($req->user->name ?? 'P', 0, 1)) }}
+                                                </div>
+                                                {{ $req->user->name ?? 'Unknown User' }}
+                                            </div>
+                                        </td>
+                                        <td class="align-middle">{{ $req->user->email ?? 'N/A' }}</td>
+                                        <td class="align-middle text-muted small">{{ $req->created_at->diffForHumans() }}</td>
+                                        <td class="align-middle text-center">
+                                            <form action="{{ route('companies.reject-member-request', [$company, $req->user]) }}" method="POST" class="d-inline mr-2">
+                                                @csrf
+                                                <button type="submit" class="btn btn-outline-danger btn-sm font-weight-bold px-3">
+                                                    <i class="fas fa-times-circle mr-1"></i> Reject
+                                                </button>
+                                            </form>
+                                            <form action="{{ route('companies.approve-member', [$company, $req->user]) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <button type="submit" class="btn btn-success btn-sm font-weight-bold px-3">
+                                                    <i class="fas fa-check-circle mr-1"></i> Approve
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
 
     <!-- Right column: Discussion Board -->

@@ -30,4 +30,12 @@ class Company extends Model
     {
         return $this->hasMany(Notification::class, 'organization_id');
     }
+
+    /**
+     * @return HasMany<Project, $this>
+     */
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class);
+    }
 }

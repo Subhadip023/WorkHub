@@ -220,6 +220,15 @@
                     } else if (notif.type === 'task_deleted') {
                         iconClass = 'fa-trash-alt';
                         iconBgClass = 'bg-danger';
+                    } else if (notif.type === 'join_request') {
+                        iconClass = 'fa-user-clock';
+                        iconBgClass = 'bg-warning';
+                    } else if (notif.type === 'join_approved') {
+                        iconClass = 'fa-check-circle';
+                        iconBgClass = 'bg-success';
+                    } else if (notif.type === 'join_rejected') {
+                        iconClass = 'fa-times-circle';
+                        iconBgClass = 'bg-danger';
                     }
 
                     var dateStr = new Date(notif.created_at).toLocaleString();
@@ -292,6 +301,77 @@
             setInterval(fetchNotifications, 30000);
         });
     </script>
+
+    @if(auth()->check())
+        @php
+            $pendingInvitations = \App\Models\CompanyInvitation::where('email', auth()->user()->email)->with('company')->get();
+        @endphp
+        @if($pendingInvitations->isNotEmpty())
+            <!-- Workspace Invitations Modal -->
+            <div class="modal fade" id="invitationsModal" tabindex="-1" role="dialog" aria-labelledby="invitationsModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; overflow: hidden;">
+                        <div class="modal-header bg-gradient-primary text-white p-4">
+                            <h5 class="modal-title font-weight-bold d-flex align-items-center" id="invitationsModalLabel">
+                                <i class="fas fa-envelope-open-text mr-2 fa-lg"></i>
+                                Workspace Invitation
+                            </h5>
+                            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <p class="text-gray-700">You have been invited to join the following workspace(s). Please accept or reject to proceed:</p>
+                            <div class="list-group list-group-flush shadow-sm rounded border">
+                                @foreach($pendingInvitations as $invite)
+                                    <div class="list-group-item d-flex flex-column flex-sm-row justify-content-between align-items-sm-center p-3">
+                                        <div class="mb-3 mb-sm-0">
+                                            <h6 class="font-weight-bold text-gray-800 mb-1">
+                                                <i class="fas fa-building text-primary mr-1"></i>
+                                                {{ $invite->company->name ?? 'Organization' }}
+                                            </h6>
+                                            <span class="badge badge-light border text-monospace text-xs">
+                                                Code: {{ $invite->company->code ?? '' }}
+                                            </span>
+                                        </div>
+                                        <div class="d-flex">
+                                            <form action="{{ route('invitations.reject', $invite) }}" method="POST" class="mr-2">
+                                                @csrf
+                                                <button type="submit" class="btn btn-outline-danger btn-sm px-3 font-weight-bold">
+                                                    <i class="fas fa-times-circle mr-1"></i> Reject
+                                                </button>
+                                            </form>
+                                            <form action="{{ route('invitations.accept', $invite) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="btn btn-success btn-sm px-3 font-weight-bold">
+                                                    <i class="fas fa-check-circle mr-1"></i> Accept
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light p-3">
+                            <button type="button" class="btn btn-secondary font-weight-bold" data-dismiss="modal">Decide Later</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @push('scripts')
+            <script>
+                $(document).ready(function() {
+                    $('#invitationsModal').modal({
+                        backdrop: 'static',
+                        keyboard: false
+                    }).modal('show');
+                });
+            </script>
+            @endpush
+        @endif
+    @endif
+
     @stack('scripts')
 </body>
 

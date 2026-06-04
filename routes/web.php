@@ -27,9 +27,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('companies', CompanyController::class);
     Route::post('/companies/join', [CompanyController::class, 'join'])->name('companies.join');
     Route::get('/companies/{company}/switch', [CompanyController::class, 'switch'])->name('companies.switch');
+    Route::post('/companies/{company}/leave', [CompanyController::class, 'leave'])->name('companies.leave');
     Route::delete('/companies/{company}/members/{user}', [CompanyController::class, 'removeMember'])->name('companies.members.destroy');
+    Route::post('/companies/{company}/approve/{user}', [CompanyController::class, 'approveMember'])->name('companies.approve-member');
+    Route::post('/companies/{company}/reject-request/{user}', [CompanyController::class, 'rejectMemberRequest'])->name('companies.reject-member-request');
     Route::post('/companies/{company}/invite', [CompanyController::class, 'invite'])->name('companies.invite');
     Route::get('/personal/switch', [CompanyController::class, 'switchToPersonal'])->name('personal.switch');
+    Route::post('/invitations/{invitation}/accept', [CompanyController::class, 'acceptInvitation'])->name('invitations.accept');
+    Route::post('/invitations/{invitation}/reject', [CompanyController::class, 'rejectInvitation'])->name('invitations.reject');
 
     Route::resource('projects', ProjectController::class);
     Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');

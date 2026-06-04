@@ -54,6 +54,14 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function companies(): HasMany
     {
+        return $this->hasMany(CompanyUsers::class, 'user_id')->where('is_approved', true);
+    }
+
+    /**
+     * @return HasMany<CompanyUsers, $this>
+     */
+    public function allCompanies(): HasMany
+    {
         return $this->hasMany(CompanyUsers::class, 'user_id');
     }
 

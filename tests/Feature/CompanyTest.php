@@ -117,8 +117,16 @@ it('prevents non-admin from deleting the company', function () {
 });
 
 it('allows user to join a company using a valid code', function () {
+    $admin = User::factory()->create();
     $user = User::factory()->create();
     $company = Company::create(['name' => 'Joinable Org', 'code' => 'JOIN']);
+
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $admin->id,
+        'role' => 1,
+        'is_approved' => true,
+    ]);
 
     $this->actingAs($user);
 
@@ -126,11 +134,19 @@ it('allows user to join a company using a valid code', function () {
         'code' => 'JOIN',
     ]);
 
-    $response->assertRedirect(route('dashboard'));
+    $response->assertRedirect(route('companies.index'));
     $this->assertDatabaseHas('company_users', [
         'company_id' => $company->id,
         'user_id' => $user->id,
         'role' => 0, // Member
+        'is_approved' => false,
+    ]);
+
+    $this->assertDatabaseHas('notifications', [
+        'user_id' => $admin->id,
+        'type' => 'join_request',
+        'title' => 'New Join Request',
+        'organization_id' => $company->id,
     ]);
 });
 
@@ -339,4 +355,290 @@ it('allows company admin to invite a team member via email', function () {
     Mail::assertSent(function (InviteMember $mail) {
         return $mail->hasTo('invitee@example.com') && $mail->companyName === 'Invite Org';
     });
+});
+
+it('stores invitation in the database when company admin invites a team member', function () {
+    Mail::fake();
+
+    $admin = User::factory()->create();
+    $company = Company::create(['name' => 'Invite Org', 'code' => 'INVT']);
+
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $admin->id,
+        'role' => 1, // Admin
+    ]);
+
+    $this->actingAs($admin);
+
+    $response = $this->post(route('companies.invite', $company), [
+        'email' => 'invitee@example.com',
+        'message' => 'Join our awesome team!',
+    ]);
+
+    $response->assertRedirect();
+    $response->assertSessionHas('success');
+
+    $this->assertDatabaseHas('company_invitations', [
+        'company_id' => $company->id,
+        'email' => 'invitee@example.com',
+    ]);
+});
+
+it('prevents inviting an email that is already a member of the company', function () {
+    Mail::fake();
+
+    $admin = User::factory()->create();
+    $member = User::factory()->create(['email' => 'member@example.com']);
+    $company = Company::create(['name' => 'Invite Org', 'code' => 'INVT']);
+
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $admin->id,
+        'role' => 1, // Admin
+    ]);
+
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $member->id,
+        'role' => 0, // Member
+    ]);
+
+    $this->actingAs($admin);
+
+    $response = $this->post(route('companies.invite', $company), [
+        'email' => 'member@example.com',
+        'message' => 'Join our awesome team!',
+    ]);
+
+    $response->assertRedirect();
+    $response->assertSessionHas('error', 'User with email member@example.com is already a member of this organization.');
+
+    $this->assertDatabaseMissing('company_invitations', [
+        'company_id' => $company->id,
+        'email' => 'member@example.com',
+    ]);
+});
+
+it('renders the invitations modal on dashboard if user has pending invitations', function () {
+    $invitedUser = User::factory()->create(['email' => 'invitee@example.com']);
+    $company = Company::create(['name' => 'Invite Org', 'code' => 'INVT']);
+
+    \App\Models\CompanyInvitation::create([
+        'company_id' => $company->id,
+        'email' => 'invitee@example.com',
+    ]);
+
+    $this->actingAs($invitedUser);
+
+    $response = $this->get(route('dashboard'));
+    $response->assertStatus(200);
+    $response->assertSee('Workspace Invitation');
+    $response->assertSee('Invite Org');
+});
+
+it('allows user to accept a company invitation', function () {
+    $invitedUser = User::factory()->create(['email' => 'invitee@example.com']);
+    $company = Company::create(['name' => 'Invite Org', 'code' => 'INVT']);
+
+    $invitation = \App\Models\CompanyInvitation::create([
+        'company_id' => $company->id,
+        'email' => 'invitee@example.com',
+    ]);
+
+    $this->actingAs($invitedUser);
+
+    $response = $this->post(route('invitations.accept', $invitation));
+    $response->assertRedirect(route('dashboard'));
+
+    $this->assertDatabaseHas('company_users', [
+        'company_id' => $company->id,
+        'user_id' => $invitedUser->id,
+        'role' => 0,
+    ]);
+
+    $this->assertDatabaseMissing('company_invitations', [
+        'id' => $invitation->id,
+    ]);
+
+    expect(session('current_company_id'))->toBe($company->id);
+});
+
+it('allows user to reject a company invitation', function () {
+    $invitedUser = User::factory()->create(['email' => 'invitee@example.com']);
+    $company = Company::create(['name' => 'Invite Org', 'code' => 'INVT']);
+
+    $invitation = \App\Models\CompanyInvitation::create([
+        'company_id' => $company->id,
+        'email' => 'invitee@example.com',
+    ]);
+
+    $this->actingAs($invitedUser);
+
+    $response = $this->post(route('invitations.reject', $invitation));
+    $response->assertRedirect();
+
+    $this->assertDatabaseMissing('company_users', [
+        'company_id' => $company->id,
+        'user_id' => $invitedUser->id,
+    ]);
+
+    $this->assertDatabaseMissing('company_invitations', [
+        'id' => $invitation->id,
+    ]);
+});
+
+it('prevents user from switching context to an unapproved company', function () {
+    $user = User::factory()->create();
+    $company = Company::create(['name' => 'Pending Org', 'code' => 'PEND']);
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $user->id,
+        'role' => 0,
+        'is_approved' => false,
+    ]);
+
+    $this->actingAs($user);
+
+    $response = $this->get(route('companies.switch', $company));
+    $response->assertStatus(403);
+});
+
+it('allows company admin to approve a join request', function () {
+    $admin = User::factory()->create();
+    $user = User::factory()->create();
+    $company = Company::create(['name' => 'Join Org', 'code' => 'JOIN']);
+
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $admin->id,
+        'role' => 1, // Admin
+        'is_approved' => true,
+    ]);
+
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $user->id,
+        'role' => 0, // Member
+        'is_approved' => false, // Pending
+    ]);
+
+    $this->actingAs($admin);
+
+    $response = $this->post(route('companies.approve-member', [$company, $user]));
+    $response->assertRedirect();
+    $response->assertSessionHas('success');
+
+    $this->assertDatabaseHas('company_users', [
+        'company_id' => $company->id,
+        'user_id' => $user->id,
+        'is_approved' => true,
+    ]);
+
+    $this->assertDatabaseHas('notifications', [
+        'user_id' => $user->id,
+        'type' => 'join_approved',
+        'title' => 'Join Request Approved',
+    ]);
+});
+
+it('allows company admin to reject a join request', function () {
+    $admin = User::factory()->create();
+    $user = User::factory()->create();
+    $company = Company::create(['name' => 'Join Org', 'code' => 'JOIN']);
+
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $admin->id,
+        'role' => 1, // Admin
+        'is_approved' => true,
+    ]);
+
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $user->id,
+        'role' => 0, // Member
+        'is_approved' => false, // Pending
+    ]);
+
+    $this->actingAs($admin);
+
+    $response = $this->post(route('companies.reject-member-request', [$company, $user]));
+    $response->assertRedirect();
+    $response->assertSessionHas('info');
+
+    $this->assertDatabaseMissing('company_users', [
+        'company_id' => $company->id,
+        'user_id' => $user->id,
+    ]);
+
+    $this->assertDatabaseHas('notifications', [
+        'user_id' => $user->id,
+        'type' => 'join_rejected',
+        'title' => 'Join Request Rejected',
+    ]);
+});
+
+it('allows a member to leave the company and unassigns tasks', function () {
+    $user = User::factory()->create();
+    $company = Company::create(['name' => 'Leave Org', 'code' => 'LEAV']);
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $user->id,
+        'role' => 0, // Member
+        'is_approved' => true,
+    ]);
+
+    $project = \App\Models\Project::create([
+        'name' => 'Proj 1',
+        'slug' => 'proj-1',
+        'company_id' => $company->id,
+        'user_id' => $user->id,
+    ]);
+
+    $task = \App\Models\Task::create([
+        'title' => 'Task 1',
+        'project_id' => $project->id,
+        'assigned_to' => $user->id,
+        'status' => 1,
+        'priority' => 1,
+        'type' => 1,
+    ]);
+
+    $this->actingAs($user);
+    session(['current_company_id' => $company->id]);
+
+    $response = $this->post(route('companies.leave', $company));
+    $response->assertRedirect(route('companies.index'));
+    $response->assertSessionHas('success');
+
+    $this->assertDatabaseMissing('company_users', [
+        'company_id' => $company->id,
+        'user_id' => $user->id,
+    ]);
+
+    $task->refresh();
+    expect($task->assigned_to)->toBeNull();
+    expect(session('current_company_id'))->toBe('personal');
+});
+
+it('prevents an admin from leaving the company', function () {
+    $admin = User::factory()->create();
+    $company = Company::create(['name' => 'Admin Org', 'code' => 'ADMN']);
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $admin->id,
+        'role' => 1, // Admin
+        'is_approved' => true,
+    ]);
+
+    $this->actingAs($admin);
+
+    $response = $this->post(route('companies.leave', $company));
+    $response->assertStatus(403);
+
+    $this->assertDatabaseHas('company_users', [
+        'company_id' => $company->id,
+        'user_id' => $admin->id,
+    ]);
 });
