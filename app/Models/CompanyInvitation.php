@@ -24,10 +24,8 @@ class CompanyInvitation extends Model
 
     /**
      * Process any pending invitations for the given user.
-     *
-     * @param  User  $user
      */
-    public static function processPendingInvitations($user): void
+    public static function processPendingInvitations(?User $user): void
     {
         if (! $user) {
             return;
