@@ -2,8 +2,10 @@
 
 use App\Mail\InviteMember;
 use App\Models\Company;
+use App\Models\CompanyInvitation;
 use App\Models\CompanyUsers;
 use App\Models\Project;
+use App\Models\Task;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 
@@ -424,7 +426,7 @@ it('renders the invitations modal on dashboard if user has pending invitations',
     $invitedUser = User::factory()->create(['email' => 'invitee@example.com']);
     $company = Company::create(['name' => 'Invite Org', 'code' => 'INVT']);
 
-    \App\Models\CompanyInvitation::create([
+    CompanyInvitation::create([
         'company_id' => $company->id,
         'email' => 'invitee@example.com',
     ]);
@@ -441,7 +443,7 @@ it('allows user to accept a company invitation', function () {
     $invitedUser = User::factory()->create(['email' => 'invitee@example.com']);
     $company = Company::create(['name' => 'Invite Org', 'code' => 'INVT']);
 
-    $invitation = \App\Models\CompanyInvitation::create([
+    $invitation = CompanyInvitation::create([
         'company_id' => $company->id,
         'email' => 'invitee@example.com',
     ]);
@@ -468,7 +470,7 @@ it('allows user to reject a company invitation', function () {
     $invitedUser = User::factory()->create(['email' => 'invitee@example.com']);
     $company = Company::create(['name' => 'Invite Org', 'code' => 'INVT']);
 
-    $invitation = \App\Models\CompanyInvitation::create([
+    $invitation = CompanyInvitation::create([
         'company_id' => $company->id,
         'email' => 'invitee@example.com',
     ]);
@@ -589,14 +591,14 @@ it('allows a member to leave the company and unassigns tasks', function () {
         'is_approved' => true,
     ]);
 
-    $project = \App\Models\Project::create([
+    $project = Project::create([
         'name' => 'Proj 1',
         'slug' => 'proj-1',
         'company_id' => $company->id,
         'user_id' => $user->id,
     ]);
 
-    $task = \App\Models\Task::create([
+    $task = Task::create([
         'title' => 'Task 1',
         'project_id' => $project->id,
         'assigned_to' => $user->id,

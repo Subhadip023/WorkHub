@@ -6,9 +6,11 @@ use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Requests\UpdateCompanyRequest;
 use App\Mail\InviteMember;
 use App\Models\Company;
+use App\Models\CompanyInvitation;
 use App\Models\CompanyUsers;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -184,6 +186,7 @@ class CompanyController extends Controller
             if ($membership) {
                 if ($membership->is_approved) {
                     session(['current_company_id' => $company_id]);
+
                     return redirect()->route('dashboard')->with('info', "You are already a member of {$company->name}. Active company switched.");
                 } else {
                     return back()->with('error', "Your join request for {$company->name} is already pending approval.");
@@ -195,7 +198,7 @@ class CompanyController extends Controller
                 'company_id' => $company_id,
                 'user_id' => $user_id,
                 'role' => 0,
-                'is_approved' => false
+                'is_approved' => false,
             ]);
 
             // Notify admins
@@ -205,7 +208,7 @@ class CompanyController extends Controller
                 ->with('user')
                 ->get();
 
-            $notificationService = app(\App\Services\NotificationService::class);
+            $notificationService = app(NotificationService::class);
             foreach ($admins as $adminMember) {
                 if ($adminMember->user) {
                     $notificationService->send(
@@ -335,7 +338,7 @@ class CompanyController extends Controller
 
         try {
             // Store the invitation in the database
-            \App\Models\CompanyInvitation::updateOrCreate([
+            CompanyInvitation::updateOrCreate([
                 'company_id' => $company->id,
                 'email' => $email,
             ]);
@@ -357,7 +360,7 @@ class CompanyController extends Controller
     /**
      * Accept a company invitation.
      */
-    public function acceptInvitation(Request $request, \App\Models\CompanyInvitation $invitation)
+    public function acceptInvitation(Request $request, CompanyInvitation $invitation)
     {
         if ($invitation->email !== auth()->user()->email) {
             abort(403, 'Unauthorized action.');
@@ -387,7 +390,7 @@ class CompanyController extends Controller
     /**
      * Reject a company invitation.
      */
-    public function rejectInvitation(Request $request, \App\Models\CompanyInvitation $invitation)
+    public function rejectInvitation(Request $request, CompanyInvitation $invitation)
     {
         if ($invitation->email !== auth()->user()->email) {
             abort(403, 'Unauthorized action.');
@@ -422,7 +425,7 @@ class CompanyController extends Controller
             ->update(['is_approved' => true]);
 
         // Notify the user (sent to personal context so it is visible immediately)
-        $notificationService = app(\App\Services\NotificationService::class);
+        $notificationService = app(NotificationService::class);
         $notificationService->send(
             $user,
             'join_approved',
@@ -458,7 +461,7 @@ class CompanyController extends Controller
             ->delete();
 
         // Notify the user (sent to personal context so it is visible immediately)
-        $notificationService = app(\App\Services\NotificationService::class);
+        $notificationService = app(NotificationService::class);
         $notificationService->send(
             $user,
             'join_rejected',

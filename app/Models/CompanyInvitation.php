@@ -5,8 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\CompanyUsers;
-use App\Models\User;
 
 class CompanyInvitation extends Model
 {
@@ -27,12 +25,11 @@ class CompanyInvitation extends Model
     /**
      * Process any pending invitations for the given user.
      *
-     * @param User $user
-     * @return void
+     * @param  User  $user
      */
     public static function processPendingInvitations($user): void
     {
-        if (!$user) {
+        if (! $user) {
             return;
         }
 
