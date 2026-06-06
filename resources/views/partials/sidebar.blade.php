@@ -57,6 +57,12 @@
             <span>Organizations</span>
         </a>
     </li>
+    <li class="nav-item {{Route::currentRouteName() == 'trash.index' ? 'active' : ''}}">
+        <a class="nav-link" href="{{ route('trash.index') }}">
+            <i class="fas fa-trash-alt"></i>
+            <span>Trash Bin</span>
+        </a>
+    </li>
 
    
 

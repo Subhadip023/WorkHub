@@ -441,7 +441,7 @@
                                             data-action="{{ route('tasks.update', $task) }}">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="d-inline ml-1" onsubmit="return confirm('Are you sure you want to delete this task?');">
+                                    <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="d-inline ml-1">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger">

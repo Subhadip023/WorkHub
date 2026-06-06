@@ -217,9 +217,55 @@ it('allows user to delete a task', function () {
 
     $response = $this->delete(route('tasks.destroy', $task));
     $response->assertRedirect();
-    $this->assertDatabaseMissing('tasks', [
+    $this->assertSoftDeleted('tasks', [
         'id' => $task->id,
     ]);
+});
+
+it('redirects to the project details page if deleted from the task details page', function () {
+    $user = User::factory()->create();
+    $project = Project::create([
+        'name' => 'Personal Project',
+        'slug' => 'personal-project',
+        'theme' => '#ff0000',
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $user->id,
+        'company_id' => null,
+    ]);
+
+    $task = Task::create([
+        'title' => 'Task to delete',
+        'project_id' => $project->id,
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $user->id,
+    ]);
+
+    $this->actingAs($user);
+
+    $response = $this->from(route('tasks.show', $task))
+        ->delete(route('tasks.destroy', $task));
+
+    $response->assertRedirect(route('projects.show', $project->id));
+});
+
+it('redirects to the tasks list page if a projectless task is deleted from its details page', function () {
+    $user = User::factory()->create();
+    $task = Task::create([
+        'title' => 'Projectless Task to delete',
+        'project_id' => null,
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $user->id,
+    ]);
+
+    $this->actingAs($user);
+
+    $response = $this->from(route('tasks.show', $task))
+        ->delete(route('tasks.destroy', $task));
+
+    $response->assertRedirect(route('tasks.index'));
 });
 
 it('allows user to import tasks from JSON format', function () {
@@ -702,7 +748,7 @@ it('allows user to view, edit and delete a projectless task they own', function 
     // Delete task
     $response = $this->delete(route('tasks.destroy', $task));
     $response->assertRedirect();
-    $this->assertDatabaseMissing('tasks', [
+    $this->assertSoftDeleted('tasks', [
         'id' => $task->id,
     ]);
 });

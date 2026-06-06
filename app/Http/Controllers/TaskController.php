@@ -409,7 +409,18 @@ class TaskController extends Controller
             );
         }
 
+        $previousUrl = url()->previous();
+        $taskShowUrl = route('tasks.show', $task);
+
         $task->delete();
+
+        if ($previousUrl === $taskShowUrl || str_contains($previousUrl, "/tasks/{$task->id}")) {
+            if ($task->project_id) {
+                return redirect()->route('projects.show', $task->project_id)->with('success', 'Task deleted successfully');
+            }
+
+            return redirect()->route('tasks.index')->with('success', 'Task deleted successfully');
+        }
 
         return redirect()->back()->with('success', 'Task deleted successfully');
     }

@@ -49,18 +49,18 @@
             @php
                 $current_company = session('current_company_id');
                 $canDelete = false;
-                if ($current_company === 'personal') {
-                    $canDelete = ($project->company_id === null && $project->user_id === auth()->id());
+                if ($project->company_id === null) {
+                    $canDelete = ($project->user_id === auth()->id());
                 } else {
-                    $is_admin = \App\Models\CompanyUsers::where('company_id', $current_company)
+                    $is_admin = \App\Models\CompanyUsers::where('company_id', $project->company_id)
                         ->where('user_id', auth()->id())
                         ->where('role', 1)
                         ->exists();
-                    $canDelete = ($project->company_id == $current_company && $is_admin);
+                    $canDelete = $is_admin;
                 }
             @endphp
             @if($canDelete)
-                <form action="{{ route('projects.destroy', $project) }}" method="POST" class="d-inline ml-1" onsubmit="return confirm('Are you sure you want to delete this project? This will delete all tasks within it.');">
+                <form action="{{ route('projects.destroy', $project) }}" method="POST" class="d-inline ml-1">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-sm btn-danger shadow-sm">
@@ -353,7 +353,7 @@
                                     <a class="btn btn-sm btn-info" href="{{ route('tasks.show', $task) }}">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="d-inline ml-1" onsubmit="return confirm('Are you sure you want to delete this task?');">
+                                    <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="d-inline ml-1">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger">

@@ -142,8 +142,7 @@
                                                     @method('DELETE')
                                                     <button type="submit" 
                                                             class="btn btn-danger btn-sm btn-circle" 
-                                                            title="Delete Organization"
-                                                            onclick="return confirm('Warning: Deleting this organization will permanently remove all of its projects and tasks. This action cannot be undone. Are you sure you want to proceed?');">
+                                                            title="Delete Organization">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>

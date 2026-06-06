@@ -97,15 +97,42 @@
 
                     <!-- Actions -->
                     <div class="row no-gutters mt-2">
-                        <div class="col-6 pr-1">
-                            <a href="{{ route('projects.show', $project) }}" class="btn btn-sm btn-primary btn-block shadow-sm">
-                                <i class="fas fa-eye mr-1"></i> View Tasks
+                        <div class="col-5 pr-1">
+                            <a href="{{ route('projects.show', $project) }}" class="btn btn-sm btn-primary btn-block shadow-sm text-truncate" title="View Tasks">
+                                <i class="fas fa-eye mr-1"></i> View
                             </a>
                         </div>
-                        <div class="col-6 pl-1">
-                            <a href="{{ route('projects.edit', $project) }}" class="btn btn-sm btn-outline-info btn-block shadow-sm">
+                        <div class="col-4 px-1">
+                            <a href="{{ route('projects.edit', $project) }}" class="btn btn-sm btn-outline-info btn-block shadow-sm text-truncate" title="Edit">
                                 <i class="fas fa-edit mr-1"></i> Edit
                             </a>
+                        </div>
+                        <div class="col-3 pl-1">
+                            @php
+                                $canDelete = false;
+                                if ($project->company_id === null) {
+                                    $canDelete = ($project->user_id === auth()->id());
+                                } else {
+                                    $is_admin = \App\Models\CompanyUsers::where('company_id', $project->company_id)
+                                        ->where('user_id', auth()->id())
+                                        ->where('role', 1)
+                                        ->exists();
+                                    $canDelete = $is_admin;
+                                }
+                            @endphp
+                            @if($canDelete)
+                                <form action="{{ route('projects.destroy', $project) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger btn-block shadow-sm text-truncate" title="Delete Project">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            @else
+                                <button type="button" class="btn btn-sm btn-outline-secondary btn-block shadow-sm text-truncate disabled" title="Delete restricted" disabled>
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            @endif
                         </div>
                     </div>
                 </div>

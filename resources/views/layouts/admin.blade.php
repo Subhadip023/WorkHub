@@ -500,6 +500,89 @@
         @endif
     @endif
 
+    <!-- Universal Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow" style="border-radius: 12px; overflow: hidden;">
+                <div class="modal-header bg-danger text-white p-4">
+                    <h5 class="modal-title font-weight-bold d-flex align-items-center" id="deleteConfirmModalLabel">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        Confirm Move to Trash
+                    </h5>
+                    <button class="close text-white" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-gray-800 font-weight-bold mb-2">Are you sure you want to delete this <span id="deleteConfirmItemType">item</span>?</p>
+                    <p class="text-gray-600 mb-0" id="deleteConfirmMessage">
+                        This item will be moved to the Trash Bin for 30 days, after which it will be deleted permanently.
+                    </p>
+                </div>
+                <div class="modal-footer bg-light p-3 border-top-0">
+                    <button class="btn btn-secondary font-weight-bold" type="button" data-dismiss="modal">Cancel</button>
+                    <button class="btn btn-danger font-weight-bold" type="button" id="confirmDeleteSubmitBtn">Move to Trash</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            var formToSubmit = null;
+
+            $(document).on('submit', 'form', function(e) {
+                var action = $(this).attr('action');
+                var method = $(this).find('input[name="_method"]').val() || $(this).attr('method');
+                
+                if (action && (method === 'DELETE' || method === 'delete')) {
+                    var isTask = action.indexOf('/tasks/') !== -1;
+                    var isProject = action.indexOf('/projects/') !== -1;
+                    var isCompany = action.indexOf('/companies/') !== -1;
+
+                    var isTaskPrune = isTask && action.indexOf('/tasks/images/') === -1 && action.indexOf('/tasks/import') === -1;
+                    var isProjectPrune = isProject;
+                    var isCompanyPrune = isCompany && action.indexOf('/members/') === -1 && action.indexOf('/reject-request/') === -1 && action.indexOf('/leave') === -1;
+
+                    if (isTaskPrune || isProjectPrune || isCompanyPrune) {
+                        if (formToSubmit === this) {
+                            formToSubmit = null;
+                            return true;
+                        }
+
+                        e.preventDefault();
+                        formToSubmit = this;
+
+                        var type = '';
+                        var message = 'This item will be moved to the Trash Bin for 30 days, after which it will be deleted permanently.';
+
+                        if (isTaskPrune) {
+                            type = 'Task';
+                            message = 'This task will be moved to the Trash Bin for 30 days, after which it will be deleted permanently.';
+                        } else if (isProjectPrune) {
+                            type = 'Project';
+                            message = 'This project will be moved to the Trash Bin for 30 days, after which it and all its tasks will be deleted permanently.';
+                        } else if (isCompanyPrune) {
+                            type = 'Organization';
+                            message = 'This organization will be moved to the Trash Bin for 30 days, after which it and all its projects, tasks, and members will be deleted permanently.';
+                        }
+
+                        $('#deleteConfirmItemType').text(type);
+                        $('#deleteConfirmMessage').text(message);
+                        $('#deleteConfirmModal').modal('show');
+                    }
+                }
+            });
+
+            $('#confirmDeleteSubmitBtn').click(function() {
+                if (formToSubmit) {
+                    formToSubmit.submit();
+                }
+                $('#deleteConfirmModal').modal('hide');
+            });
+        });
+    </script>
+
     @stack('scripts')
 </body>
 

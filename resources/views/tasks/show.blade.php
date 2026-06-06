@@ -62,7 +62,7 @@
                 </button>
             </form>
             
-            <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="mr-2 mb-0" onsubmit="return confirm('Are you sure you want to delete this task?');">
+            <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="mr-2 mb-0">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-danger btn-sm shadow-sm">

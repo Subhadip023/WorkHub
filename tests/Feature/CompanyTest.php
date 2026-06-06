@@ -92,10 +92,10 @@ it('allows company admin to delete the company', function () {
     $response = $this->delete(route('companies.destroy', $company));
 
     $response->assertRedirect(route('companies.index'));
-    $this->assertDatabaseMissing('companies', [
+    $this->assertSoftDeleted('companies', [
         'id' => $company->id,
     ]);
-    $this->assertDatabaseMissing('company_users', [
+    $this->assertSoftDeleted('company_users', [
         'company_id' => $company->id,
     ]);
 });
@@ -269,7 +269,7 @@ it('allows company admin to remove a member and unassign their tasks', function 
     $response = $this->delete(route('companies.members.destroy', [$company, $member]));
 
     $response->assertRedirect();
-    $this->assertDatabaseMissing('company_users', [
+    $this->assertSoftDeleted('company_users', [
         'company_id' => $company->id,
         'user_id' => $member->id,
     ]);
@@ -576,7 +576,7 @@ it('allows company admin to reject a join request', function () {
     $response->assertRedirect();
     $response->assertSessionHas('info');
 
-    $this->assertDatabaseMissing('company_users', [
+    $this->assertSoftDeleted('company_users', [
         'company_id' => $company->id,
         'user_id' => $user->id,
     ]);
@@ -624,7 +624,7 @@ it('allows a member to leave the company and unassigns tasks', function () {
     $response->assertRedirect(route('companies.index'));
     $response->assertSessionHas('success');
 
-    $this->assertDatabaseMissing('company_users', [
+    $this->assertSoftDeleted('company_users', [
         'company_id' => $company->id,
         'user_id' => $user->id,
     ]);
