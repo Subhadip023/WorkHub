@@ -60,7 +60,7 @@
     <li class="nav-item {{Route::currentRouteName() == 'trash.index' ? 'active' : ''}}">
         <a class="nav-link" href="{{ route('trash.index') }}">
             <i class="fas fa-trash-alt"></i>
-            <span>Trash Bin</span>
+            <span>Trash</span>
         </a>
     </li>
 
