@@ -8,4 +8,4 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('trash:prune --days=30')->daily();
+Schedule::command('trash:prune --days=3')->daily();
