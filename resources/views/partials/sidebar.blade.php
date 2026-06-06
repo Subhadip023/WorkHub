@@ -18,6 +18,11 @@
         <div class="sidebar-brand-text">WorkHub</div>
     </a>
 
+    <!-- Mobile Close Button (only visible on mobile/tablet) -->
+    <button class="btn btn-link text-white d-md-none" id="sidebarCloseMobile" style="position: absolute; right: 15px; top: 15px; font-size: 1.25rem; z-index: 1060; opacity: 0.7; transition: opacity 0.2s; border: none; outline: none; box-shadow: none;">
+        <i class="fas fa-times"></i>
+    </button>
+
     <!-- Divider -->
     <hr class="sidebar-divider my-0">
 

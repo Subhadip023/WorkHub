@@ -22,9 +22,112 @@
     <link href="{{ asset('asset/css/sb-admin-2.min.css') }}" rel="stylesheet">
 
     @stack('styles')
+    
+    <!-- Custom styling for modern responsive sidebar -->
+    <style>
+        /* Mobile responsive sidebar styles */
+        @media (max-width: 767.98px) {
+            #wrapper {
+                position: relative;
+                overflow-x: hidden;
+            }
+            
+            #wrapper .sidebar {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                bottom: 0 !important;
+                z-index: 1050 !important;
+                width: 260px !important;
+                height: 100vh !important;
+                transform: translateX(-100%) !important;
+                transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2) !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+            
+            #wrapper .sidebar.toggled {
+                transform: translateX(0) !important;
+            }
+            
+            /* Sidebar items styling in mobile drawer */
+            .sidebar .sidebar-brand .sidebar-brand-text {
+                display: inline !important;
+            }
+            
+            .sidebar .nav-item .nav-link {
+                text-align: left !important;
+                width: 100% !important;
+                padding: 1rem 1.5rem !important;
+                display: flex !important;
+                align-items: center !important;
+            }
+            
+            .sidebar .nav-item .nav-link i {
+                font-size: 0.95rem !important;
+                margin-right: 0.75rem !important;
+                width: 1.5rem !important;
+                text-align: center !important;
+            }
+            
+            .sidebar .nav-item .nav-link span {
+                font-size: 0.9rem !important;
+                display: inline !important;
+            }
+            
+            /* Background backdrop */
+            .sidebar-backdrop {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background-color: rgba(15, 23, 42, 0.6); /* Modern slate/dark backdrop */
+                backdrop-filter: blur(4px);
+                -webkit-backdrop-filter: blur(4px);
+                z-index: 1040;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            
+            body.sidebar-toggled .sidebar-backdrop {
+                opacity: 1;
+                pointer-events: auto;
+            }
+            
+            body.sidebar-toggled {
+                overflow: hidden !important;
+            }
+        }
+        
+        /* Hamburger Button Styling */
+        #sidebarToggleTop {
+            background-color: #f8f9fc;
+            border: 1px solid #eaecf4;
+            color: #4e73df;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease-in-out;
+        }
+        #sidebarToggleTop:hover {
+            background-color: #4e73df;
+            color: #fff;
+            border-color: #4e73df;
+        }
+        
+        /* Smooth transitions for toggle actions on desktop as well */
+        @media (min-width: 768px) {
+            .sidebar {
+                transition: width 0.2s ease-in-out !important;
+            }
+        }
+    </style>
 </head>
 
 <body id="page-top">
+    <!-- Sidebar Backdrop for Mobile -->
+    <div class="sidebar-backdrop"></div>
     @php
         $icons = [
             'success' => 'fa-check-circle text-success',
@@ -160,6 +263,30 @@
         setTimeout(() => {
             $('.alert').alert('close');
         }, 3000);
+
+        $(document).ready(function() {
+            // Ensure sidebar is closed on initial load for mobile
+            if ($(window).width() < 768) {
+                $("body").removeClass("sidebar-toggled");
+                $(".sidebar").removeClass("toggled");
+            }
+
+            // Close sidebar when clicking on backdrop or mobile close button
+            $(document).on('click', '.sidebar-backdrop, #sidebarCloseMobile', function() {
+                $("body").removeClass("sidebar-toggled");
+                $(".sidebar").removeClass("toggled");
+                if (typeof $.fn.collapse === 'function') {
+                    $('.sidebar .collapse').collapse('hide');
+                }
+            });
+
+            // Handle window resizing to clean up state
+            $(window).resize(function() {
+                if ($(window).width() >= 768) {
+                    $("body").removeClass("sidebar-toggled");
+                }
+            });
+        });
     </script>
     <script>
         $(document).ready(function() {
