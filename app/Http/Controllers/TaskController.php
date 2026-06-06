@@ -149,7 +149,7 @@ class TaskController extends Controller
                 'Task Assigned',
                 "You have been assigned the task '{$task->title}' in project '{$project->name}'.",
                 $project->company_id,
-                ['task_id' => $task->id, 'project_id' => $project->id,'url'=>route('tasks.show',$task->id)]
+                ['task_id' => $task->id, 'project_id' => $project->id, 'url' => route('tasks.show', $task->id)]
             );
         }
 
