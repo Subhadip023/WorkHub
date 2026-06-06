@@ -4,6 +4,7 @@ use App\Mail\InviteMember;
 use App\Models\Company;
 use App\Models\CompanyInvitation;
 use App\Models\CompanyUsers;
+use App\Models\Notification;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
@@ -150,6 +151,9 @@ it('allows user to join a company using a valid code', function () {
         'title' => 'New Join Request',
         'organization_id' => $company->id,
     ]);
+
+    $notifJoinRequest = Notification::where('user_id', $admin->id)->where('type', 'join_request')->firstOrFail();
+    expect($notifJoinRequest->data)->toHaveKey('url', route('companies.show', $company->id));
 });
 
 it('allows user to switch active company context', function () {
@@ -542,6 +546,9 @@ it('allows company admin to approve a join request', function () {
         'type' => 'join_approved',
         'title' => 'Join Request Approved',
     ]);
+
+    $notifApproved = Notification::where('user_id', $user->id)->where('type', 'join_approved')->firstOrFail();
+    expect($notifApproved->data)->toHaveKey('url', route('companies.show', $company->id));
 });
 
 it('allows company admin to reject a join request', function () {
@@ -579,6 +586,9 @@ it('allows company admin to reject a join request', function () {
         'type' => 'join_rejected',
         'title' => 'Join Request Rejected',
     ]);
+
+    $notifRejected = Notification::where('user_id', $user->id)->where('type', 'join_rejected')->firstOrFail();
+    expect($notifRejected->data)->toHaveKey('url', route('companies.index'));
 });
 
 it('allows a member to leave the company and unassigns tasks', function () {

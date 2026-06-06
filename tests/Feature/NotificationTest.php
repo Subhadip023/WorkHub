@@ -174,6 +174,10 @@ it('sends notifications when a project is created', function () {
         'type' => 'project_created',
         'title' => 'New Project Created',
     ]);
+
+    $projectBeta = Project::where('name', 'Project Beta')->firstOrFail();
+    $notifProject = Notification::where('user_id', $otherUser->id)->where('type', 'project_created')->firstOrFail();
+    expect($notifProject->data)->toHaveKey('url', route('projects.show', $projectBeta->id));
 });
 
 it('sends notifications when a task is created or its deadline is updated', function () {
@@ -223,6 +227,9 @@ it('sends notifications when a task is created or its deadline is updated', func
         'title' => 'Task Assigned',
     ]);
 
+    $notifCreated = Notification::where('user_id', $assignee->id)->where('type', 'task_created')->firstOrFail();
+    expect($notifCreated->data)->toHaveKey('url', route('tasks.show', $task->id));
+
     // 2. Update task deadline
     $response2 = $this->patch(route('tasks.update', $task), [
         'title' => 'Task A',
@@ -238,6 +245,9 @@ it('sends notifications when a task is created or its deadline is updated', func
         'title' => 'Task Deadline Updated',
         'message' => "The deadline for task 'Task A' has been set/updated to 2026-06-15.",
     ]);
+
+    $notifDeadline = Notification::where('user_id', $assignee->id)->where('type', 'task_deadline_updated')->firstOrFail();
+    expect($notifDeadline->data)->toHaveKey('url', route('tasks.show', $task->id));
 });
 
 it('provides endpoints to fetch and mark notifications as read', function () {
@@ -361,6 +371,9 @@ it('sends notifications on all task CRUD events including status, priority, assi
         'message' => "The status of task 'Task B' has been updated to 'Completed'.",
     ]);
 
+    $notifStatus = Notification::where('user_id', $assignee->id)->where('type', 'task_status_updated')->firstOrFail();
+    expect($notifStatus->data)->toHaveKey('url', route('tasks.show', $task->id));
+
     // 3. Update priority while assigned to assignee
     $this->patch(route('tasks.update', $task), [
         'title' => 'Task B',
@@ -374,6 +387,9 @@ it('sends notifications on all task CRUD events including status, priority, assi
         'type' => 'task_priority_updated',
         'message' => "The priority of task 'Task B' has been set to 'High'.",
     ]);
+
+    $notifPriority = Notification::where('user_id', $assignee->id)->where('type', 'task_priority_updated')->firstOrFail();
+    expect($notifPriority->data)->toHaveKey('url', route('tasks.show', $task->id));
 
     // 4. Update assignee
     $anotherAssignee = User::factory()->create();
@@ -396,6 +412,9 @@ it('sends notifications on all task CRUD events including status, priority, assi
         'title' => 'Task Assigned',
     ]);
 
+    $notifAssigned = Notification::where('user_id', $anotherAssignee->id)->where('type', 'task_assigned')->firstOrFail();
+    expect($notifAssigned->data)->toHaveKey('url', route('tasks.show', $task->id));
+
     // 5. Delete task
     $this->delete(route('tasks.destroy', $task))->assertRedirect();
 
@@ -404,4 +423,7 @@ it('sends notifications on all task CRUD events including status, priority, assi
         'type' => 'task_deleted',
         'title' => 'Task Deleted',
     ]);
+
+    $notifDeleted = Notification::where('user_id', $anotherAssignee->id)->where('type', 'task_deleted')->firstOrFail();
+    expect($notifDeleted->data)->toHaveKey('url', route('projects.show', $project->id));
 });

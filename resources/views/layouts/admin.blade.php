@@ -234,7 +234,7 @@
                     var dateStr = new Date(notif.created_at).toLocaleString();
 
                     var itemHtml = `
-                        <a class="dropdown-item d-flex align-items-center notification-item" href="#" data-id="${notif.id}">
+                        <a class="dropdown-item d-flex align-items-center notification-item" href="${notif.data?.url || '#'}" data-id="${notif.id}">
                             <div class="mr-3">
                                 <div class="icon-circle ${iconBgClass}">
                                     <i class="fas ${iconClass} text-white"></i>
@@ -267,6 +267,7 @@
                                 item.remove();
                                 fetchNotifications();
                             });
+                            window.location.href = item.attr('href');
                         },
                         error: function(xhr, status, error) {
                             console.error("Failed to mark notification as read:", error);

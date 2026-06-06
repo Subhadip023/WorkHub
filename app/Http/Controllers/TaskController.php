@@ -149,7 +149,7 @@ class TaskController extends Controller
                 'Task Assigned',
                 "You have been assigned the task '{$task->title}' in project '{$project->name}'.",
                 $project->company_id,
-                ['task_id' => $task->id, 'project_id' => $project->id]
+                ['task_id' => $task->id, 'project_id' => $project->id,'url'=>route('tasks.show',$task->id)]
             );
         }
 
@@ -200,7 +200,7 @@ class TaskController extends Controller
                 'Task Assigned',
                 "You have been assigned the task '{$task->title}' in project '{$project->name}'.",
                 $project->company_id,
-                ['task_id' => $task->id, 'project_id' => $project->id]
+                ['task_id' => $task->id, 'project_id' => $project->id, 'url' => route('tasks.show', $task->id)]
             );
         }
 
@@ -286,7 +286,7 @@ class TaskController extends Controller
                     'Task Deadline Updated',
                     $message,
                     $task->project->company_id,
-                    ['task_id' => $task->id, 'project_id' => $task->project_id, 'due_date' => $task->due_date]
+                    ['task_id' => $task->id, 'project_id' => $task->project_id, 'due_date' => $task->due_date, 'url' => route('tasks.show', $task->id)]
                 );
             }
         }
@@ -300,7 +300,7 @@ class TaskController extends Controller
                     'Task Assigned',
                     "You have been assigned the task '{$task->title}' in project '{$task->project->name}'.",
                     $task->project->company_id,
-                    ['task_id' => $task->id, 'project_id' => $task->project_id]
+                    ['task_id' => $task->id, 'project_id' => $task->project_id, 'url' => route('tasks.show', $task->id)]
                 );
             }
         }
@@ -316,7 +316,7 @@ class TaskController extends Controller
                     'Task Status Updated',
                     "The status of task '{$task->title}' has been updated to '{$statusStr}'.",
                     $task->project->company_id,
-                    ['task_id' => $task->id, 'project_id' => $task->project_id, 'status' => $task->status]
+                    ['task_id' => $task->id, 'project_id' => $task->project_id, 'status' => $task->status, 'url' => route('tasks.show', $task->id)]
                 );
             }
         }
@@ -332,7 +332,7 @@ class TaskController extends Controller
                     'Task Priority Updated',
                     "The priority of task '{$task->title}' has been set to '{$priorityStr}'.",
                     $task->project->company_id,
-                    ['task_id' => $task->id, 'project_id' => $task->project_id, 'priority' => $task->priority]
+                    ['task_id' => $task->id, 'project_id' => $task->project_id, 'priority' => $task->priority, 'url' => route('tasks.show', $task->id)]
                 );
             }
         }
@@ -356,7 +356,7 @@ class TaskController extends Controller
                 'Task Deleted',
                 "The task '{$task->title}' in project '{$task->project->name}' has been deleted.",
                 $task->project->company_id,
-                ['project_id' => $task->project_id]
+                ['project_id' => $task->project_id, 'url' => route('projects.show', $task->project_id)]
             );
         }
 

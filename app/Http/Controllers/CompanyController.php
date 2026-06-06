@@ -217,7 +217,7 @@ class CompanyController extends Controller
                         'New Join Request',
                         "{$auth_user->name} has requested to join {$company->name}.",
                         $company_id,
-                        ['user_id' => $auth_user->id]
+                        ['user_id' => $auth_user->id, 'url' => route('companies.show', $company->id)]
                     );
                 }
             }
@@ -431,7 +431,8 @@ class CompanyController extends Controller
             'join_approved',
             'Join Request Approved',
             "Your request to join {$company->name} has been approved.",
-            null
+            null,
+            ['url' => route('companies.show', $company->id)]
         );
 
         return back()->with('success', "{$user->name} has been approved to join the organization.");
@@ -467,7 +468,8 @@ class CompanyController extends Controller
             'join_rejected',
             'Join Request Rejected',
             "Your request to join {$company->name} was rejected.",
-            null
+            null,
+            ['url' => route('companies.index')]
         );
 
         return back()->with('info', "Join request from {$user->name} was rejected.");

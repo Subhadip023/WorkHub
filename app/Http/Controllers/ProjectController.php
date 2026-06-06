@@ -86,7 +86,7 @@ class ProjectController extends Controller
                         'New Project Created',
                         "A new project '{$project->name}' has been created in your organization.",
                         $project->company_id,
-                        ['project_id' => $project->id]
+                        ['project_id' => $project->id, 'url' => route('projects.show', $project->id)]
                     );
                 }
             }
@@ -97,7 +97,7 @@ class ProjectController extends Controller
                 'New Personal Project',
                 "You created a new personal project '{$project->name}'.",
                 null,
-                ['project_id' => $project->id]
+                ['project_id' => $project->id, 'url' => route('projects.show', $project->id)]
             );
         }
 
