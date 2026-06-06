@@ -9,3 +9,6 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('trash:prune --days=2')->daily();
+
+// Daily digest email — set MAIL_DAILY_DIGEST_TO in your .env
+Schedule::command('mail:daily-digest')->daily();

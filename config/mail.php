@@ -115,4 +115,20 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Daily Digest Settings
+    |--------------------------------------------------------------------------
+    |
+    | Configure the recipient, subject and body for the daily digest email
+    | that is sent by the mail:daily-digest artisan command.
+    |
+    */
+
+    'daily_digest' => [
+        'to' => env('MAIL_DAILY_DIGEST_TO'),
+        'subject' => env('MAIL_DAILY_DIGEST_SUBJECT', 'WorkHub — Daily Digest'),
+        'body' => env('MAIL_DAILY_DIGEST_BODY', 'This is your daily digest from WorkHub.'),
+    ],
+
 ];
