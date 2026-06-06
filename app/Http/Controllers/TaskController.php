@@ -33,7 +33,16 @@ class TaskController extends Controller
         $projectIds = $projects->pluck('id')->toArray();
 
         // Base query for all accessible tasks
-        $tasksQuery = Task::whereIn('project_id', $projectIds);
+        $tasksQuery = Task::where(function ($query) use ($projectIds, $user) {
+            $query->whereIn('project_id', $projectIds)
+                ->orWhere(function ($q) use ($user) {
+                    $q->whereNull('project_id')
+                        ->where(function ($sub) use ($user) {
+                            $sub->where('user_id', $user->id)
+                                ->orWhere('assigned_to', $user->id);
+                        });
+                });
+        });
 
         // Fetch all unique team members from all companies the user belongs to
         $companyUsers = CompanyUsers::whereIn('company_id', $companyIds)
@@ -61,7 +70,11 @@ class TaskController extends Controller
 
         // Apply filters from query parameters
         if ($request->filled('project') && $request->project !== 'all') {
-            $tasksQuery->where('project_id', $request->project);
+            if ($request->project === 'none') {
+                $tasksQuery->whereNull('project_id');
+            } else {
+                $tasksQuery->where('project_id', $request->project);
+            }
         }
 
         if ($request->filled('status') && $request->status !== 'all') {
@@ -108,7 +121,7 @@ class TaskController extends Controller
     public function storeGeneral(Request $request)
     {
         $validated = $request->validate([
-            'project_id' => 'required|exists:projects,id',
+            'project_id' => 'nullable|exists:projects,id',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'due_date' => 'nullable|date',
@@ -118,39 +131,62 @@ class TaskController extends Controller
             'type' => 'nullable|integer|in:1,2,3,4',
         ]);
 
-        $project = Project::findOrFail($validated['project_id']);
         $user_id = auth()->id();
+        $validated['user_id'] = $user_id;
 
-        if ($project->company_id === null) {
-            if ($project->user_id !== $user_id) {
-                abort(403);
+        if (! empty($validated['project_id'])) {
+            $project = Project::findOrFail($validated['project_id']);
+
+            if ($project->company_id === null) {
+                if ($project->user_id !== $user_id) {
+                    abort(403);
+                }
+            } else {
+                $membership = CompanyUsers::where('company_id', $project->company_id)
+                    ->where('user_id', $user_id)
+                    ->exists();
+                if (! $membership) {
+                    abort(403);
+                }
+            }
+
+            if (empty($validated['assigned_to'])) {
+                $validated['assigned_to'] = $user_id;
+            }
+
+            $task = $project->tasks()->create($validated);
+
+            // Send notification
+            $assignee = $task->assignedUser ?? User::find($task->assigned_to);
+            if ($assignee) {
+                $this->notificationService->send(
+                    $assignee,
+                    'task_created',
+                    'Task Assigned',
+                    "You have been assigned the task '{$task->title}' in project '{$project->name}'.",
+                    $project->company_id,
+                    ['task_id' => $task->id, 'project_id' => $project->id, 'url' => route('tasks.show', $task->id)]
+                );
             }
         } else {
-            $membership = CompanyUsers::where('company_id', $project->company_id)
-                ->where('user_id', $user_id)
-                ->exists();
-            if (! $membership) {
-                abort(403);
+            if (empty($validated['assigned_to'])) {
+                $validated['assigned_to'] = $user_id;
             }
-        }
 
-        if (empty($validated['assigned_to'])) {
-            $validated['assigned_to'] = $user_id;
-        }
+            $task = Task::create($validated);
 
-        $task = $project->tasks()->create($validated);
-
-        // Send notification
-        $assignee = $task->assignedUser ?? User::find($task->assigned_to);
-        if ($assignee) {
-            $this->notificationService->send(
-                $assignee,
-                'task_created',
-                'Task Assigned',
-                "You have been assigned the task '{$task->title}' in project '{$project->name}'.",
-                $project->company_id,
-                ['task_id' => $task->id, 'project_id' => $project->id, 'url' => route('tasks.show', $task->id)]
-            );
+            // Send notification
+            $assignee = $task->assignedUser ?? User::find($task->assigned_to);
+            if ($assignee) {
+                $this->notificationService->send(
+                    $assignee,
+                    'task_created',
+                    'Task Assigned',
+                    "You have been assigned the task '{$task->title}'.",
+                    null,
+                    ['task_id' => $task->id, 'url' => route('tasks.show', $task->id)]
+                );
+            }
         }
 
         return redirect()->route('tasks.index')->with('success', 'Task created successfully');
@@ -214,6 +250,14 @@ class TaskController extends Controller
     {
         $project = $task->project;
         $user_id = auth()->id();
+
+        if ($project === null) {
+            if ($task->user_id !== $user_id && $task->assigned_to !== $user_id) {
+                abort(403, 'You do not have permission to modify this task.');
+            }
+
+            return;
+        }
 
         if ($project->company_id === null) {
             if ($project->user_id !== $user_id) {
@@ -285,7 +329,7 @@ class TaskController extends Controller
                     'task_deadline_updated',
                     'Task Deadline Updated',
                     $message,
-                    $task->project->company_id,
+                    $task->project ? $task->project->company_id : null,
                     ['task_id' => $task->id, 'project_id' => $task->project_id, 'due_date' => $task->due_date, 'url' => route('tasks.show', $task->id)]
                 );
             }
@@ -294,12 +338,13 @@ class TaskController extends Controller
         if ($task->assigned_to !== $oldAssigneeId) {
             $newAssignee = User::find($task->assigned_to);
             if ($newAssignee && $task->assigned_to !== auth()->id()) {
+                $projectName = $task->project ? " in project '{$task->project->name}'" : '';
                 $this->notificationService->send(
                     $newAssignee,
                     'task_assigned',
                     'Task Assigned',
-                    "You have been assigned the task '{$task->title}' in project '{$task->project->name}'.",
-                    $task->project->company_id,
+                    "You have been assigned the task '{$task->title}'{$projectName}.",
+                    $task->project ? $task->project->company_id : null,
                     ['task_id' => $task->id, 'project_id' => $task->project_id, 'url' => route('tasks.show', $task->id)]
                 );
             }
@@ -315,7 +360,7 @@ class TaskController extends Controller
                     'task_status_updated',
                     'Task Status Updated',
                     "The status of task '{$task->title}' has been updated to '{$statusStr}'.",
-                    $task->project->company_id,
+                    $task->project ? $task->project->company_id : null,
                     ['task_id' => $task->id, 'project_id' => $task->project_id, 'status' => $task->status, 'url' => route('tasks.show', $task->id)]
                 );
             }
@@ -331,7 +376,7 @@ class TaskController extends Controller
                     'task_priority_updated',
                     'Task Priority Updated',
                     "The priority of task '{$task->title}' has been set to '{$priorityStr}'.",
-                    $task->project->company_id,
+                    $task->project ? $task->project->company_id : null,
                     ['task_id' => $task->id, 'project_id' => $task->project_id, 'priority' => $task->priority, 'url' => route('tasks.show', $task->id)]
                 );
             }
@@ -350,13 +395,17 @@ class TaskController extends Controller
         // Notify assignee before deleting
         $assignee = $task->assignedUser ?? User::find($task->assigned_to);
         if ($assignee && $task->assigned_to !== auth()->id()) {
+            $company_id = $task->project ? $task->project->company_id : null;
+            $projectName = $task->project ? " in project '{$task->project->name}'" : '';
+            $redirectUrl = $task->project ? route('projects.show', $task->project_id) : route('tasks.index');
+
             $this->notificationService->send(
                 $assignee,
                 'task_deleted',
                 'Task Deleted',
-                "The task '{$task->title}' in project '{$task->project->name}' has been deleted.",
-                $task->project->company_id,
-                ['project_id' => $task->project_id, 'url' => route('projects.show', $task->project_id)]
+                "The task '{$task->title}'{$projectName} has been deleted.",
+                $company_id,
+                ['project_id' => $task->project_id, 'url' => $redirectUrl]
             );
         }
 
@@ -433,7 +482,28 @@ class TaskController extends Controller
         $project = $task->project;
         $user_id = auth()->id();
 
-        if ($project->company_id === null) {
+        if ($project === null) {
+            if ($task->user_id !== $user_id && $task->assigned_to !== $user_id) {
+                abort(403);
+            }
+
+            $companyIds = auth()->user()->companies()->pluck('company_id')->toArray();
+            $companyUsers = CompanyUsers::whereIn('company_id', $companyIds)
+                ->with('user')
+                ->get()
+                ->map(function ($cu) {
+                    return $cu->user;
+                })
+                ->filter()
+                ->unique('id')
+                ->values();
+
+            if (! $companyUsers->contains('id', $user_id)) {
+                $companyUsers->push(auth()->user());
+            }
+
+            $user_role = 1;
+        } elseif ($project->company_id === null) {
             if ($project->user_id !== $user_id) {
                 abort(403);
             }

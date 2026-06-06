@@ -20,11 +20,13 @@
 <!-- Page Heading -->
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
     <h1 class="h3 mb-0 text-gray-800 font-weight-bold">Tasks</h1>
-    <button class="btn btn-primary shadow-sm" id="btnShowInlineAdd">
-        <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Add Task
-    </button>
+    <div class="d-flex flex-column align-items-center gap-2">
+        <button class="btn btn-primary shadow-sm" id="btnShowInlineAdd">
+            <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Add Task
+        </button>
+        <small class="text-muted"> Press (Alt + t) to add task</small>
+    </div>
 </div>
-
 <div class="row">
     <!-- Total Tasks Card -->
     <div class="col-xl-3 col-md-6 mb-4">
@@ -103,6 +105,7 @@
                 <label for="filterProject" class="font-weight-bold text-xs text-gray-700 text-uppercase">Project</label>
                 <select id="filterProject" class="form-control form-control-sm">
                     <option value="all" {{ request('project') == 'all' || !request('project') ? 'selected' : '' }}>All Projects</option>
+                    <option value="none" {{ request('project') == 'none' ? 'selected' : '' }}>Personal</option>
                     @foreach($projects as $project)
                         <option value="{{ $project->id }}" {{ request('project') == $project->id ? 'selected' : '' }}>{{ $project->name }}</option>
                     @endforeach
@@ -148,7 +151,13 @@
 <!-- Tasks List Card -->
 <div class="card shadow mb-4">
     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-primary">All Tasks</h6>
+        <h6 class="m-0 font-weight-bold text-primary">All Tasks</h6> 
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="showCompleted" style="margin-top: 6px">
+            <label class="form-check-label" for="showCompleted">
+                Show Completed Tasks
+            </label>
+        </div>
     </div>
     <div class="card-body">
         <div id="noTasksContainer" class="text-center py-5" style="display: {{ $tasks->isEmpty() ? 'block' : 'none' }}">
@@ -190,8 +199,8 @@
                             </select>
                         </td>
                         <td class="align-middle d-none d-md-table-cell">
-                            <select name="project_id" form="inlineAddTaskForm" class="form-control form-control-sm" required>
-                                <option value="">-- Select Project --</option>
+                            <select name="project_id" form="inlineAddTaskForm" class="form-control form-control-sm">
+                                <option value="">-- Personal --</option>
                                 @foreach($projects as $proj)
                                     <option value="{{ $proj->id }}" {{ request('project') == $proj->id ? 'selected' : '' }}>{{ $proj->name }}</option>
                                 @endforeach
@@ -237,7 +246,9 @@
                     @foreach($tasks as $task)
                         @php
                             $canMutate = false;
-                            if ($task->project->company_id === null) {
+                            if ($task->project === null) {
+                                $canMutate = ($task->user_id === auth()->id()) || ($task->assigned_to === auth()->id());
+                            } elseif ($task->project->company_id === null) {
                                 $canMutate = $task->project->user_id === auth()->id();
                             } else {
                                 $role = auth()->user()->companies->where('company_id', $task->project->company_id)->first()->role ?? 0;
@@ -247,8 +258,9 @@
                         <tr class="task-row" 
                             data-project="{{ $task->project_id }}" 
                             data-completed="{{ $task->status == 3 ? 'completed' : 'pending' }}" 
-                            data-assigned="{{ $task->assigned_to ?? 'unassigned' }}">
-                            <td class="text-center align-middle">
+                            data-assigned="{{ $task->assigned_to ?? 'unassigned' }}" 
+                            style="display: {{ $task->status == 3 && request('status') != 'completed' ? 'none' : 'table-row' }}">
+                            <td class="text-center align-middle" >
                                 @if($canMutate)
                                     <form action="{{ route('tasks.toggle', $task) }}" method="POST">
                                         @csrf
@@ -290,9 +302,15 @@
                                         </span>
 
                                         <!-- Project -->
-                                        <a href="{{ route('projects.show', $task->project) }}" class="badge text-white px-2 py-1 shadow-sm text-xs" style="background-color: {{ $task->project->theme }}">
-                                            <i class="fas fa-folder mr-1"></i>{{ $task->project->name }}
-                                        </a>
+                                        @if($task->project)
+                                            <a href="{{ route('projects.show', $task->project) }}" class="badge text-white px-2 py-1 shadow-sm text-xs" style="background-color: {{ $task->project->theme }}">
+                                                <i class="fas fa-folder mr-1"></i>{{ $task->project->name }}
+                                            </a>
+                                        @else
+                                            <span class="badge badge-light border text-muted px-2 py-1 shadow-sm text-xs">
+                                                <i class="fas fa-user-lock mr-1"></i>Personal
+                                            </span>
+                                        @endif
 
                                         <!-- Status -->
                                         @if($task->status == 1)
@@ -344,10 +362,16 @@
                                 </span>
                             </td>
                             <td class="align-middle d-none d-md-table-cell">
-                                <a href="{{ route('projects.show', $task->project) }}" class="badge text-white p-2 shadow-sm" style="background-color: {{ $task->project->theme }}">
-                                    <i class="fas fa-project-diagram mr-1"></i>
-                                    {{ $task->project->name }}
-                                </a>
+                                @if($task->project)
+                                    <a href="{{ route('projects.show', $task->project) }}" class="badge text-white p-2 shadow-sm" style="background-color: {{ $task->project->theme }}">
+                                        <i class="fas fa-project-diagram mr-1"></i>
+                                        {{ $task->project->name }}
+                                    </a>
+                                @else
+                                    <span class="badge badge-light border text-muted p-2 shadow-sm">
+                                        <i class="fas fa-user-lock mr-1"></i>Personal
+                                    </span>
+                                @endif
                             </td>
                             <td class="align-middle d-none d-md-table-cell">
                                 @if($task->assignedUser)
@@ -504,7 +528,33 @@
             applyFilters();
         });
 
-        // Inline add row visibility and keypress handlers are handled in the partial
+        $('#showCompleted').change(function() {
+            if ($(this).is(':checked')) {
+                $('.task-row').show();
+            } else {
+                $('.task-row').each(function() {
+                    if ($(this).data('completed') === 'completed') {
+                        $(this).hide();
+                    }
+                });
+            }
+        });
+
+        // When press alt + t show inline add row
+        $(document).keydown(function(e) {
+            if (e.altKey && e.key === 't') {
+                e.preventDefault();
+                $('#btnShowInlineAdd').click();
+            }
+        });
+
+        // When press esc close inline add row
+        $(document).keydown(function(e) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                $('#inlineAddRow').hide();
+            }
+        });
     });
 </script>
 @endpush

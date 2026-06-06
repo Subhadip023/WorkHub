@@ -43,7 +43,11 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb mb-0 bg-transparent p-0">
             <li class="breadcrumb-item"><a href="{{ route('tasks.index') }}" class="font-weight-bold">Tasks</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('projects.show', $task->project) }}">{{ $task->project->name }}</a></li>
+            @if($task->project)
+                <li class="breadcrumb-item"><a href="{{ route('projects.show', $task->project) }}">{{ $task->project->name }}</a></li>
+            @else
+                <li class="breadcrumb-item text-muted">No Project</li>
+            @endif
             <li class="breadcrumb-item active" aria-current="page">{{ Str::limit($task->title, 30) }}</li>
         </ol>
     </nav>
@@ -67,9 +71,15 @@
             </form>
         @endif
 
-        <a href="{{ route('projects.show', $task->project) }}" class="btn btn-secondary btn-sm shadow-sm">
-            <i class="fas fa-arrow-left fa-sm mr-1"></i> Back to Project
-        </a>
+        @if($task->project)
+            <a href="{{ route('projects.show', $task->project) }}" class="btn btn-secondary btn-sm shadow-sm">
+                <i class="fas fa-arrow-left fa-sm mr-1"></i> Back to Project
+            </a>
+        @else
+            <a href="{{ route('tasks.index') }}" class="btn btn-secondary btn-sm shadow-sm">
+                <i class="fas fa-arrow-left fa-sm mr-1"></i> Back to Tasks
+            </a>
+        @endif
     </div>
 </div>
 

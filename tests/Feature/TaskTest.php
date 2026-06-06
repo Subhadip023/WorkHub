@@ -646,3 +646,128 @@ it('enforces company permissions for task image uploads', function () {
     ]);
     $response->assertStatus(403);
 });
+
+it('allows authenticated user to create a task without a project', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user);
+
+    $response = $this->post(route('tasks.store'), [
+        'project_id' => null,
+        'title' => 'Personal Projectless Task',
+        'description' => 'Personal description.',
+        'status' => 1,
+        'priority' => 2,
+    ]);
+
+    $response->assertRedirect(route('tasks.index'));
+    $this->assertDatabaseHas('tasks', [
+        'title' => 'Personal Projectless Task',
+        'project_id' => null,
+        'user_id' => $user->id,
+        'status' => 1,
+        'priority' => 2,
+    ]);
+});
+
+it('allows user to view, edit and delete a projectless task they own', function () {
+    $user = User::factory()->create();
+    $task = Task::create([
+        'title' => 'Projectless Task',
+        'project_id' => null,
+        'user_id' => $user->id,
+        'status' => 1,
+        'priority' => 2,
+    ]);
+
+    $this->actingAs($user);
+
+    // View task
+    $response = $this->get(route('tasks.show', $task));
+    $response->assertStatus(200);
+    $response->assertSee('Projectless Task');
+
+    // Update task
+    $response = $this->patch(route('tasks.update', $task), [
+        'title' => 'Updated Projectless Task',
+        'status' => 2,
+    ]);
+    $response->assertRedirect();
+    $this->assertDatabaseHas('tasks', [
+        'id' => $task->id,
+        'title' => 'Updated Projectless Task',
+        'status' => 2,
+    ]);
+
+    // Delete task
+    $response = $this->delete(route('tasks.destroy', $task));
+    $response->assertRedirect();
+    $this->assertDatabaseMissing('tasks', [
+        'id' => $task->id,
+    ]);
+});
+
+it('prevents other users from editing or viewing a projectless task they do not own or are not assigned to', function () {
+    $owner = User::factory()->create();
+    $other = User::factory()->create();
+    $task = Task::create([
+        'title' => 'Private Projectless Task',
+        'project_id' => null,
+        'user_id' => $owner->id,
+        'status' => 1,
+        'priority' => 2,
+    ]);
+
+    $this->actingAs($other);
+
+    // View task -> 403
+    $response = $this->get(route('tasks.show', $task));
+    $response->assertStatus(403);
+
+    // Update task -> 403
+    $response = $this->patch(route('tasks.update', $task), [
+        'title' => 'Hacked Task',
+    ]);
+    $response->assertStatus(403);
+
+    // Delete task -> 403
+    $response = $this->delete(route('tasks.destroy', $task));
+    $response->assertStatus(403);
+});
+
+it('allows user to filter tasks by personal / projectless tasks', function () {
+    $user = User::factory()->create();
+    $project = Project::create([
+        'name' => 'Some Project',
+        'slug' => 'some-project',
+        'theme' => '#ff0000',
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $user->id,
+        'company_id' => null,
+    ]);
+
+    // Task with project
+    Task::create([
+        'title' => 'Project Task',
+        'project_id' => $project->id,
+        'status' => 1,
+        'priority' => 1,
+    ]);
+
+    // Task without project (Personal)
+    Task::create([
+        'title' => 'Personal Task',
+        'project_id' => null,
+        'user_id' => $user->id,
+        'status' => 1,
+        'priority' => 1,
+    ]);
+
+    $this->actingAs($user);
+
+    $response = $this->get(route('tasks.index', ['project' => 'none']));
+    $response->assertStatus(200);
+    $response->assertSee('Personal Task');
+    $response->assertDontSee('Project Task');
+});
