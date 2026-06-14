@@ -152,12 +152,6 @@
 <div class="card shadow mb-4">
     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
         <h6 class="m-0 font-weight-bold text-primary">All Tasks</h6> 
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" value="" id="showCompleted" style="margin-top: 6px">
-            <label class="form-check-label" for="showCompleted">
-                Show Completed Tasks
-            </label>
-        </div>
     </div>
     <div class="card-body">
         <div id="noTasksContainer" class="text-center py-5" style="display: {{ $tasks->isEmpty() ? 'block' : 'none' }}">
@@ -259,7 +253,7 @@
                             data-project="{{ $task->project_id }}" 
                             data-completed="{{ $task->status == 3 ? 'completed' : 'pending' }}" 
                             data-assigned="{{ $task->assigned_to ?? 'unassigned' }}" 
-                            style="display: {{ $task->status == 3 && request('status') != 'completed' ? 'none' : 'table-row' }}">
+                            style="display: table-row;">
                             <td class="text-center align-middle" >
                                 @if($canMutate)
                                     <form action="{{ route('tasks.toggle', $task) }}" method="POST">
@@ -427,20 +421,9 @@
                             </td>
                             <td class="text-center align-middle">
                                 @if($canMutate)
-                                    <button class="btn btn-sm btn-info edit-task-btn" 
-                                            data-toggle="modal" 
-                                            data-target="#editTaskModal"
-                                            data-id="{{ $task->id }}"
-                                            data-title="{{ $task->title }}"
-                                            data-description="{{ $task->description }}"
-                                            data-due_date="{{ $task->due_date }}"
-                                            data-assigned_to="{{ $task->assigned_to }}"
-                                            data-status="{{ $task->status }}"
-                                            data-priority="{{ $task->priority }}"
-                                            data-type="{{ $task->type }}"
-                                            data-action="{{ route('tasks.update', $task) }}">
+                                    <a href="{{ route('tasks.show', $task) }}" class="btn btn-sm btn-info edit-task-btn">
                                         <i class="fas fa-edit"></i>
-                                    </button>
+                                    </a>
                                     <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="d-inline ml-1">
                                         @csrf
                                         @method('DELETE')
