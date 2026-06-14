@@ -560,10 +560,16 @@ class TaskController extends Controller
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('task_images', 'public');
+            $url = asset('storage/' . $path);
 
             $task->images()->create([
                 'image_path' => $path,
             ]);
+
+            // Append image to the description
+            $imageHtml = '<p><img src="' . $url . '" alt="Uploaded Image"></p>';
+            $task->description = ($task->description ?? '') . $imageHtml;
+            $task->save();
 
             return redirect()->back()->with('success', 'Image uploaded successfully');
         }

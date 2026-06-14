@@ -30,6 +30,26 @@
         border-color: #4e73df;
         background-color: #f0f3fc;
     }
+    #task-info-tabs {
+        background-color: #f8f9fc;
+        border-top-left-radius: 0.35rem;
+        border-top-right-radius: 0.35rem;
+    }
+    #task-info-tabs .nav-link {
+        border: none;
+        border-bottom: 3px solid transparent;
+        color: #858796;
+        transition: all 0.2s ease;
+    }
+    #task-info-tabs .nav-link.active {
+        background-color: transparent;
+        border-bottom-color: #4e73df;
+        color: #4e73df !important;
+    }
+    #task-info-tabs .nav-link:hover:not(.active) {
+        border-bottom-color: #dddfeb;
+        color: #5a5c69;
+    }
 </style>
 @endpush
 
@@ -268,6 +288,12 @@
                                             <i class="fas fa-search-plus"></i>
                                         </a>
                                         @if($canMutate)
+                                            <button type="button" class="btn btn-light btn-sm mx-1 rounded-circle insert-img-btn" data-url="{{ asset('storage/' . $img->image_path) }}" title="Insert into Description">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-light btn-sm mx-1 rounded-circle copy-url-btn" data-url="{{ asset('storage/' . $img->image_path) }}" title="Copy URL">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
                                             <form action="{{ route('tasks.images.destroy', $img) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this image?');">
                                                 @csrf
                                                 @method('DELETE')
@@ -404,6 +430,50 @@
                 descHtml = '';
             }
             $('#hidden-description').val(descHtml);
+        });
+
+        // Insert image into editor
+        $('.insert-img-btn').click(function() {
+            var url = $(this).data('url');
+            var range = quill.getSelection();
+            if (range) {
+                quill.insertEmbed(range.index, 'image', url);
+                quill.setSelection(range.index + 1);
+            } else {
+                quill.insertEmbed(quill.getLength() - 1, 'image', url);
+            }
+            // Scroll to editor
+            $('html, body').animate({
+                scrollTop: $("#editor-container").offset().top - 100
+            }, 500);
+        });
+
+        // Copy URL to clipboard
+        $('.copy-url-btn').click(function() {
+            var url = $(this).data('url');
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(url).then(showSuccess).catch(fallbackCopy);
+            } else {
+                fallbackCopy();
+            }
+
+            var $btn = $(this);
+            function showSuccess() {
+                var originalHtml = $btn.html();
+                $btn.html('<i class="fas fa-check text-success"></i>');
+                setTimeout(function() {
+                    $btn.html(originalHtml);
+                }, 2000);
+            }
+
+            function fallbackCopy() {
+                var $temp = $("<input>");
+                $("body").append($temp);
+                $temp.val(url).select();
+                document.execCommand("copy");
+                $temp.remove();
+                showSuccess();
+            }
         });
     });
 </script>
