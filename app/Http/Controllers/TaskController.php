@@ -9,6 +9,7 @@ use App\Models\TaskImage;
 use App\Models\User;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 
 class TaskController extends Controller
@@ -136,19 +137,7 @@ class TaskController extends Controller
 
         if (! empty($validated['project_id'])) {
             $project = Project::findOrFail($validated['project_id']);
-
-            if ($project->company_id === null) {
-                if ($project->user_id !== $user_id) {
-                    abort(403);
-                }
-            } else {
-                $membership = CompanyUsers::where('company_id', $project->company_id)
-                    ->where('user_id', $user_id)
-                    ->exists();
-                if (! $membership) {
-                    abort(403);
-                }
-            }
+            Gate::authorize('update', $project);
 
             if (empty($validated['assigned_to'])) {
                 $validated['assigned_to'] = $user_id;
@@ -197,19 +186,7 @@ class TaskController extends Controller
      */
     public function store(Request $request, Project $project)
     {
-        $user_id = auth()->id();
-        if ($project->company_id === null) {
-            if ($project->user_id !== $user_id) {
-                abort(403);
-            }
-        } else {
-            $belongs = CompanyUsers::where('company_id', $project->company_id)
-                ->where('user_id', $user_id)
-                ->exists();
-            if (! $belongs) {
-                abort(403);
-            }
-        }
+        Gate::authorize('update', $project);
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -221,8 +198,11 @@ class TaskController extends Controller
             'type' => 'nullable|integer|in:1,2,3,4',
         ]);
 
+        $user_id = auth()->id();
+        $validated['user_id'] = $user_id;
+
         if (empty($validated['assigned_to'])) {
-            $validated['assigned_to'] = $user_id;
+            $validated['assigned_to'] = null;
         }
 
         $task = $project->tasks()->create($validated);
@@ -248,34 +228,7 @@ class TaskController extends Controller
      */
     protected function checkTaskOwnership(Task $task)
     {
-        $project = $task->project;
-        $user_id = auth()->id();
-
-        if ($project === null) {
-            if ($task->user_id !== $user_id && $task->assigned_to !== $user_id) {
-                abort(403, 'You do not have permission to modify this task.');
-            }
-
-            return;
-        }
-
-        if ($project->company_id === null) {
-            if ($project->user_id !== $user_id) {
-                abort(403);
-            }
-        } else {
-            $membership = CompanyUsers::where('company_id', $project->company_id)
-                ->where('user_id', $user_id)
-                ->first();
-
-            if (! $membership) {
-                abort(403, 'You are not a member of this organization.');
-            }
-
-            if ($membership->role == 0 && $task->assigned_to !== $user_id) {
-                abort(403, 'You can only modify tasks assigned to you.');
-            }
-        }
+        Gate::authorize('update', $task);
     }
 
     /**
@@ -430,19 +383,7 @@ class TaskController extends Controller
      */
     public function import(Request $request, Project $project)
     {
-        $user_id = auth()->id();
-        if ($project->company_id === null) {
-            if ($project->user_id !== $user_id) {
-                abort(403);
-            }
-        } else {
-            $belongs = CompanyUsers::where('company_id', $project->company_id)
-                ->where('user_id', $user_id)
-                ->exists();
-            if (! $belongs) {
-                abort(403);
-            }
-        }
+        Gate::authorize('update', $project);
 
         $request->validate([
             'json_data' => 'required|string',
@@ -493,11 +434,9 @@ class TaskController extends Controller
         $project = $task->project;
         $user_id = auth()->id();
 
-        if ($project === null) {
-            if ($task->user_id !== $user_id && $task->assigned_to !== $user_id) {
-                abort(403);
-            }
+        Gate::authorize('view', $task);
 
+        if ($project === null) {
             $companyIds = auth()->user()->companies()->pluck('company_id')->toArray();
             $companyUsers = CompanyUsers::whereIn('company_id', $companyIds)
                 ->with('user')
@@ -515,20 +454,12 @@ class TaskController extends Controller
 
             $user_role = 1;
         } elseif ($project->company_id === null) {
-            if ($project->user_id !== $user_id) {
-                abort(403);
-            }
-
             $companyUsers = collect([auth()->user()]);
             $user_role = 1;
         } else {
             $membership = CompanyUsers::where('company_id', $project->company_id)
                 ->where('user_id', $user_id)
                 ->first();
-
-            if (! $membership) {
-                abort(403);
-            }
 
             $companyUsers = CompanyUsers::where('company_id', $project->company_id)
                 ->with('user')

@@ -55,7 +55,7 @@
 
 @section('content')
 @php
-    $canMutate = ($user_role == 1) || ($task->assigned_to === auth()->id());
+    $canMutate = auth()->user()->can('update', $task);
 @endphp
 
 <!-- Page Heading -->

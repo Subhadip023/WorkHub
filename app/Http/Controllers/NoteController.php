@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use App\Models\Note;
 use App\Models\Project;
 use App\Models\Task;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use JoyPixels\Client;
 
@@ -70,16 +72,14 @@ class NoteController extends Controller
 
     public function show(Note $note)
     {
-        $user = auth()->user();
-        $this->authorizeNoteAccess($note, $user);
+        Gate::authorize('view', $note);
 
         return view('notes.show', compact('note'));
     }
 
     public function downloadPdf(Note $note)
     {
-        $user = auth()->user();
-        $this->authorizeNoteAccess($note, $user);
+        Gate::authorize('view', $note);
 
         $joyPixels = new Client;
         $noteDescription = $joyPixels->toImage($note->description);
@@ -107,31 +107,13 @@ class NoteController extends Controller
             $noteTypeId = $user->id;
         } elseif ($noteType === Note::TYPE_PROJECT) {
             $project = Project::findOrFail($noteTypeId);
-            if ($project->company_id) {
-                if (! $user->companies->contains('company_id', $project->company_id)) {
-                    abort(403);
-                }
-            } else {
-                if ($project->user_id !== $user->id) {
-                    abort(403);
-                }
-            }
+            Gate::authorize('view', $project);
         } elseif ($noteType === Note::TYPE_TASK) {
             $task = Task::findOrFail($noteTypeId);
-            $project = $task->project;
-            if ($project->company_id) {
-                if (! $user->companies->contains('company_id', $project->company_id)) {
-                    abort(403);
-                }
-            } else {
-                if ($project->user_id !== $user->id) {
-                    abort(403);
-                }
-            }
+            Gate::authorize('view', $task);
         } elseif ($noteType === Note::TYPE_ORGANIZATION) {
-            if (! $user->companies->contains('company_id', $noteTypeId)) {
-                abort(403);
-            }
+            $company = Company::findOrFail($noteTypeId);
+            Gate::authorize('view', $company);
         }
 
         Note::create([
@@ -152,9 +134,9 @@ class NoteController extends Controller
 
     public function edit(Note $note)
     {
-        $user = auth()->user();
-        $this->authorizeNoteAccess($note, $user);
+        Gate::authorize('update', $note);
 
+        $user = auth()->user();
         $companyIds = $user->companies->pluck('company_id')->toArray();
         $projects = Project::select('id', 'name')->where(function ($q) use ($user, $companyIds) {
             $q->whereNull('company_id')
@@ -178,8 +160,7 @@ class NoteController extends Controller
             'description' => 'required|string',
         ]);
 
-        $user = auth()->user();
-        $this->authorizeNoteAccess($note, $user);
+        Gate::authorize('update', $note);
 
         $note->update([
             'title' => $request->title,
@@ -195,50 +176,10 @@ class NoteController extends Controller
 
     public function destroy(Note $note)
     {
-        $user = auth()->user();
-        $this->authorizeNoteAccess($note, $user);
+        Gate::authorize('delete', $note);
 
         $note->delete();
 
         return redirect()->back()->with('success', 'Note deleted successfully.');
-    }
-
-    protected function authorizeNoteAccess(Note $note, $user)
-    {
-        $noteType = (int) $note->note_type;
-        $noteTypeId = $note->note_type_id;
-
-        if ($noteType === Note::TYPE_PERSONAL) {
-            if ($noteTypeId !== $user->id) {
-                abort(403);
-            }
-        } elseif ($noteType === Note::TYPE_PROJECT) {
-            $project = Project::findOrFail($noteTypeId);
-            if ($project->company_id) {
-                if (! $user->companies->contains('company_id', $project->company_id)) {
-                    abort(403);
-                }
-            } else {
-                if ($project->user_id !== $user->id) {
-                    abort(403);
-                }
-            }
-        } elseif ($noteType === Note::TYPE_TASK) {
-            $task = Task::findOrFail($noteTypeId);
-            $project = $task->project;
-            if ($project->company_id) {
-                if (! $user->companies->contains('company_id', $project->company_id)) {
-                    abort(403);
-                }
-            } else {
-                if ($project->user_id !== $user->id) {
-                    abort(403);
-                }
-            }
-        } elseif ($noteType === Note::TYPE_ORGANIZATION) {
-            if (! $user->companies->contains('company_id', $noteTypeId)) {
-                abort(403);
-            }
-        }
     }
 }

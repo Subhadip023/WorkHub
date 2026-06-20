@@ -265,3 +265,78 @@ it('allows restoring projectless tasks from trash', function () {
     $response->assertRedirect();
     $this->assertDatabaseHas('tasks', ['id' => $task->id, 'deleted_at' => null]);
 });
+
+it('allows company admins to view, restore and permanently delete trashed company members', function () {
+    $admin = User::factory()->create();
+    $member = User::factory()->create();
+    $company = Company::create([
+        'name' => 'Member Test Org',
+        'code' => 'MTO1',
+    ]);
+
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $admin->id,
+        'role' => 1,
+        'is_approved' => true,
+    ]);
+
+    $membership = CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $member->id,
+        'role' => 0,
+        'is_approved' => true,
+    ]);
+
+    $membership->delete();
+
+    $this->actingAs($admin);
+
+    $response = $this->get(route('trash.index'));
+    $response->assertStatus(200);
+    $response->assertSee($member->name);
+
+    $response = $this->post(route('trash.members.restore', $membership->id));
+    $response->assertRedirect();
+    $this->assertDatabaseHas('company_users', ['id' => $membership->id, 'deleted_at' => null]);
+
+    $membership->delete();
+
+    $response = $this->delete(route('trash.members.forceDelete', $membership->id));
+    $response->assertRedirect();
+    $this->assertDatabaseMissing('company_users', ['id' => $membership->id]);
+});
+
+it('prevents non-admins from restoring or permanently deleting trashed company members', function () {
+    $admin = User::factory()->create();
+    $otherUser = User::factory()->create();
+    $member = User::factory()->create();
+    $company = Company::create([
+        'name' => 'Member Test Org 2',
+        'code' => 'MTO2',
+    ]);
+
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $admin->id,
+        'role' => 1,
+        'is_approved' => true,
+    ]);
+
+    $membership = CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $member->id,
+        'role' => 0,
+        'is_approved' => true,
+    ]);
+
+    $membership->delete();
+
+    $this->actingAs($otherUser);
+
+    $response = $this->post(route('trash.members.restore', $membership->id));
+    $response->assertStatus(403);
+
+    $response = $this->delete(route('trash.members.forceDelete', $membership->id));
+    $response->assertStatus(403);
+});

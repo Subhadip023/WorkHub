@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
+use App\Models\Company;
 use App\Models\CompanyUsers;
 use App\Models\Project;
 use App\Services\NotificationService;
+use Illuminate\Support\Facades\Gate;
 
 class ProjectController extends Controller
 {
@@ -59,13 +61,8 @@ class ProjectController extends Controller
         if ($company_id === 'personal' || empty($company_id)) {
             $data['company_id'] = null;
         } else {
-            // Verify user belongs to this company
-            $belongs = CompanyUsers::where('company_id', $company_id)
-                ->where('user_id', auth()->id())
-                ->exists();
-            if (! $belongs) {
-                abort(403);
-            }
+            $company = Company::findOrFail($company_id);
+            Gate::authorize('view', $company);
             $data['company_id'] = $company_id;
         }
         $data['user_id'] = auth()->id();
@@ -111,11 +108,9 @@ class ProjectController extends Controller
     {
         $user_id = auth()->id();
 
-        if ($project->company_id === null) {
-            if ($project->user_id !== $user_id) {
-                abort(403);
-            }
+        Gate::authorize('view', $project);
 
+        if ($project->company_id === null) {
             $project->load(['tasks' => function ($query) {
                 $query->orderByRaw('due_date IS NULL, due_date ASC')->orderBy('priority', 'desc');
             }, 'tasks.assignedUser']);
@@ -125,10 +120,6 @@ class ProjectController extends Controller
             $membership = CompanyUsers::where('company_id', $project->company_id)
                 ->where('user_id', $user_id)
                 ->first();
-
-            if (! $membership) {
-                abort(403);
-            }
 
             $project->load(['tasks' => function ($query) {
                 $query->orderByRaw('due_date IS NULL, due_date ASC')->orderBy('priority', 'desc');
@@ -154,19 +145,7 @@ class ProjectController extends Controller
      */
     public function edit(Project $project)
     {
-        $user_id = auth()->id();
-        if ($project->company_id === null) {
-            if ($project->user_id !== $user_id) {
-                abort(403);
-            }
-        } else {
-            $membership = CompanyUsers::where('company_id', $project->company_id)
-                ->where('user_id', $user_id)
-                ->exists();
-            if (! $membership) {
-                abort(403);
-            }
-        }
+        Gate::authorize('update', $project);
 
         $companies = auth()->user()->companies()->with('company')->get()->map(function ($cu) {
             return $cu->company;
@@ -180,19 +159,7 @@ class ProjectController extends Controller
      */
     public function update(UpdateProjectRequest $request, Project $project)
     {
-        $user_id = auth()->id();
-        if ($project->company_id === null) {
-            if ($project->user_id !== $user_id) {
-                abort(403);
-            }
-        } else {
-            $membership = CompanyUsers::where('company_id', $project->company_id)
-                ->where('user_id', $user_id)
-                ->exists();
-            if (! $membership) {
-                abort(403);
-            }
-        }
+        Gate::authorize('update', $project);
 
         $data = $request->validated();
         $data['slug'] = str_replace(' ', '-', strtolower($data['name']));
@@ -221,19 +188,7 @@ class ProjectController extends Controller
      */
     public function destroy(Project $project)
     {
-        $user_id = auth()->id();
-        if ($project->company_id === null) {
-            if ($project->user_id !== $user_id) {
-                abort(403);
-            }
-        } else {
-            $membership = CompanyUsers::where('company_id', $project->company_id)
-                ->where('user_id', $user_id)
-                ->first();
-            if (! $membership || $membership->role !== 1) {
-                abort(403, 'Only organization admins can delete projects.');
-            }
-        }
+        Gate::authorize('delete', $project);
 
         $project->delete();
 

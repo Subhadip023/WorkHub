@@ -46,20 +46,7 @@
             <a href="{{ route('projects.edit', $project) }}" class="btn btn-sm btn-info shadow-sm">
                 <i class="fas fa-edit fa-sm text-white-50 mr-1"></i> Edit Project
             </a>
-            @php
-                $current_company = session('current_company_id');
-                $canDelete = false;
-                if ($project->company_id === null) {
-                    $canDelete = ($project->user_id === auth()->id());
-                } else {
-                    $is_admin = \App\Models\CompanyUsers::where('company_id', $project->company_id)
-                        ->where('user_id', auth()->id())
-                        ->where('role', 1)
-                        ->exists();
-                    $canDelete = $is_admin;
-                }
-            @endphp
-            @if($canDelete)
+            @can('delete', $project)
                 <form action="{{ route('projects.destroy', $project) }}" method="POST" class="d-inline ml-1">
                     @csrf
                     @method('DELETE')
@@ -67,7 +54,7 @@
                         <i class="fas fa-trash fa-sm text-white-50 mr-1"></i> Delete Project
                     </button>
                 </form>
-            @endif
+            @endcan
         </div>
     </div>
     @if($project->description)
@@ -205,12 +192,9 @@
                     </tr>
 
                     @foreach($project->tasks as $task)
-                        @php
-                            $canMutate = ($user_role == 1) || ($task->assigned_to === auth()->id());
-                        @endphp
                         <tr class="task-row-item {{ $task->status == 3 ? 'completed-task' : 'pending-task' }}">
                             <td class="text-center align-middle">
-                                @if($canMutate)
+                                @can('update', $task)
                                     <form action="{{ route('tasks.toggle', $task) }}" method="POST">
                                         @csrf
                                         @method('PATCH')
@@ -230,7 +214,7 @@
                                             <i class="far fa-square fa-2x text-gray-300"></i>
                                         @endif
                                     </span>
-                                @endif
+                                @endcan
                             </td>
                             <td class="align-middle">
                                 <div class="font-weight-bold {{ $task->status == 3 ? 'text-muted text-line-through' : 'text-gray-800' }}" style="font-size: 1.05rem;">
@@ -349,7 +333,7 @@
                                 @endif
                             </td>
                             <td class="text-center align-middle">
-                                @if($canMutate)
+                                @can('update', $task)
                                     <a class="btn btn-sm btn-info" href="{{ route('tasks.show', $task) }}">
                                         <i class="fas fa-edit"></i>
                                     </a>
@@ -362,7 +346,7 @@
                                     </form>
                                 @else
                                     <span class="text-muted small font-italic">No actions</span>
-                                @endif
+                                @endcan
                             </td>
                         </tr>
                     @endforeach

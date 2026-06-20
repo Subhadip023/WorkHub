@@ -8,58 +8,37 @@ use App\Models\User;
 class ProjectPolicy
 {
     /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can view the model.
+     * Determine whether the user can view the project.
      */
     public function view(User $user, Project $project): bool
     {
-        return false;
+        if ($project->company_id === null) {
+            return $project->user_id === $user->id;
+        }
+
+        return $user->companies->contains('company_id', $project->company_id);
     }
 
     /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can update the model.
+     * Determine whether the user can update the project.
      */
     public function update(User $user, Project $project): bool
     {
-        return false;
+        return $this->view($user, $project);
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * Determine whether the user can delete the project.
      */
     public function delete(User $user, Project $project): bool
     {
-        return false;
-    }
+        if ($project->company_id === null) {
+            return $project->user_id === $user->id;
+        }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Project $project): bool
-    {
-        return false;
-    }
+        // Only company administrators can delete company projects
+        $membership = $user->companies()->where('company_id', $project->company_id)->first();
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Project $project): bool
-    {
-        return false;
+        return $membership && $membership->role === 1;
     }
 }

@@ -80,7 +80,20 @@ class TrashController extends Controller
             ->latest('deleted_at')
             ->get();
 
-        return view('trash.index', compact('tasks', 'projects', 'companies'));
+        // 4. Fetch Trashed Members (where user is admin in the target company)
+        $currentUserAdminCompanyIds = CompanyUsers::withTrashed()
+            ->where('user_id', $user->id)
+            ->where('role', 1)
+            ->pluck('company_id')
+            ->toArray();
+
+        $trashedMembers = CompanyUsers::onlyTrashed()
+            ->whereIn('company_id', $currentUserAdminCompanyIds)
+            ->with(['user', 'company'])
+            ->latest('deleted_at')
+            ->get();
+
+        return view('trash.index', compact('tasks', 'projects', 'companies', 'trashedMembers'));
     }
 
     /**
@@ -281,5 +294,53 @@ class TrashController extends Controller
         $company->forceDelete();
 
         return redirect()->back()->with('success', 'Organization and all associated data permanently deleted.');
+    }
+
+    /**
+     * Restore a deleted company member.
+     */
+    public function restoreMember($id)
+    {
+        $membership = CompanyUsers::onlyTrashed()->findOrFail($id);
+        $user_id = auth()->id();
+
+        // Check if currently authenticated user is an Admin of this company
+        $isAdmin = CompanyUsers::withTrashed()
+            ->where('company_id', $membership->company_id)
+            ->where('user_id', $user_id)
+            ->where('role', 1)
+            ->exists();
+
+        if (! $isAdmin) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $membership->restore();
+
+        return redirect()->back()->with('success', 'Organization member restored successfully.');
+    }
+
+    /**
+     * Permanently delete a company member.
+     */
+    public function forceDeleteMember($id)
+    {
+        $membership = CompanyUsers::onlyTrashed()->findOrFail($id);
+        $user_id = auth()->id();
+
+        // Check if currently authenticated user is an Admin of this company
+        $isAdmin = CompanyUsers::withTrashed()
+            ->where('company_id', $membership->company_id)
+            ->where('user_id', $user_id)
+            ->where('role', 1)
+            ->exists();
+
+        if (! $isAdmin) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $membership->forceDelete();
+
+        return redirect()->back()->with('success', 'Member record permanently deleted.');
     }
 }

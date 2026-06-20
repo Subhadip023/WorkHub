@@ -46,6 +46,11 @@
                     <i class="fas fa-building mr-1"></i> Organizations ({{ $companies->count() }})
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link font-weight-bold text-xs text-uppercase" id="members-tab" data-toggle="tab" href="#members" role="tab" aria-controls="members" aria-selected="false">
+                    <i class="fas fa-users mr-1"></i> Members ({{ $trashedMembers->count() }})
+                </a>
+            </li>
         </ul>
     </div>
     <div class="card-body">
@@ -231,6 +236,78 @@
                                                     </button>
                                                 </form>
                                                 <form action="{{ route('trash.companies.forceDelete', $company->id) }}" method="POST" class="d-inline" onsubmit="return confirm('WARNING: Are you sure you want to permanently delete this organization? All projects, tasks, and member history will be permanently wiped!');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Permanently">
+                                                        <i class="fas fa-times mr-1"></i> Permanent
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
+            
+            <!-- Members Tab -->
+            <div class="tab-pane fade" id="members" role="tabpanel" aria-labelledby="members-tab">
+                @if($trashedMembers->isEmpty())
+                    <div class="text-center py-5">
+                        <div class="text-gray-400 mb-3">
+                            <i class="fas fa-trash fa-3x"></i>
+                        </div>
+                        <h5 class="text-gray-600 font-weight-bold">No removed members in trash</h5>
+                        <p class="text-muted text-xs">Removed team members will appear here and can be restored.</p>
+                    </div>
+                @else
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" width="100%" cellspacing="0">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Organization</th>
+                                    <th>Role</th>
+                                    <th>Removed At</th>
+                                    <th class="text-center" style="width: 200px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($trashedMembers as $membership)
+                                    <tr>
+                                        <td class="align-middle">
+                                            <span class="font-weight-bold text-gray-800">{{ $membership->user->name ?? 'Deleted User' }}</span>
+                                        </td>
+                                        <td class="align-middle text-xs text-gray-700">
+                                            {{ $membership->user->email ?? 'N/A' }}
+                                        </td>
+                                        <td class="align-middle">
+                                            <span class="badge badge-info shadow-sm">
+                                                <i class="fas fa-building mr-1"></i> {{ $membership->company->name ?? 'N/A' }}
+                                            </span>
+                                        </td>
+                                        <td class="align-middle text-xs">
+                                            @if($membership->role == 1)
+                                                <span class="badge badge-danger">Admin</span>
+                                            @else
+                                                <span class="badge badge-secondary">Member</span>
+                                            @endif
+                                        </td>
+                                        <td class="align-middle text-xs text-muted">
+                                            {{ $membership->deleted_at->format('M d, Y H:i') }}
+                                        </td>
+                                        <td class="text-center align-middle">
+                                            <div class="d-flex justify-content-center gap-2">
+                                                <form action="{{ route('trash.members.restore', $membership->id) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Restore">
+                                                        <i class="fas fa-trash-restore mr-1"></i> Restore
+                                                    </button>
+                                                </form>
+                                                <form action="{{ route('trash.members.forceDelete', $membership->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to permanently delete this member relation? This action cannot be undone.');">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Permanently">
