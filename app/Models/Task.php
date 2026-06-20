@@ -32,8 +32,6 @@ class Task extends Model
                 'field' => 'status',
                 'old_value' => null,
                 'new_value' => (string) ($task->status ?? 1),
-                'old_status' => null,
-                'new_status' => $task->status ?? 1,
             ]);
 
             if ($task->priority) {
@@ -71,11 +69,6 @@ class Task extends Model
                             'old_value' => $oldVal === null ? null : (string) $oldVal,
                             'new_value' => $newVal === null ? null : (string) $newVal,
                         ];
-
-                        if ($field === 'status') {
-                            $data['old_status'] = $oldVal !== null ? (int) $oldVal : null;
-                            $data['new_status'] = $newVal !== null ? (int) $newVal : null;
-                        }
 
                         TaskHistory::create($data);
                     }

@@ -1,0 +1,82 @@
+========================================================================
+WorkHub: Company Users (Members) Relations & Permissions Guide
+========================================================================
+
+The `company_users` table (mapped to the `App\Models\CompanyUsers` model) serves as the core junction/membership table between Users and Organizations (Companies). It defines user access levels, authorization scopes, and ownership parameters across the application.
+
+------------------------------------------------------------------------
+1. Database Schema Reference (company_users)
+------------------------------------------------------------------------
+- id (BigInt, Primary Key)
+- company_id (Foreign Key referencing companies.id)
+- user_id (Foreign Key referencing users.id)
+- role (TinyInt/Integer)
+    - 0 = Member (Standard user)
+    - 1 = Admin (Administrator / Owner)
+- is_approved (Boolean)
+    - true = Membership is active and approved
+    - false = Pending join request or invitation
+- deleted_at (Timestamp, Nullable)
+    - Supports SoftDeletes (removed members are kept in trash)
+- created_at / updated_at (Timestamps)
+
+------------------------------------------------------------------------
+2. Eloquent Model Relationships
+------------------------------------------------------------------------
+
+A. CompanyUsers Model (App\Models\CompanyUsers)
+   - belongsTo(Company::class) -> Access organization details
+   - belongsTo(User::class)    -> Access user account details
+   - hasMany(Task::class)      -> Retrieve tasks assigned to this member in the company context
+
+B. User Model (App\Models\User)
+   - hasMany(CompanyUsers::class) -> Retrieves all company memberships (includes pending)
+   - belongsToMany(Company::class, 'company_users') -> Direct relation to active companies
+
+C. Company Model (App\Models\Company)
+   - hasMany(CompanyUsers::class) -> Retrieves all member accounts under the organization
+   - belongsToMany(User::class, 'company_users') -> Direct relation to all member users
+
+------------------------------------------------------------------------
+3. Role & Permission Mapping
+------------------------------------------------------------------------
+
+[ ROLE: 1 (Admin) ]
+========================================================================
+Administrative level access over the organization scope:
+- Organization Management:
+    - View, edit, and delete organization details.
+    - Soft-delete and restore the organization.
+- Membership Management:
+    - Invite new members / approve join requests.
+    - Change roles of existing members.
+    - Remove members (soft-delete membership) and restore them from Trash.
+    - Permanently delete member records.
+- Projects:
+    - Create, view, update, delete, and restore all Projects in the company.
+- Tasks:
+    - Create, view, update, delete, and restore all Tasks in the company.
+- Notes:
+    - View all project, task, and organization notes.
+    - Update/delete own notes.
+
+[ ROLE: 0 (Member) ]
+========================================================================
+Collaborator level access within the organization scope:
+- Organization Management:
+    - View basic organization details.
+    - No access to organization settings, invitations, or member removal.
+- Projects:
+    - View projects associated with the company.
+    - Cannot create, update, delete, or restore company projects.
+- Tasks:
+    - View tasks within organization projects.
+    - Create tasks within organization projects.
+    - Mutate (edit/update status/priority/details) tasks ONLY if:
+        a) The task is assigned to them (assigned_to = user_id).
+        b) OR they are the creator of the task (user_id = user_id).
+    - Cannot delete or force-delete tasks unless they are the creator/owner.
+- Notes:
+    - View notes attached to tasks, projects, or companies they have access to.
+    - Create notes in tasks, projects, and organizations.
+    - Update/delete ONLY the notes they created.

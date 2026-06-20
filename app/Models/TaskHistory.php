@@ -14,8 +14,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $field
  * @property string|null $old_value
  * @property string|null $new_value
- * @property int|null $old_status
- * @property int|null $new_status
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Task $task
@@ -31,8 +29,6 @@ class TaskHistory extends Model
         'field',
         'old_value',
         'new_value',
-        'old_status',
-        'new_status',
     ];
 
     /**
@@ -99,8 +95,8 @@ class TaskHistory extends Model
     public function getDescription(): string
     {
         $field = $this->field ?? 'status';
-        $old = $this->old_value !== null ? $this->old_value : ($this->old_status !== null ? (string) $this->old_status : null);
-        $new = $this->new_value !== null ? $this->new_value : ($this->new_status !== null ? (string) $this->new_status : null);
+        $old = $this->old_value;
+        $new = $this->new_value;
 
         if ($field === 'status') {
             if ($old === null) {
@@ -164,7 +160,7 @@ class TaskHistory extends Model
     public function getOldValueDetails(): ?string
     {
         $field = $this->field ?? 'status';
-        $old = $this->old_value !== null ? $this->old_value : ($this->old_status !== null ? (string) $this->old_status : null);
+        $old = $this->old_value;
 
         if ($old === null || $old === '') {
             return null;

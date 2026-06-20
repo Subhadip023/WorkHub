@@ -434,8 +434,9 @@ it('logs task status history and displays it on the task details page', function
 
     $this->assertDatabaseHas('task_histories', [
         'task_id' => $task->id,
-        'old_status' => null,
-        'new_status' => 1,
+        'field' => 'status',
+        'old_value' => null,
+        'new_value' => '1',
     ]);
 
     // 2. Log status update
@@ -445,8 +446,9 @@ it('logs task status history and displays it on the task details page', function
 
     $this->assertDatabaseHas('task_histories', [
         'task_id' => $task->id,
-        'old_status' => 1,
-        'new_status' => 2,
+        'field' => 'status',
+        'old_value' => '1',
+        'new_value' => '2',
     ]);
 
     // 3. Log priority update
