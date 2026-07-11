@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\CompanyUsers;
+use App\Models\Project;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -47,4 +49,28 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+function createProject($userId = null, $companyId = null, $status = 1, $priority = 1): Project
+{
+    return Project::create([
+        'name' => 'Personal Project',
+        'slug' => 'personal-project',
+        'theme' => '#ff0000',
+        'status' => $status,
+        'priority' => $priority,
+        'user_id' => $userId,
+        'company_id' => $companyId,
+    ]);
+}
+
+function createCompanyUser($cid, $uid, $role = 0, $is_approved = true)
+{
+    return
+    CompanyUsers::create([
+        'company_id' => $cid,
+        'user_id' => $uid,
+        'role' => $role,
+        'is_approved' => $is_approved,
+    ]);
 }
