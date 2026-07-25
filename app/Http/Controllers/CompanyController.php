@@ -343,6 +343,12 @@ class CompanyController extends Controller
                 'email' => $email,
             ]);
 
+            // Clear cache for the invited user if they exist
+            $invitedUser = User::where('email', $email)->first();
+            if ($invitedUser) {
+                cache()->forget('pending_invitations_' . $invitedUser->id);
+            }
+
             Mail::to($email)->send(new InviteMember(
                 $company->name,
                 $auth_user->name,
@@ -384,6 +390,9 @@ class CompanyController extends Controller
         // Delete the invitation
         $invitation->delete();
 
+        // Clear the cache
+        cache()->forget('pending_invitations_' . auth()->id());
+
         return redirect()->route('dashboard')->with('success', 'You have successfully joined the organization!');
     }
 
@@ -398,6 +407,9 @@ class CompanyController extends Controller
 
         // Delete the invitation
         $invitation->delete();
+
+        // Clear the cache
+        cache()->forget('pending_invitations_' . auth()->id());
 
         return back()->with('info', 'Invitation rejected.');
     }

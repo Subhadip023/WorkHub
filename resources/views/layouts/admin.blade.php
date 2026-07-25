@@ -160,11 +160,7 @@
     <script src="{{ asset('asset/js/sb-admin-2.min.js') }}"></script>
     <script src="{{ asset('asset/js/admin-custom.js') }}?v={{ filemtime(public_path('asset/js/admin-custom.js')) }}"></script>
 
-    @if(auth()->check())
-        @php
-            $pendingInvitations = \App\Models\CompanyInvitation::where('email', auth()->user()->email)->with('company')->get();
-        @endphp
-        @if($pendingInvitations->isNotEmpty())
+    @if(auth()->check() && isset($pendingInvitations) && $pendingInvitations->isNotEmpty())
             <!-- Workspace Invitations Modal -->
             <div class="modal fade" id="invitationsModal" tabindex="-1" role="dialog" aria-labelledby="invitationsModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered" role="document">

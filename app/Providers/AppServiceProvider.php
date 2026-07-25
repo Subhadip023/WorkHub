@@ -47,5 +47,22 @@ class AppServiceProvider extends ServiceProvider
                     'name' => $notifiable->name ?? 'User',
                 ]);
         });
+
+        view()->composer('layouts.admin', function ($view) {
+            if (auth()->check()) {
+                $user = auth()->user();
+                $cacheKey = 'pending_invitations_' . $user->id;
+
+                $pendingInvitations = cache()->remember($cacheKey, 300, function () use ($user) {
+                    return \App\Models\CompanyInvitation::where('email', $user->email)
+                        ->with('company')
+                        ->get();
+                });
+
+                $view->with('pendingInvitations', $pendingInvitations);
+            } else {
+                $view->with('pendingInvitations', collect());
+            }
+        });
     }
 }
