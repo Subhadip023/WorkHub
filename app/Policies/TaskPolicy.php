@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 
@@ -14,14 +15,9 @@ class TaskPolicy
     {
         $project = $task->project;
 
-        // 1. Personal Task Scope (No Project associated)
-        if ($project === null) {
-            return ($task->user_id === $user->id) || ($task->assigned_to === $user->id);
-        }
-
-        // 2. Personal Project Scope
-        if ($project->company_id === null) {
-            return ($project->user_id === $user->id) || ($task->assigned_to === $user->id);
+        $personalAccess = $this->isPersonalOrProjectOwnerOrAssignee($user, $task, $project);
+        if ($personalAccess !== null) {
+            return $personalAccess;
         }
 
         // 3. Organization Project Scope (Must be a company member)
@@ -35,14 +31,9 @@ class TaskPolicy
     {
         $project = $task->project;
 
-        // 1. Personal Task Scope (No Project associated)
-        if ($project === null) {
-            return ($task->user_id === $user->id) || ($task->assigned_to === $user->id);
-        }
-
-        // 2. Personal Project Scope (Project is not associated with any company)
-        if ($project->company_id === null) {
-            return ($project->user_id === $user->id) || ($task->assigned_to === $user->id);
+        $personalAccess = $this->isPersonalOrProjectOwnerOrAssignee($user, $task, $project);
+        if ($personalAccess !== null) {
+            return $personalAccess;
         }
 
         // 3. Organization Project Scope
@@ -63,14 +54,9 @@ class TaskPolicy
     {
         $project = $task->project()->withTrashed()->first();
 
-        // 1. Personal Task Scope (No Project associated)
-        if ($project === null) {
-            return ($task->user_id === $user->id) || ($task->assigned_to === $user->id);
-        }
-
-        // 2. Personal Project Scope (Project is not associated with any company)
-        if ($project->company_id === null) {
-            return ($project->user_id === $user->id) || ($task->assigned_to === $user->id);
+        $personalAccess = $this->isPersonalOrProjectOwnerOrAssignee($user, $task, $project);
+        if ($personalAccess !== null) {
+            return $personalAccess;
         }
 
         // 3. Organization Project Scope
@@ -90,5 +76,23 @@ class TaskPolicy
     public function forceDelete(User $user, Task $task): bool
     {
         return $this->restore($user, $task);
+    }
+
+    /**
+     * Helper to verify if the task is personal or user is the owner/assignee.
+     */
+    private function isPersonalOrProjectOwnerOrAssignee(User $user, Task $task, ?Project $project): ?bool
+    {
+        // 1. Personal Task Scope (No Project associated)
+        if ($project === null) {
+            return ($task->user_id === $user->id) || ($task->assigned_to === $user->id);
+        }
+
+        // 2. Personal Project Scope (Project is not associated with any company)
+        if ($project->company_id === null) {
+            return ($project->user_id === $user->id) || ($task->assigned_to === $user->id);
+        }
+
+        return null;
     }
 }

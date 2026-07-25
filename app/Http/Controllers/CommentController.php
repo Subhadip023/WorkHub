@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Comment;
 use App\Models\Company;
-use App\Models\CompanyUsers;
 use App\Models\Note;
 use App\Models\Project;
 use App\Models\Task;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class CommentController extends Controller
 {
@@ -40,9 +40,7 @@ class CommentController extends Controller
      */
     public function destroy(Comment $comment)
     {
-        if ($comment->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized.');
-        }
+        Gate::authorize('delete', $comment);
 
         $comment->delete();
 
@@ -63,71 +61,26 @@ class CommentController extends Controller
 
         switch ($type) {
             case 'company':
-                $company = Company::find($id);
-                if (! $company) {
-                    abort(404);
-                }
-                $isMember = CompanyUsers::where('company_id', $company->id)
-                    ->where('user_id', $user->id)
-                    ->exists();
-                if (! $isMember) {
-                    abort(403);
-                }
+                $company = Company::findOrFail($id);
+                Gate::authorize('view', $company);
 
                 return $company;
 
             case 'project':
-                $project = Project::find($id);
-                if (! $project) {
-                    abort(404);
-                }
-                if ($project->company_id === null) {
-                    if ($project->user_id !== $user->id) {
-                        abort(403);
-                    }
-                } else {
-                    $isMember = CompanyUsers::where('company_id', $project->company_id)
-                        ->where('user_id', $user->id)
-                        ->exists();
-                    if (! $isMember) {
-                        abort(403);
-                    }
-                }
+                $project = Project::findOrFail($id);
+                Gate::authorize('view', $project);
 
                 return $project;
 
             case 'task':
-                $task = Task::find($id);
-                if (! $task) {
-                    abort(404);
-                }
-                $this->checkAccess('project', $task->project_id);
+                $task = Task::findOrFail($id);
+                Gate::authorize('view', $task);
 
                 return $task;
 
             case 'note':
-                $note = Note::find($id);
-                if (! $note) {
-                    abort(404);
-                }
-                switch ($note->note_type) {
-                    case Note::TYPE_PROJECT:
-                        $this->checkAccess('project', $note->note_type_id);
-                        break;
-                    case Note::TYPE_TASK:
-                        $this->checkAccess('task', $note->note_type_id);
-                        break;
-                    case Note::TYPE_ORGANIZATION:
-                        $this->checkAccess('company', $note->note_type_id);
-                        break;
-                    case Note::TYPE_PERSONAL:
-                        if ($note->note_type_id !== $user->id) {
-                            abort(403);
-                        }
-                        break;
-                    default:
-                        abort(403);
-                }
+                $note = Note::findOrFail($id);
+                Gate::authorize('view', $note);
 
                 return $note;
 
