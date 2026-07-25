@@ -224,7 +224,6 @@
             </script>
             @endpush
         @endif
-    @endif
 
     <!-- Universal Delete Confirmation Modal -->
     <div class="modal fade" id="deleteConfirmModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">

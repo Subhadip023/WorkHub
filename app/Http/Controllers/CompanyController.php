@@ -264,14 +264,7 @@ class CompanyController extends Controller
     {
         $auth_user = auth()->user();
 
-        $isAdmin = CompanyUsers::where('company_id', $company->id)
-            ->where('user_id', $auth_user->id)
-            ->where('role', 1)
-            ->exists();
-
-        if (! $isAdmin) {
-            abort(403, 'Unauthorized action.');
-        }
+        \Illuminate\Support\Facades\Gate::authorize('update', $company);
 
         if ($auth_user->id == $user->id) {
             return back()->with('error', 'You cannot remove yourself from the organization.');
@@ -309,15 +302,7 @@ class CompanyController extends Controller
 
         $auth_user = auth()->user();
 
-        // Verify current user is admin of this company
-        $isAdmin = CompanyUsers::where('company_id', $company->id)
-            ->where('user_id', $auth_user->id)
-            ->where('role', 1)
-            ->exists();
-
-        if (! $isAdmin) {
-            abort(403, 'Unauthorized action.');
-        }
+        \Illuminate\Support\Facades\Gate::authorize('update', $company);
 
         $email = $request->input('email');
 
@@ -368,9 +353,7 @@ class CompanyController extends Controller
      */
     public function acceptInvitation(Request $request, CompanyInvitation $invitation)
     {
-        if ($invitation->email !== auth()->user()->email) {
-            abort(403, 'Unauthorized action.');
-        }
+        \Illuminate\Support\Facades\Gate::authorize('handle', $invitation);
 
         $company_id = $invitation->company_id;
         $user_id = auth()->user()->id;
@@ -401,9 +384,7 @@ class CompanyController extends Controller
      */
     public function rejectInvitation(Request $request, CompanyInvitation $invitation)
     {
-        if ($invitation->email !== auth()->user()->email) {
-            abort(403, 'Unauthorized action.');
-        }
+        \Illuminate\Support\Facades\Gate::authorize('handle', $invitation);
 
         // Delete the invitation
         $invitation->delete();
@@ -421,15 +402,7 @@ class CompanyController extends Controller
     {
         $auth_user = auth()->user();
 
-        // Verify current user is admin of this company
-        $isAdmin = CompanyUsers::where('company_id', $company->id)
-            ->where('user_id', $auth_user->id)
-            ->where('role', 1)
-            ->exists();
-
-        if (! $isAdmin) {
-            abort(403, 'Unauthorized action.');
-        }
+        \Illuminate\Support\Facades\Gate::authorize('update', $company);
 
         // Approve the member
         CompanyUsers::where('company_id', $company->id)
@@ -457,15 +430,7 @@ class CompanyController extends Controller
     {
         $auth_user = auth()->user();
 
-        // Verify current user is admin of this company
-        $isAdmin = CompanyUsers::where('company_id', $company->id)
-            ->where('user_id', $auth_user->id)
-            ->where('role', 1)
-            ->exists();
-
-        if (! $isAdmin) {
-            abort(403, 'Unauthorized action.');
-        }
+        \Illuminate\Support\Facades\Gate::authorize('update', $company);
 
         // Delete the pending membership
         CompanyUsers::where('company_id', $company->id)
@@ -494,19 +459,11 @@ class CompanyController extends Controller
     {
         $user = auth()->user();
 
-        // Verify membership access
+        \Illuminate\Support\Facades\Gate::authorize('leave', $company);
+
         $membership = CompanyUsers::where('company_id', $company->id)
             ->where('user_id', $user->id)
             ->first();
-
-        if (! $membership || ! $membership->is_approved) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        // If admin, they cannot leave
-        if ($membership->role == 1) {
-            abort(403, 'Administrators cannot leave the organization.');
-        }
 
         // Unassign all tasks assigned to this user in projects of this company
         $projectIds = $company->projects()->pluck('id')->toArray();

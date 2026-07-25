@@ -52,7 +52,11 @@ class CompanyUsersPolicy
      */
     public function restore(User $user, CompanyUsers $companyUsers): bool
     {
-        return false;
+        return $user->companies()
+            ->withTrashed()
+            ->where('company_id', $companyUsers->company_id)
+            ->where('role', 1)
+            ->exists();
     }
 
     /**
@@ -60,6 +64,6 @@ class CompanyUsersPolicy
      */
     public function forceDelete(User $user, CompanyUsers $companyUsers): bool
     {
-        return false;
+        return $this->restore($user, $companyUsers);
     }
 }

@@ -111,29 +111,9 @@ class TrashController extends Controller
             if ($project->trashed()) {
                 return redirect()->back()->with('error', 'Cannot restore task because its project is in the trash. Please restore the project first.');
             }
-
-            $user_id = auth()->id();
-            if ($project->company_id === null) {
-                if ($project->user_id !== $user_id) {
-                    abort(403);
-                }
-            } else {
-                $membership = CompanyUsers::withTrashed()
-                    ->where('company_id', $project->company_id)
-                    ->where('user_id', $user_id)
-                    ->first();
-                if (! $membership) {
-                    abort(403);
-                }
-                if ($membership->role == 0 && $task->assigned_to !== $user_id) {
-                    abort(403);
-                }
-            }
-        } else {
-            if ($task->user_id !== auth()->id() && $task->assigned_to !== auth()->id()) {
-                abort(403);
-            }
         }
+
+        \Illuminate\Support\Facades\Gate::authorize('restore', $task);
 
         $task->restore();
 
@@ -147,34 +127,7 @@ class TrashController extends Controller
     {
         $task = Task::onlyTrashed()->findOrFail($id);
 
-        if ($task->project_id) {
-            $project = Project::withTrashed()->find($task->project_id);
-            if (! $project) {
-                abort(404);
-            }
-
-            $user_id = auth()->id();
-            if ($project->company_id === null) {
-                if ($project->user_id !== $user_id) {
-                    abort(403);
-                }
-            } else {
-                $membership = CompanyUsers::withTrashed()
-                    ->where('company_id', $project->company_id)
-                    ->where('user_id', $user_id)
-                    ->first();
-                if (! $membership) {
-                    abort(403);
-                }
-                if ($membership->role == 0 && $task->assigned_to !== $user_id) {
-                    abort(403);
-                }
-            }
-        } else {
-            if ($task->user_id !== auth()->id() && $task->assigned_to !== auth()->id()) {
-                abort(403);
-            }
-        }
+        \Illuminate\Support\Facades\Gate::authorize('forceDelete', $task);
 
         $task->forceDelete();
 
@@ -187,21 +140,8 @@ class TrashController extends Controller
     public function restoreProject($id)
     {
         $project = Project::onlyTrashed()->findOrFail($id);
-        $user_id = auth()->id();
 
-        if ($project->company_id === null) {
-            if ($project->user_id !== $user_id) {
-                abort(403);
-            }
-        } else {
-            $membership = CompanyUsers::withTrashed()
-                ->where('company_id', $project->company_id)
-                ->where('user_id', $user_id)
-                ->first();
-            if (! $membership || $membership->role !== 1) {
-                abort(403);
-            }
-        }
+        \Illuminate\Support\Facades\Gate::authorize('restore', $project);
 
         $project->restore();
 
@@ -214,21 +154,8 @@ class TrashController extends Controller
     public function forceDeleteProject($id)
     {
         $project = Project::onlyTrashed()->findOrFail($id);
-        $user_id = auth()->id();
 
-        if ($project->company_id === null) {
-            if ($project->user_id !== $user_id) {
-                abort(403);
-            }
-        } else {
-            $membership = CompanyUsers::withTrashed()
-                ->where('company_id', $project->company_id)
-                ->where('user_id', $user_id)
-                ->first();
-            if (! $membership || $membership->role !== 1) {
-                abort(403);
-            }
-        }
+        \Illuminate\Support\Facades\Gate::authorize('forceDelete', $project);
 
         // Clean up tasks associated with this project permanently
         $project->tasks()->forceDelete();
@@ -243,17 +170,8 @@ class TrashController extends Controller
     public function restoreCompany($id)
     {
         $company = Company::onlyTrashed()->findOrFail($id);
-        $user_id = auth()->id();
 
-        // Verify if user was an admin of this company
-        $membership = CompanyUsers::onlyTrashed()
-            ->where('company_id', $company->id)
-            ->where('user_id', $user_id)
-            ->first();
-
-        if (! $membership || $membership->role !== 1) {
-            abort(403);
-        }
+        \Illuminate\Support\Facades\Gate::authorize('restore', $company);
 
         // Restore Company
         $company->restore();
@@ -270,17 +188,8 @@ class TrashController extends Controller
     public function forceDeleteCompany($id)
     {
         $company = Company::onlyTrashed()->findOrFail($id);
-        $user_id = auth()->id();
 
-        // Verify if user was an admin of this company
-        $membership = CompanyUsers::onlyTrashed()
-            ->where('company_id', $company->id)
-            ->where('user_id', $user_id)
-            ->first();
-
-        if (! $membership || $membership->role !== 1) {
-            abort(403);
-        }
+        \Illuminate\Support\Facades\Gate::authorize('forceDelete', $company);
 
         // 1. Force delete all tasks and projects in this company
         $projectIds = Project::withTrashed()->where('company_id', $company->id)->pluck('id')->toArray();
@@ -302,18 +211,8 @@ class TrashController extends Controller
     public function restoreMember($id)
     {
         $membership = CompanyUsers::onlyTrashed()->findOrFail($id);
-        $user_id = auth()->id();
 
-        // Check if currently authenticated user is an Admin of this company
-        $isAdmin = CompanyUsers::withTrashed()
-            ->where('company_id', $membership->company_id)
-            ->where('user_id', $user_id)
-            ->where('role', 1)
-            ->exists();
-
-        if (! $isAdmin) {
-            abort(403, 'Unauthorized action.');
-        }
+        \Illuminate\Support\Facades\Gate::authorize('restore', $membership);
 
         $membership->restore();
 
@@ -326,18 +225,8 @@ class TrashController extends Controller
     public function forceDeleteMember($id)
     {
         $membership = CompanyUsers::onlyTrashed()->findOrFail($id);
-        $user_id = auth()->id();
 
-        // Check if currently authenticated user is an Admin of this company
-        $isAdmin = CompanyUsers::withTrashed()
-            ->where('company_id', $membership->company_id)
-            ->where('user_id', $user_id)
-            ->where('role', 1)
-            ->exists();
-
-        if (! $isAdmin) {
-            abort(403, 'Unauthorized action.');
-        }
+        \Illuminate\Support\Facades\Gate::authorize('forceDelete', $membership);
 
         $membership->forceDelete();
 

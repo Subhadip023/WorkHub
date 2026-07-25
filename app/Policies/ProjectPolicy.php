@@ -41,4 +41,27 @@ class ProjectPolicy
 
         return $membership && $membership->role === 1;
     }
+
+    /**
+     * Determine whether the user can restore the project.
+     */
+    public function restore(User $user, Project $project): bool
+    {
+        // Use withTrashed() because membership or project components might be soft-deleted
+        if ($project->company_id === null) {
+            return $project->user_id === $user->id;
+        }
+
+        $membership = $user->companies()->withTrashed()->where('company_id', $project->company_id)->first();
+
+        return $membership && $membership->role === 1;
+    }
+
+    /**
+     * Determine whether the user can permanently delete the project.
+     */
+    public function forceDelete(User $user, Project $project): bool
+    {
+        return $this->restore($user, $project);
+    }
 }
