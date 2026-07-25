@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Company;
+use App\Models\CompanyInvitation;
 use App\Models\Note;
 use App\Models\Project;
 use App\Models\Task;
@@ -51,10 +52,10 @@ class AppServiceProvider extends ServiceProvider
         view()->composer('layouts.admin', function ($view) {
             if (auth()->check()) {
                 $user = auth()->user();
-                $cacheKey = 'pending_invitations_' . $user->id;
+                $cacheKey = 'pending_invitations_'.$user->id;
 
                 $pendingInvitations = cache()->remember($cacheKey, 300, function () use ($user) {
-                    return \App\Models\CompanyInvitation::where('email', $user->email)
+                    return CompanyInvitation::where('email', $user->email)
                         ->with('company')
                         ->get();
                 });
