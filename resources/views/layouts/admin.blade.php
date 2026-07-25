@@ -24,7 +24,7 @@
     @stack('styles')
     
     <!-- Custom styling for modern responsive sidebar -->
-    <link href="{{ asset('asset/css/admin-custom.css') }}" rel="stylesheet">
+    <link href="{{ asset('asset/css/admin-custom.css') }}?v={{ filemtime(public_path('asset/css/admin-custom.css')) }}" rel="stylesheet">
 
     <!-- Global App Routes and variables for JavaScript -->
     <script>
@@ -158,7 +158,7 @@
 
     <!-- Custom scripts for all pages-->
     <script src="{{ asset('asset/js/sb-admin-2.min.js') }}"></script>
-    <script src="{{ asset('asset/js/admin-custom.js') }}"></script>
+    <script src="{{ asset('asset/js/admin-custom.js') }}?v={{ filemtime(public_path('asset/js/admin-custom.js')) }}"></script>
 
     @if(auth()->check())
         @php
