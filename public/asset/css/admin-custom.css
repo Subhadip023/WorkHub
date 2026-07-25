@@ -148,9 +148,15 @@ html, body {
 }
 
 /* Footer is static at the bottom */
-#wrapper #content-wrapper footer.sticky-footer {
+#wrapper #content-wrapper .sticky-footer {
     flex-shrink: 0 !important;
-    padding: 1rem 0 !important;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: flex-end  !important;
+    align-items: center !important;
+    background-color: #ffffff !important;
+    height: 30px !important;
+    padding: 0 10px !important;
 }
 
 /* Custom Sleek Scrollbars */
