@@ -338,36 +338,52 @@
         });
 
         function handleIssueSubmit() {
-            const title = document.getElementById('issueTitle').value;
-            const priorityElement = document.getElementById('issuePriority');
-            const priorityText = priorityElement.options[priorityElement.selectedIndex].text;
-            const categoryElement = document.getElementById('issueCategory');
-            const categoryValue = categoryElement.value;
-            const categoryText = categoryElement.options[categoryElement.selectedIndex].text;
-            const description = document.getElementById('issueDescription').value;
+            const form = document.getElementById('reportIssueForm');
+            const submitBtn = document.getElementById('submitIssueBtn');
+            const originalBtnHtml = submitBtn.innerHTML;
+
+            const formData = new FormData();
+            formData.append('title', document.getElementById('issueTitle').value);
+            formData.append('priority', document.getElementById('issuePriority').value);
+            formData.append('category', document.getElementById('issueCategory').value);
+            formData.append('description', document.getElementById('issueDescription').value);
             
             const attachment = document.getElementById('issueAttachment');
-            const fileSelected = attachment.files.length > 0;
-            const fileName = fileSelected ? attachment.files[0].name : null;
-
-            // Construct GitHub issue body template
-            let body = `### Issue Details\n\n`;
-            body += `* **Category:** ${categoryText}\n`;
-            body += `* **Priority:** ${priorityText}\n`;
-            if (fileSelected) {
-                body += `* **Selected File:** \`${fileName}\` (Please drag & drop/attach this file below)\n`;
+            if (attachment.files.length > 0) {
+                formData.append('attachment', attachment.files[0]);
             }
-            body += `\n### Description\n\n${description}\n\n`;
-            body += `---\n*Reported via WorkHub Issue Form*`;
 
-            const githubUrl = `https://github.com/Subhadip023/WorkHub/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}&labels=${encodeURIComponent(categoryValue)}`;
+            // Disable button and show spinner
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Submitting...';
 
-            window.open(githubUrl, '_blank');
-
-            // Reset form and modal
-            document.getElementById('reportIssueForm').reset();
-            document.querySelector('.custom-file-label').innerText = 'Choose file';
-            $('#reportIssueModal').modal('hide');
+            fetch('{{ route("issues.store") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(result => {
+                if (result.status === 200 && result.body.success) {
+                    alert('Issue successfully submitted to GitHub!\nIssue URL: ' + result.body.url);
+                    form.reset();
+                    document.querySelector('.custom-file-label').innerText = 'Choose file';
+                    $('#reportIssueModal').modal('hide');
+                } else {
+                    alert('Error: ' + (result.body.message || 'Something went wrong.'));
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting issue:', error);
+                alert('An error occurred while submitting the issue. Please try again.');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnHtml;
+            });
         }
     </script>
 

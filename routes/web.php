@@ -3,6 +3,7 @@
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\IssueController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
@@ -72,6 +73,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/permissions', function () {
         return view('permissions.index');
     })->name('permissions.index');
+
+    Route::post('/issues', [IssueController::class, 'store'])->name('issues.store');
 });
 
 require __DIR__.'/auth.php';

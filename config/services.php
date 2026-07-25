@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'github' => [
+        'pat' => env('GITHUB_PAT'),
+        'owner' => env('GITHUB_OWNER', 'Subhadip023'),
+        'repo' => env('GITHUB_REPO', 'WorkHub'),
+    ],
+
 ];
