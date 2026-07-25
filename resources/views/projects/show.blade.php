@@ -112,7 +112,7 @@
 
 <div class="row">
     <!-- Left Column (2/3 width) -->
-    <div class="col-lg-8">
+    <div class="col-lg-9">
         <!-- Nav Option Tabs -->
         <ul class="nav nav-tabs mb-4" id="projectShowTabs" role="tablist">
             <li class="nav-item">
@@ -542,7 +542,7 @@
     </div>
 
     <!-- Right Column (1/3 width) -->
-    <div class="col-lg-4">
+    <div class="col-lg-3">
         <!-- Comments Section -->
         @include('partials.comments', [
             'comments' => $comments,
