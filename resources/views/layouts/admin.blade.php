@@ -254,6 +254,123 @@
 
 
 
+    <!-- Report Issue Modal -->
+    <div class="modal fade" id="reportIssueModal" tabindex="-1" role="dialog" aria-labelledby="reportIssueModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content border-0 shadow" style="border-radius: 12px; overflow: hidden;">
+                <div class="modal-header bg-primary text-white p-4">
+                    <h5 class="modal-title font-weight-bold d-flex align-items-center" id="reportIssueModalLabel">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        Submit an Issue
+                    </h5>
+                    <button class="close text-white" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <form id="reportIssueForm" onsubmit="event.preventDefault(); handleIssueSubmit();">
+                    <div class="modal-body p-4">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label for="issueTitle" class="text-gray-800 font-weight-bold">Issue Title <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="issueTitle" placeholder="e.g. Broken button on dashboard" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="issuePriority" class="text-gray-800 font-weight-bold">Priority <span class="text-danger">*</span></label>
+                                    <select class="form-control" id="issuePriority" required>
+                                        <option value="low">🟢 Low</option>
+                                        <option value="medium" selected>🟡 Medium</option>
+                                        <option value="high">🟠 High</option>
+                                        <option value="critical">🔴 Critical</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="issueCategory" class="text-gray-800 font-weight-bold">Category <span class="text-danger">*</span></label>
+                                    <select class="form-control" id="issueCategory" required>
+                                        <option value="bug" selected>🐛 Bug / Error</option>
+                                        <option value="feature">💡 Feature Request</option>
+                                        <option value="improvement">⚡ Improvement</option>
+                                        <option value="security">🔒 Security Concern</option>
+                                        <option value="other">❓ Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="issueAttachment" class="text-gray-800 font-weight-bold">Attachment (Optional)</label>
+                                    <div class="custom-file">
+                                        <input type="file" class="custom-file-input" id="issueAttachment">
+                                        <label class="custom-file-label" for="issueAttachment">Choose file</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mt-2">
+                            <label for="issueDescription" class="text-gray-800 font-weight-bold">Description <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="issueDescription" rows="5" placeholder="Please describe the steps to reproduce the issue..." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light p-3 border-top-0">
+                        <button class="btn btn-secondary font-weight-bold" type="button" data-dismiss="modal">Cancel</button>
+                        <button class="btn btn-primary font-weight-bold" type="submit" id="submitIssueBtn">
+                            <i class="fas fa-paper-plane mr-1"></i> Submit Issue
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Update custom file input label with selected filename
+        document.getElementById('issueAttachment').addEventListener('change', function(e) {
+            var fileName = e.target.files[0] ? e.target.files[0].name : 'Choose file';
+            var nextSibling = e.target.nextElementSibling;
+            nextSibling.innerText = fileName;
+        });
+
+        function handleIssueSubmit() {
+            const title = document.getElementById('issueTitle').value;
+            const priorityElement = document.getElementById('issuePriority');
+            const priorityText = priorityElement.options[priorityElement.selectedIndex].text;
+            const categoryElement = document.getElementById('issueCategory');
+            const categoryValue = categoryElement.value;
+            const categoryText = categoryElement.options[categoryElement.selectedIndex].text;
+            const description = document.getElementById('issueDescription').value;
+            
+            const attachment = document.getElementById('issueAttachment');
+            const fileSelected = attachment.files.length > 0;
+            const fileName = fileSelected ? attachment.files[0].name : null;
+
+            // Construct GitHub issue body template
+            let body = `### Issue Details\n\n`;
+            body += `* **Category:** ${categoryText}\n`;
+            body += `* **Priority:** ${priorityText}\n`;
+            if (fileSelected) {
+                body += `* **Selected File:** \`${fileName}\` (Please drag & drop/attach this file below)\n`;
+            }
+            body += `\n### Description\n\n${description}\n\n`;
+            body += `---\n*Reported via WorkHub Issue Form*`;
+
+            const githubUrl = `https://github.com/Subhadip023/WorkHub/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}&labels=${encodeURIComponent(categoryValue)}`;
+
+            window.open(githubUrl, '_blank');
+
+            // Reset form and modal
+            document.getElementById('reportIssueForm').reset();
+            document.querySelector('.custom-file-label').innerText = 'Choose file';
+            $('#reportIssueModal').modal('hide');
+        }
+    </script>
+
     @stack('scripts')
 </body>
 

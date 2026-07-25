@@ -124,6 +124,13 @@
             </div>
         </li>
 
+        <!-- Nav Item - Report Issue -->
+        <li class="nav-item mx-1">
+            <a class="nav-link" href="#" data-toggle="modal" data-target="#reportIssueModal" title="Report Issue">
+                <i class="fas fa-bug fa-fw"></i>
+            </a>
+        </li>
+
         <div class="topbar-divider d-none d-sm-block"></div>
 
         <!-- Nav Item - User Information -->
