@@ -12,6 +12,7 @@ use App\Models\Task;
 use App\Models\User;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 
 class CompanyController extends Controller
@@ -264,7 +265,7 @@ class CompanyController extends Controller
     {
         $auth_user = auth()->user();
 
-        \Illuminate\Support\Facades\Gate::authorize('update', $company);
+        Gate::authorize('update', $company);
 
         if ($auth_user->id == $user->id) {
             return back()->with('error', 'You cannot remove yourself from the organization.');
@@ -302,7 +303,7 @@ class CompanyController extends Controller
 
         $auth_user = auth()->user();
 
-        \Illuminate\Support\Facades\Gate::authorize('update', $company);
+        Gate::authorize('update', $company);
 
         $email = $request->input('email');
 
@@ -353,7 +354,7 @@ class CompanyController extends Controller
      */
     public function acceptInvitation(Request $request, CompanyInvitation $invitation)
     {
-        \Illuminate\Support\Facades\Gate::authorize('handle', $invitation);
+        Gate::authorize('handle', $invitation);
 
         $company_id = $invitation->company_id;
         $user_id = auth()->user()->id;
@@ -384,7 +385,7 @@ class CompanyController extends Controller
      */
     public function rejectInvitation(Request $request, CompanyInvitation $invitation)
     {
-        \Illuminate\Support\Facades\Gate::authorize('handle', $invitation);
+        Gate::authorize('handle', $invitation);
 
         // Delete the invitation
         $invitation->delete();
@@ -402,7 +403,7 @@ class CompanyController extends Controller
     {
         $auth_user = auth()->user();
 
-        \Illuminate\Support\Facades\Gate::authorize('update', $company);
+        Gate::authorize('update', $company);
 
         // Approve the member
         CompanyUsers::where('company_id', $company->id)
@@ -430,7 +431,7 @@ class CompanyController extends Controller
     {
         $auth_user = auth()->user();
 
-        \Illuminate\Support\Facades\Gate::authorize('update', $company);
+        Gate::authorize('update', $company);
 
         // Delete the pending membership
         CompanyUsers::where('company_id', $company->id)
@@ -459,7 +460,7 @@ class CompanyController extends Controller
     {
         $user = auth()->user();
 
-        \Illuminate\Support\Facades\Gate::authorize('leave', $company);
+        Gate::authorize('leave', $company);
 
         $membership = CompanyUsers::where('company_id', $company->id)
             ->where('user_id', $user->id)

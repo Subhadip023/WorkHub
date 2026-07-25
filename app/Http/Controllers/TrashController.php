@@ -6,6 +6,7 @@ use App\Models\Company;
 use App\Models\CompanyUsers;
 use App\Models\Project;
 use App\Models\Task;
+use Illuminate\Support\Facades\Gate;
 
 class TrashController extends Controller
 {
@@ -113,7 +114,7 @@ class TrashController extends Controller
             }
         }
 
-        \Illuminate\Support\Facades\Gate::authorize('restore', $task);
+        Gate::authorize('restore', $task);
 
         $task->restore();
 
@@ -127,7 +128,7 @@ class TrashController extends Controller
     {
         $task = Task::onlyTrashed()->findOrFail($id);
 
-        \Illuminate\Support\Facades\Gate::authorize('forceDelete', $task);
+        Gate::authorize('forceDelete', $task);
 
         $task->forceDelete();
 
@@ -141,7 +142,7 @@ class TrashController extends Controller
     {
         $project = Project::onlyTrashed()->findOrFail($id);
 
-        \Illuminate\Support\Facades\Gate::authorize('restore', $project);
+        Gate::authorize('restore', $project);
 
         $project->restore();
 
@@ -155,7 +156,7 @@ class TrashController extends Controller
     {
         $project = Project::onlyTrashed()->findOrFail($id);
 
-        \Illuminate\Support\Facades\Gate::authorize('forceDelete', $project);
+        Gate::authorize('forceDelete', $project);
 
         // Clean up tasks associated with this project permanently
         $project->tasks()->forceDelete();
@@ -171,7 +172,7 @@ class TrashController extends Controller
     {
         $company = Company::onlyTrashed()->findOrFail($id);
 
-        \Illuminate\Support\Facades\Gate::authorize('restore', $company);
+        Gate::authorize('restore', $company);
 
         // Restore Company
         $company->restore();
@@ -189,7 +190,7 @@ class TrashController extends Controller
     {
         $company = Company::onlyTrashed()->findOrFail($id);
 
-        \Illuminate\Support\Facades\Gate::authorize('forceDelete', $company);
+        Gate::authorize('forceDelete', $company);
 
         // 1. Force delete all tasks and projects in this company
         $projectIds = Project::withTrashed()->where('company_id', $company->id)->pluck('id')->toArray();
@@ -212,7 +213,7 @@ class TrashController extends Controller
     {
         $membership = CompanyUsers::onlyTrashed()->findOrFail($id);
 
-        \Illuminate\Support\Facades\Gate::authorize('restore', $membership);
+        Gate::authorize('restore', $membership);
 
         $membership->restore();
 
@@ -226,7 +227,7 @@ class TrashController extends Controller
     {
         $membership = CompanyUsers::onlyTrashed()->findOrFail($id);
 
-        \Illuminate\Support\Facades\Gate::authorize('forceDelete', $membership);
+        Gate::authorize('forceDelete', $membership);
 
         $membership->forceDelete();
 

@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Company;
 use App\Models\User;
+use Illuminate\Auth\Access\Response;
 
 class CompanyPolicy
 {
@@ -41,14 +42,14 @@ class CompanyPolicy
         $membership = $user->companies()->where('company_id', $company->id)->first();
 
         if (! $membership || ! $membership->is_approved) {
-            return \Illuminate\Auth\Access\Response::deny('You are not a member of this organization.');
+            return Response::deny('You are not a member of this organization.');
         }
 
         if ($membership->role === 1) {
-            return \Illuminate\Auth\Access\Response::deny('Administrators cannot leave the organization.');
+            return Response::deny('Administrators cannot leave the organization.');
         }
 
-        return \Illuminate\Auth\Access\Response::allow();
+        return Response::allow();
     }
 
     /**

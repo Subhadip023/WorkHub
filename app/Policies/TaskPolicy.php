@@ -54,7 +54,7 @@ class TaskPolicy
 
         // Admins can modify anything; Members can only modify tasks explicitly assigned to them
         return ($membership->role == 1) || ($task->assigned_to === $user->id) || ($task->user_id === $user->id);
-     }
+    }
 
     /**
      * Determine whether the user can restore the task.
