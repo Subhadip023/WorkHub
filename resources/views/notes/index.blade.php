@@ -75,36 +75,34 @@
 </div>
 
 <!-- Notes Type Filter Tab Bar -->
-<div class="card mb-4 bg-white" style="box-shadow: 0 .125rem .25rem rgba(0,0,0,.075)">
-    <div class="card-body py-2.5 px-3">
-        <ul class="nav nav-tabs" id="notesFilterTab" role="tablist">
-            <li class="nav-item mr-2">
-                <a class="nav-link active font-weight-bold" id="all-tab" data-toggle="tab" href="#all-notes" role="tab">
-                    <i class="fas fa-th-large mr-2"></i>All Notes
-                </a>
-            </li>
-            <li class="nav-item mr-2">
-                <a class="nav-link font-weight-bold" id="personal-tab" data-toggle="tab" href="#personal-notes" role="tab">
-                    <i class="fas fa-user-lock mr-2"></i>Personal
-                </a>
-            </li>
-            <li class="nav-item mr-2">
-                <a class="nav-link font-weight-bold" id="project-tab" data-toggle="tab" href="#project-notes" role="tab">
-                    <i class="fas fa-project-diagram mr-2"></i>Projects
-                </a>
-            </li>
-            <li class="nav-item mr-2">
-                <a class="nav-link font-weight-bold" id="task-tab" data-toggle="tab" href="#task-notes" role="tab">
-                    <i class="fas fa-tasks mr-2"></i>Tasks
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link font-weight-bold" id="org-tab" data-toggle="tab" href="#org-notes" role="tab">
-                    <i class="fas fa-building mr-2"></i>Organizations
-                </a>
-            </li>
-        </ul>
-    </div>
+<div class="mb-4">
+    <ul class="nav nav-tabs" id="notesFilterTab" role="tablist">
+        <li class="nav-item mr-2">
+            <a class="nav-link active font-weight-bold" id="all-tab" data-toggle="tab" href="#all-notes" role="tab">
+                <i class="fas fa-th-large mr-2"></i>All Notes
+            </a>
+        </li>
+        <li class="nav-item mr-2">
+            <a class="nav-link font-weight-bold" id="personal-tab" data-toggle="tab" href="#personal-notes" role="tab">
+                <i class="fas fa-user-lock mr-2"></i>Personal
+            </a>
+        </li>
+        <li class="nav-item mr-2">
+            <a class="nav-link font-weight-bold" id="project-tab" data-toggle="tab" href="#project-notes" role="tab">
+                <i class="fas fa-project-diagram mr-2"></i>Projects
+            </a>
+        </li>
+        <li class="nav-item mr-2">
+            <a class="nav-link font-weight-bold" id="task-tab" data-toggle="tab" href="#task-notes" role="tab">
+                <i class="fas fa-tasks mr-2"></i>Tasks
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link font-weight-bold" id="org-tab" data-toggle="tab" href="#org-notes" role="tab">
+                <i class="fas fa-building mr-2"></i>Organizations
+            </a>
+        </li>
+    </ul>
 </div>
 
 <!-- Notes Grid -->
