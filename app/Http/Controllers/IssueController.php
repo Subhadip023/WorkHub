@@ -43,11 +43,12 @@ class IssueController extends Controller
             $attachmentName = $request->file('attachment')->getClientOriginalName();
         }
 
-        // Build Markdown Body for GitHub Issue
-        $body = "### 📋 Issue Details\n\n";
-        $body .= "* **Reporter:** {$user->name} ({$user->email})\n";
-        $body .= '* **Category:** '.ucfirst($request->input('category'))."\n";
-        $body .= '* **Priority:** '.ucfirst($request->input('priority'))."\n";
+        // // Build Markdown Body for GitHub Issue
+        $body = '';
+        // $body = "### 📋 Issue Details\n\n";
+        // $body .= "* **Reporter:** {$user->name} ({$user->email})\n";
+        // $body .= '* **Category:** '.ucfirst($request->input('category'))."\n";
+        // $body .= '* **Priority:** '.ucfirst($request->input('priority'))."\n";
 
         if ($attachmentUrl) {
             $body .= "* **Attachment:** [{$attachmentName}]({$attachmentUrl})\n";
@@ -55,6 +56,8 @@ class IssueController extends Controller
 
         $body .= "\n### 📝 Description\n\n".$request->input('description')."\n\n";
         $body .= "---\n*Reported via WorkHub Issue Form*";
+        // add issue user name and email in issue body
+        $body .= "\n### 👤 Reporter\n\n {$user->name} \n Email : {$user->email}";
 
         // Map category and priority to labels
         $labels = [$request->input('category'), $request->input('priority')];

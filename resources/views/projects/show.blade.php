@@ -7,6 +7,52 @@
     .text-line-through {
         text-decoration: line-through;
     }
+    .note-card-hover {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    .note-card-hover:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 0.75rem 2rem rgba(58, 59, 69, 0.15) !important;
+    }
+    .note-description-preview {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: #5a5c69;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+    /* Custom Modern Underline Tabs */
+    #projectShowTabs {
+        border-bottom: 2px solid #eaecf4;
+    }
+    #projectShowTabs .nav-link {
+        border: none;
+        background: transparent;
+        color: #858796;
+        padding: 0.75rem 1.25rem;
+        border-bottom: 3px solid transparent;
+        font-weight: 700;
+        transition: all 0.15s ease-in-out;
+        border-radius: 0;
+    }
+    #projectShowTabs .nav-link:hover {
+        color: #5a5c69;
+        border-bottom: 3px solid #dddfeb;
+    }
+    #projectShowTabs .nav-link.active {
+        color: {{ $project->theme }} !important;
+        border-bottom: 3px solid {{ $project->theme }} !important;
+        background: transparent;
+    }
+    #projectShowTabs .nav-link i {
+        transition: transform 0.2s;
+    }
+    #projectShowTabs .nav-link:hover i {
+        transform: translateY(-1px);
+    }
 </style>
 @endpush
 
@@ -71,12 +117,12 @@
         <ul class="nav nav-tabs mb-4" id="projectShowTabs" role="tablist">
             <li class="nav-item">
                 <a class="nav-link active font-weight-bold" id="tasks-tab" data-toggle="tab" href="#tasks-content" role="tab" aria-controls="tasks-content" aria-selected="true">
-                    <i class="fas fa-tasks mr-2 text-primary"></i>Tasks
+                    <i class="fas fa-tasks mr-2"></i>Tasks
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link font-weight-bold" id="notes-tab" data-toggle="tab" href="#notes-content" role="tab" aria-controls="notes-content" aria-selected="false">
-                    <i class="fas fa-sticky-note mr-2 text-info"></i>Notes
+                    <i class="fas fa-sticky-note mr-2"></i>Notes
                 </a>
             </li>
         </ul>
@@ -390,38 +436,53 @@
         <div class="row">
             @forelse($project->notes as $note)
                 <div class="col-lg-6 col-12 mb-3">
-                    <div class="card border-left-primary shadow-sm h-100 p-3">
-                            <div class="d-flex align-items-center justify-content-between mb-2">
-                                <h6 class="font-weight-bold mb-0 text-truncate" style="max-width: 85%;" title="{{ $note->title }}">
-                                    <a href="{{ route('notes.show', [$note, 'redirect_back' => request()->fullUrl()]) }}" class="text-gray-900 text-decoration-none">
-                                        {{ $note->title }}
-                                    </a>
-                                </h6>
+                    <div class="card shadow-sm h-100 border-0 note-card-hover" style="border-left: 4px solid #4e73df !important; border-radius: 8px;">
+                        <div class="card-body d-flex flex-column p-4">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <span class="badge badge-primary px-2.5 py-1 font-weight-bold shadow-sm" style="background-color: rgba(78, 115, 223, 0.15); color: #4e73df;">Project Note</span>
+                                
                                 <div class="dropdown no-arrow">
-                                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink{{ $note->id }}" data-toggle="dropdown">
+                                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink{{ $note->id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
                                     </a>
-                                    <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in">
-                                        <a class="dropdown-item" href="{{ route('notes.edit', [$note, 'redirect_back' => request()->fullUrl()]) }}">
+                                    <div class="dropdown-menu dropdown-menu-right shadow border-0 animated--fade-in" aria-labelledby="dropdownMenuLink{{ $note->id }}" style="border-radius: 8px;">
+                                        <a class="dropdown-item py-2" href="{{ route('notes.edit', [$note, 'redirect_back' => request()->fullUrl()]) }}">
                                             <i class="fas fa-edit fa-sm fa-fw mr-2 text-gray-400"></i> Edit Note
                                         </a>
                                         <div class="dropdown-divider"></div>
                                         <form action="{{ route('notes.destroy', $note) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this note?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="dropdown-item text-danger">
+                                            <button type="submit" class="dropdown-item text-danger py-2">
                                                 <i class="fas fa-trash fa-sm fa-fw mr-2 text-danger"></i> Delete Note
                                             </button>
                                         </form>
                                     </div>
                                 </div>
                             </div>
-                            <p class="text-gray-600 small mb-2 flex-grow-1" style="white-space: pre-wrap;">{!! Str::limit(strip_tags($note->description), 200) !!}</p>
-                            <div class="text-right text-xs text-gray-500 font-weight-bold mt-auto pt-2">
-                                <span>{{ $note->created_at->diffForHumans() }}</span>
+
+                            <h5 class="font-weight-bold mb-2">
+                                <a href="{{ route('notes.show', [$note, 'redirect_back' => request()->fullUrl()]) }}" class="text-gray-900 text-decoration-none hover-link" style="font-size: 1.15rem; line-height: 1.4;">
+                                    {{ $note->title }}
+                                </a>
+                            </h5>
+
+                            <!-- Description Preview with clamp lines -->
+                            <p class="text-gray-600 mb-4 flex-grow-1 note-description-preview" style="font-size: 0.9rem; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; white-space: normal;">
+                                {!! strip_tags($note->description) !!}
+                            </p>
+                            
+                            <div class="d-flex align-items-center justify-content-between text-xs text-gray-500 font-weight-bold border-top pt-3">
+                                <span class="text-muted d-inline-flex align-items-center">
+                                    <i class="fas fa-project-diagram mr-1"></i>{{ Str::limit($project->name, 15) }}
+                                </span>
+                                <span title="Created {{ $note->created_at->format('M d, Y h:i A') }}" class="d-inline-flex align-items-center text-muted">
+                                    <i class="far fa-clock mr-1"></i>{{ $note->created_at->diffForHumans() }}
+                                </span>
                             </div>
                         </div>
                     </div>
+                </div>
             @empty
                 <div class="col-12 text-center py-4">
                     <p class="text-muted mb-0">No notes found for this project. Add one to document project info!</p>
