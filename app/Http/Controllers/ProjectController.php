@@ -8,6 +8,7 @@ use App\Models\Company;
 use App\Models\CompanyUsers;
 use App\Models\Project;
 use App\Services\NotificationService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 class ProjectController extends Controller
@@ -104,26 +105,19 @@ class ProjectController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Project $project)
+    public function show(Project $project, Request $request)
     {
         $user_id = auth()->id();
 
         Gate::authorize('view', $project);
 
         if ($project->company_id === null) {
-            $project->load(['tasks' => function ($query) {
-                $query->orderByRaw('due_date IS NULL, due_date ASC')->orderBy('priority', 'desc');
-            }, 'tasks.assignedUser']);
             $companyUsers = collect([auth()->user()]);
             $user_role = 1; // Admin of their personal space
         } else {
             $membership = CompanyUsers::where('company_id', $project->company_id)
                 ->where('user_id', $user_id)
                 ->first();
-
-            $project->load(['tasks' => function ($query) {
-                $query->orderByRaw('due_date IS NULL, due_date ASC')->orderBy('priority', 'desc');
-            }, 'tasks.assignedUser']);
 
             $companyUsers = CompanyUsers::where('company_id', $project->company_id)
                 ->with('user')
@@ -134,16 +128,50 @@ class ProjectController extends Controller
                 ->filter()
                 ->values();
 
-            $user_role = $membership->role;
+            $user_role = $membership ? $membership->role : 2;
+        }
+
+        // Build tasks query with filters
+        $tasksQuery = $project->tasks()->with('assignedUser');
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $tasksQuery->where('title', 'like', '%'.$search.'%');
+        }
+
+        if ($request->filled('priority')) {
+            $tasksQuery->where('priority', $request->input('priority'));
+        }
+
+        if ($request->filled('status')) {
+            $tasksQuery->where('status', $request->input('status'));
+        }
+
+        if ($request->filled('type')) {
+            $tasksQuery->where('type', $request->input('type'));
+        }
+
+        $showCompleted = $request->input('show_completed') === 'true';
+        if (! $showCompleted && $request->input('status') != 3) {
+            $tasksQuery->where('status', '!=', 3);
+        }
+
+        $tasksQuery->orderByRaw('due_date IS NULL, due_date ASC')->orderBy('priority', 'desc');
+        $tasks = $tasksQuery->get();
+
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('projects.partials.tasks_table', compact('project', 'tasks', 'companyUsers'))->render(),
+            ]);
         }
 
         $comments = $project->comments()->with('user')->latest()->get();
 
-        $totalTasks = $project->tasks->count();
-        $completedTasks = $project->tasks->where('status', 3)->count();
+        $totalTasks = $project->tasks()->count();
+        $completedTasks = $project->tasks()->where('status', 3)->count();
         $percentage = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100) : 0;
 
-        return view('projects.show', compact('project', 'companyUsers', 'user_role', 'comments', 'totalTasks', 'completedTasks', 'percentage'));
+        return view('projects.show', compact('project', 'companyUsers', 'user_role', 'comments', 'tasks', 'totalTasks', 'completedTasks', 'percentage'));
     }
 
     /**

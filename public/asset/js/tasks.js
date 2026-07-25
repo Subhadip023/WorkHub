@@ -30,8 +30,8 @@ $(document).ready(function() {
         $('#inline_title').focus();
     });
 
-    // 3. Cancel Inline Add
-    $('#cancelInlineAdd').click(function() {
+    // 3. Cancel Inline Add (delegated for AJAX compatibility)
+    $(document).on('click', '#cancelInlineAdd', function() {
         $('#inlineAddRow').hide();
         
         if (typeof window.applyFilter === 'function') {
