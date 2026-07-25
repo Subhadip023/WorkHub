@@ -74,7 +74,9 @@ class NoteController extends Controller
     {
         Gate::authorize('view', $note);
 
-        return view('notes.show', compact('note'));
+        $comments = $note->comments()->with('user')->latest()->get();
+
+        return view('notes.show', compact('note', 'comments'));
     }
 
     public function downloadPdf(Note $note)

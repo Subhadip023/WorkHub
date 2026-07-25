@@ -64,13 +64,28 @@
     @endif
 </div>
 
-<!-- Task Stats & Progress Card -->
-@php
-    $totalTasks = $project->tasks->count();
-    $completedTasks = $project->tasks->where('status', 3)->count();
-    $percentage = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100) : 0;
-@endphp
-<div class="card shadow mb-4" style="border-left: 4px solid {{ $project->theme }}">
+<div class="row">
+    <!-- Left Column (2/3 width) -->
+    <div class="col-lg-8">
+        <!-- Nav Option Tabs -->
+        <ul class="nav nav-tabs mb-4" id="projectShowTabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active font-weight-bold" id="tasks-tab" data-toggle="tab" href="#tasks-content" role="tab" aria-controls="tasks-content" aria-selected="true">
+                    <i class="fas fa-tasks mr-2 text-primary"></i>Tasks
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link font-weight-bold" id="notes-tab" data-toggle="tab" href="#notes-content" role="tab" aria-controls="notes-content" aria-selected="false">
+                    <i class="fas fa-sticky-note mr-2 text-info"></i>Notes
+                </a>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="projectShowTabsContent">
+            <!-- Tasks Tab Pane -->
+            <div class="tab-pane fade show active" id="tasks-content" role="tabpanel" aria-labelledby="tasks-tab">
+                <!-- Task Stats & Progress Card -->
+                <div class="card shadow mb-4" style="border-left: 4px solid {{ $project->theme }}">
     <div class="card-body">
         <div class="row align-items-center">
             <div class="col mr-2">
@@ -106,7 +121,7 @@
 </div>
 
 <!-- Tasks List Card -->
-<div class="card shadow mb-4">
+<div class="card shadow mb-4 ">
     <div class="card-header py-3 d-flex align-items-center justify-content-between">
         <h6 class="m-0 font-weight-bold text-primary mb-0">Project Tasks</h6>
         <div class="custom-control custom-checkbox">
@@ -359,9 +374,12 @@
         </form>
     </div>
 </div>
+            </div> <!-- End Tasks Tab Pane -->
 
-<!-- Notes Section -->
-<div class="card shadow mb-4">
+            <!-- Notes Tab Pane -->
+            <div class="tab-pane fade" id="notes-content" role="tabpanel" aria-labelledby="notes-tab">
+                <!-- Notes Section -->
+                <div class="card shadow mb-4">
     <div class="card-header py-3 d-flex align-items-center justify-content-between">
         <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-sticky-note mr-1"></i> Project Notes</h6>
         <a href="{{ route('notes.create', ['note_type' => 1, 'note_type_id' => $project->id, 'redirect_back' => request()->fullUrl()]) }}" class="btn btn-sm btn-primary shadow-sm">
@@ -372,7 +390,7 @@
         <div class="row">
             @forelse($project->notes as $note)
                 <div class="col-lg-6 col-12 mb-3">
-                    <div class="card border-left-primary shadow-sm h-100">
+                    <div class="card border-left-primary shadow-sm h-100 p-3">
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <h6 class="font-weight-bold mb-0 text-truncate" style="max-width: 85%;" title="{{ $note->title }}">
                                     <a href="{{ route('notes.show', [$note, 'redirect_back' => request()->fullUrl()]) }}" class="text-gray-900 text-decoration-none">
@@ -412,13 +430,21 @@
         </div>
     </div>
 </div>
+            </div> <!-- End Notes Tab Pane -->
+        </div> <!-- End Tab Content Container -->
 
-<!-- Comments Section -->
-@include('partials.comments', [
-    'comments' => $project->comments()->with('user')->latest()->get(),
-    'commentableType' => 'project',
-    'commentableId' => $project->id
-])
+    </div>
+
+    <!-- Right Column (1/3 width) -->
+    <div class="col-lg-4">
+        <!-- Comments Section -->
+        @include('partials.comments', [
+            'comments' => $comments,
+            'commentableType' => 'project',
+            'commentableId' => $project->id
+        ])
+    </div>
+</div>
 
 @include('partials.edit_task_modal')
 
@@ -468,6 +494,15 @@
 <script src="{{ asset('asset/js/tasks.js') }}"></script>
 <script>
     $(document).ready(function() {
+        // Tab switching persistence
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            localStorage.setItem('activeProjectTab_' + {{ $project->id }}, $(e.target).attr('href'));
+        });
+        var activeTab = localStorage.getItem('activeProjectTab_' + {{ $project->id }});
+        if (activeTab) {
+            $('#projectShowTabs a[href="' + activeTab + '"]').tab('show');
+        }
+
         // Edit task modal populating is handled in the partial
 
         // Toggle Completed Tasks filtering logic

@@ -137,7 +137,13 @@ class ProjectController extends Controller
             $user_role = $membership->role;
         }
 
-        return view('projects.show', compact('project', 'companyUsers', 'user_role'));
+        $comments = $project->comments()->with('user')->latest()->get();
+
+        $totalTasks = $project->tasks->count();
+        $completedTasks = $project->tasks->where('status', 3)->count();
+        $percentage = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100) : 0;
+
+        return view('projects.show', compact('project', 'companyUsers', 'user_role', 'comments', 'totalTasks', 'completedTasks', 'percentage'));
     }
 
     /**

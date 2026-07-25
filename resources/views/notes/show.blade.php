@@ -57,7 +57,7 @@
 
         <!-- Comments Section -->
         @include('partials.comments', [
-            'comments' => $note->comments()->with('user')->latest()->get(),
+            'comments' => $comments,
             'commentableType' => 'note',
             'commentableId' => $note->id
         ])

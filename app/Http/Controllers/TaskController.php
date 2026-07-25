@@ -475,7 +475,9 @@ class TaskController extends Controller
 
         $task->load(['project', 'assignedUser', 'images', 'histories.user']);
 
-        return view('tasks.show', compact('task', 'companyUsers', 'user_role'));
+        $comments = $task->comments()->with('user')->latest()->get();
+
+        return view('tasks.show', compact('task', 'companyUsers', 'user_role', 'comments'));
     }
 
     /**

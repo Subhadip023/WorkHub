@@ -372,7 +372,7 @@
     <div class="col-lg-4">
         <!-- Comments Section -->
         @include('partials.comments', [
-            'comments' => $task->comments()->with('user')->latest()->get(),
+            'comments' => $comments,
             'commentableType' => 'task',
             'commentableId' => $task->id
         ])
