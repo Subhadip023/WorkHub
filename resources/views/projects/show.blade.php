@@ -178,6 +178,47 @@
         </div>
     </div>
     <div class="card-body">
+        @if($project->tasks->isNotEmpty())
+            <!-- Tasks Search & Filter Bar -->
+            <div class="row mb-3 bg-light py-2 px-1 rounded mx-0 border align-items-center" style="border-radius: 8px;">
+                <div class="col-md-4 mb-2 mb-md-0">
+                    <div class="input-group input-group-sm">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text bg-white border-right-0"><i class="fas fa-search text-gray-400"></i></span>
+                        </div>
+                        <input type="text" class="form-control border-left-0" id="searchTaskInput" placeholder="Search tasks by title...">
+                    </div>
+                </div>
+                <div class="col-md-2 mb-2 mb-md-0 col-6">
+                    <select class="form-control form-control-sm text-xs font-weight-bold" id="filterTaskPriority">
+                        <option value="">All Priorities</option>
+                        <option value="1">🟢 Low</option>
+                        <option value="2">🟡 Medium</option>
+                        <option value="3">🟠 High</option>
+                        <option value="4">🔴 Urgent</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-2 mb-md-0 col-6">
+                    <select class="form-control form-control-sm text-xs font-weight-bold" id="filterTaskStatus">
+                        <option value="">All Statuses</option>
+                        <option value="1">📝 To Do</option>
+                        <option value="2">⚙️ In Progress</option>
+                        <option value="3">✅ Completed</option>
+                        <option value="4">🛑 On Hold</option>
+                    </select>
+                </div>
+                <div class="col-md-3 col-12">
+                    <select class="form-control form-control-sm text-xs font-weight-bold" id="filterTaskType">
+                        <option value="">All Types</option>
+                        <option value="1">Task</option>
+                        <option value="2">Bug</option>
+                        <option value="3">Feature</option>
+                        <option value="4">Improvement</option>
+                    </select>
+                </div>
+            </div>
+        @endif
+
         <div id="noTasksContainer" class="text-center py-5" style="display: {{ $project->tasks->isEmpty() ? 'block' : 'none' }}">
             <i class="fas fa-clipboard-list fa-3x text-gray-300 mb-3"></i>
             <h5 class="text-gray-500 font-weight-bold">No tasks found</h5>
@@ -253,7 +294,11 @@
                     </tr>
 
                     @foreach($project->tasks as $task)
-                        <tr class="task-row-item {{ $task->status == 3 ? 'completed-task' : 'pending-task' }}">
+                        <tr class="task-row-item {{ $task->status == 3 ? 'completed-task' : 'pending-task' }}"
+                            data-priority="{{ $task->priority }}"
+                            data-status="{{ $task->status }}"
+                            data-type="{{ $task->type }}"
+                            data-title="{{ $task->title }}">
                             <td class="text-center align-middle">
                                 @can('update', $task)
                                     <form action="{{ route('tasks.toggle', $task) }}" method="POST">
@@ -577,20 +622,54 @@
                 var show = toggleCheckbox.checked;
                 localStorage.setItem('showCompletedTasks', show);
                 
+                var searchVal = (document.getElementById('searchTaskInput') ? document.getElementById('searchTaskInput').value : '').toLowerCase().trim();
+                var priorityVal = document.getElementById('filterTaskPriority') ? document.getElementById('filterTaskPriority').value : '';
+                var statusVal = document.getElementById('filterTaskStatus') ? document.getElementById('filterTaskStatus').value : '';
+                var typeVal = document.getElementById('filterTaskType') ? document.getElementById('filterTaskType').value : '';
+                
+                var showCompletedOverride = (statusVal === '3');
+                
                 var rows = document.querySelectorAll('.task-row-item');
                 var visibleCount = 0;
                 
                 rows.forEach(function(row) {
-                    if (row.classList.contains('completed-task')) {
-                        if (show) {
-                            row.style.setProperty('display', '', 'important');
-                            visibleCount++;
-                        } else {
-                            row.style.setProperty('display', 'none', 'important');
-                        }
-                    } else {
+                    var rowStatus = row.getAttribute('data-status');
+                    var rowPriority = row.getAttribute('data-priority');
+                    var rowType = row.getAttribute('data-type');
+                    var rowTitle = (row.getAttribute('data-title') || '').toLowerCase();
+                    
+                    var isMatch = true;
+                    
+                    // Completed tasks filter
+                    if (rowStatus === '3' && !show && !showCompletedOverride) {
+                        isMatch = false;
+                    }
+                    
+                    // Title Search filter
+                    if (searchVal && !rowTitle.includes(searchVal)) {
+                        isMatch = false;
+                    }
+                    
+                    // Priority filter
+                    if (priorityVal && rowPriority !== priorityVal) {
+                        isMatch = false;
+                    }
+                    
+                    // Status filter
+                    if (statusVal && rowStatus !== statusVal) {
+                        isMatch = false;
+                    }
+                    
+                    // Type filter
+                    if (typeVal && rowType !== typeVal) {
+                        isMatch = false;
+                    }
+                    
+                    if (isMatch) {
                         row.style.setProperty('display', '', 'important');
                         visibleCount++;
+                    } else {
+                        row.style.setProperty('display', 'none', 'important');
                     }
                 });
 
@@ -615,14 +694,26 @@
                         } else {
                             tasksTableContainer.style.display = 'none';
                             noTasksContainer.style.display = 'block';
-                            noTasksContainer.querySelector('h5').innerText = 'No pending tasks';
-                            noTasksContainer.querySelector('p').innerText = 'Check "Show Completed Tasks" to see finished tasks.';
+                            noTasksContainer.querySelector('h5').innerText = 'No matching tasks';
+                            noTasksContainer.querySelector('p').innerText = 'Try adjusting your filters or search terms.';
                         }
                     }
                 }
             };
 
             toggleCheckbox.addEventListener('change', window.applyFilter);
+            
+            var searchInput = document.getElementById('searchTaskInput');
+            if (searchInput) searchInput.addEventListener('input', window.applyFilter);
+            
+            var prioritySelect = document.getElementById('filterTaskPriority');
+            if (prioritySelect) prioritySelect.addEventListener('change', window.applyFilter);
+            
+            var statusSelect = document.getElementById('filterTaskStatus');
+            if (statusSelect) statusSelect.addEventListener('change', window.applyFilter);
+            
+            var typeSelect = document.getElementById('filterTaskType');
+            if (typeSelect) typeSelect.addEventListener('change', window.applyFilter);
 
             // Initial run
             window.applyFilter();
