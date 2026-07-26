@@ -168,7 +168,7 @@ it('sorts tasks in project details page by due_date ascending and priority desce
 
     $this->actingAs($user);
 
-    $response = $this->get(route('projects.show', $project));
+    $response = $this->get(route('projects.show', [$project, 'show_completed' => 'true']));
     $response->assertStatus(200);
 
     // Verify Show Completed Tasks checkbox and row classes are in HTML
@@ -182,7 +182,7 @@ it('sorts tasks in project details page by due_date ascending and priority desce
     // 3. Task B (Later due date 2026-06-05, Priority Medium 2)
     // 4. Task E (Later due date 2026-06-10, Priority Low 1)
     // 5. Task A (No due date, Priority Urgent 4 - comes last because due_date is null)
-    $tasks = $response->viewData('project')->tasks;
+    $tasks = $response->viewData('tasks');
 
     expect($tasks->get(0)->id)->toBe($taskD->id)
         ->and($tasks->get(1)->id)->toBe($taskC->id)
