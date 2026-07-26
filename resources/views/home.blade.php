@@ -717,7 +717,7 @@
                             <span class="mockup-dot dot-red"></span>
                             <span class="mockup-dot dot-yellow"></span>
                             <span class="mockup-dot dot-green"></span>
-                            <span class="mockup-url">workhub.test/dashboard</span>
+                            <span class="mockup-url">{{ parse_url(config('app.url'), PHP_URL_HOST) ?? request()->getHost() }}/dashboard</span>
                         </div>
                         <div class="mockup-body">
                             <img src="{{ asset('images/dashboard.png') }}" alt="WorkHub Workspace Dashboard">
@@ -809,7 +809,7 @@
                                 <span class="mockup-dot dot-red"></span>
                                 <span class="mockup-dot dot-yellow"></span>
                                 <span class="mockup-dot dot-green"></span>
-                                <span class="mockup-url">workhub.test/tasks</span>
+                                <span class="mockup-url">{{ parse_url(config('app.url'), PHP_URL_HOST) ?? request()->getHost() }}/tasks</span>
                             </div>
                             <div class="mockup-body">
                                 <img src="{{ asset('images/tasks.png') }}" alt="Inline Task Table">
@@ -826,7 +826,7 @@
                                 <span class="mockup-dot dot-red"></span>
                                 <span class="mockup-dot dot-yellow"></span>
                                 <span class="mockup-dot dot-green"></span>
-                                <span class="mockup-url">workhub.test/projects/7</span>
+                                <span class="mockup-url">{{ parse_url(config('app.url'), PHP_URL_HOST) ?? request()->getHost() }}/projects/7</span>
                             </div>
                             <div class="mockup-body">
                                 <img src="{{ asset('images/project_details.png') }}" alt="Project Details Board">
@@ -843,7 +843,7 @@
                                 <span class="mockup-dot dot-red"></span>
                                 <span class="mockup-dot dot-yellow"></span>
                                 <span class="mockup-dot dot-green"></span>
-                                <span class="mockup-url">workhub.test/notes/create</span>
+                                <span class="mockup-url">{{ parse_url(config('app.url'), PHP_URL_HOST) ?? request()->getHost() }}/notes/create</span>
                             </div>
                             <div class="mockup-body">
                                 <img src="{{ asset('images/create_note.png') }}" alt="Rich Text Note Editor">
@@ -860,7 +860,7 @@
                                 <span class="mockup-dot dot-red"></span>
                                 <span class="mockup-dot dot-yellow"></span>
                                 <span class="mockup-dot dot-green"></span>
-                                <span class="mockup-url">workhub.test/issues</span>
+                                <span class="mockup-url">{{ parse_url(config('app.url'), PHP_URL_HOST) ?? request()->getHost() }}/issues</span>
                             </div>
                             <div class="mockup-body">
                                 <img src="{{ asset('images/issues.png') }}" alt="GitHub Issue Reporting">
@@ -877,7 +877,7 @@
                                 <span class="mockup-dot dot-red"></span>
                                 <span class="mockup-dot dot-yellow"></span>
                                 <span class="mockup-dot dot-green"></span>
-                                <span class="mockup-url">workhub.test/tasks/26</span>
+                                <span class="mockup-url">{{ parse_url(config('app.url'), PHP_URL_HOST) ?? request()->getHost() }}/tasks/26</span>
                             </div>
                             <div class="mockup-body">
                                 <img src="{{ asset('images/task_details.png') }}" alt="Task Details & History">
@@ -894,7 +894,7 @@
                                 <span class="mockup-dot dot-red"></span>
                                 <span class="mockup-dot dot-yellow"></span>
                                 <span class="mockup-dot dot-green"></span>
-                                <span class="mockup-url">workhub.test/trash</span>
+                                <span class="mockup-url">{{ parse_url(config('app.url'), PHP_URL_HOST) ?? request()->getHost() }}/trash</span>
                             </div>
                             <div class="mockup-body">
                                 <img src="{{ asset('images/trash.png') }}" alt="Trash Bin & Recovery">
