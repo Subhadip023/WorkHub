@@ -62,11 +62,7 @@
         }
 
         /* Full Screen Sections */
-        .hero, .features, .workflow, .cta {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+        .hero, .features, .showcase, .workflow, .cta {
             padding: 120px 0 80px;
             box-sizing: border-box;
             width: 100%;
@@ -87,7 +83,7 @@
             left: 0;
             width: 100%;
             z-index: 1000;
-            background: rgba(248, 250, 252, 0.8);
+            background: rgba(248, 250, 252, 0.85);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(226, 232, 240, 0.8);
             transition: var(--transition);
@@ -177,6 +173,9 @@
         .hero {
             background: radial-gradient(circle at 80% 20%, rgba(78, 115, 223, 0.08) 0%, rgba(248, 250, 252, 0) 50%);
             position: relative;
+            min-height: 90vh;
+            display: flex;
+            align-items: center;
         }
 
         .hero-grid {
@@ -200,7 +199,7 @@
         }
 
         .hero-title {
-            font-size: 56px;
+            font-size: 52px;
             font-weight: 800;
             line-height: 1.15;
             color: var(--dark);
@@ -226,23 +225,55 @@
             gap: 20px;
         }
 
-        .hero-image-wrapper {
-            position: relative;
+        /* App Mockup Frame Styling */
+        .app-mockup {
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            background: #ffffff;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .app-mockup:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 25px 50px rgba(78, 115, 223, 0.2);
+        }
+
+        .mockup-bar {
+            background: #f1f5f9;
+            padding: 8px 14px;
             display: flex;
-            justify-content: center;
             align-items: center;
+            gap: 6px;
+            border-bottom: 1px solid #e2e8f0;
         }
 
-        .hero-image-wrapper img {
+        .mockup-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .dot-red { background: #ff5f56; }
+        .dot-yellow { background: #ffbd2e; }
+        .dot-green { background: #27c93f; }
+
+        .mockup-url {
+            font-size: 11px;
+            color: #64748b;
+            margin-left: auto;
+            font-family: SFMono-Regular, Consolas, monospace;
+            background: #ffffff;
+            padding: 2px 10px;
+            border-radius: 4px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .mockup-body img {
             width: 100%;
-            max-width: 480px;
-            filter: drop-shadow(0 20px 40px rgba(15, 23, 42, 0.08));
-            animation: float 6s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-12px); }
+            display: block;
         }
 
         /* Features Section */
@@ -254,7 +285,7 @@
         .section-header {
             text-align: center;
             max-width: 650px;
-            margin: 0 auto 70px;
+            margin: 0 auto 60px;
         }
 
         .section-header h2 {
@@ -336,6 +367,38 @@
         .feature-card p {
             color: #64748b;
             font-size: 15px;
+        }
+
+        /* UI Showcase Section */
+        .showcase {
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 32px;
+            margin-top: 40px;
+        }
+
+        .showcase-card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .showcase-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-top: 16px;
+            margin-bottom: 6px;
+        }
+
+        .showcase-desc {
+            font-size: 14px;
+            color: #64748b;
         }
 
         /* Workflows Section */
@@ -516,7 +579,7 @@
                 gap: 50px;
             }
             .hero-title {
-                font-size: 46px;
+                font-size: 44px;
             }
             .hero-subtitle {
                 margin-left: auto;
@@ -562,7 +625,7 @@
                 padding: 140px 0 60px;
             }
             .hero-title {
-                font-size: 36px;
+                font-size: 34px;
             }
             .hero-actions {
                 flex-direction: column;
@@ -574,6 +637,9 @@
             }
             .cta-box h2 {
                 font-size: 32px;
+            }
+            .showcase-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -601,6 +667,7 @@
             <nav>
                 <ul class="nav-links">
                     <li><a href="#features">Features</a></li>
+                    <li><a href="#showcase">UI Showcase</a></li>
                     <li><a href="#workflow">Workflow</a></li>
                 </ul>
             </nav>
@@ -645,7 +712,17 @@
                     </div>
                 </div>
                 <div class="hero-image-wrapper">
-                    <img src="{{ asset('asset/img/undraw_posting_photo.svg') }}" alt="WorkHub Workspace Illustration">
+                    <div class="app-mockup">
+                        <div class="mockup-bar">
+                            <span class="mockup-dot dot-red"></span>
+                            <span class="mockup-dot dot-yellow"></span>
+                            <span class="mockup-dot dot-green"></span>
+                            <span class="mockup-url">workhub.test/dashboard</span>
+                        </div>
+                        <div class="mockup-body">
+                            <img src="{{ asset('images/dashboard.png') }}" alt="WorkHub Workspace Dashboard">
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -662,19 +739,19 @@
                     <!-- Feature 1 -->
                     <div class="feature-card">
                         <div class="feature-icon">
-                            <i class="fas fa-building"></i>
+                            <i class="fas fa-bolt"></i>
                         </div>
-                        <h3>Multi-Company Workspaces</h3>
-                        <p>Segment projects by client or organization. Create companies, switch active contexts seamlessly, and invite members with unique, secure access codes.</p>
+                        <h3>Inline AJAX Task Grid</h3>
+                        <p>Notion-like inline task management. Update Type, Project, Assignee, Due Date, Status, and Priority instantly without page refreshes.</p>
                     </div>
 
                     <!-- Feature 2 -->
                     <div class="feature-card">
                         <div class="feature-icon">
-                            <i class="fas fa-chart-line"></i>
+                            <i class="fas fa-building"></i>
                         </div>
-                        <h3>Real-time Progress Tracking</h3>
-                        <p>Monitor your project's task completion progress. Visual indicators show completed counts and percentage completion charts so you are always updated.</p>
+                        <h3>Multi-Company Workspaces</h3>
+                        <p>Segment projects by client or organization. Create companies, switch active contexts seamlessly, and invite members with unique, secure access codes.</p>
                     </div>
 
                     <!-- Feature 3 -->
@@ -682,35 +759,149 @@
                         <div class="feature-icon">
                             <i class="fas fa-pen-nib"></i>
                         </div>
-                        <h3>Quill Rich Documentation</h3>
-                        <p>Write detailed project scopes and task explanations. The integrated Quill editor allows formatting headers, strong text, and lists with clear visual styling.</p>
+                        <h3>Rich Notes & PDF Export</h3>
+                        <p>Draft project scopes and rich documentation. Format text, headers, and lists with Quill editor and download as formatted PDF documents.</p>
                     </div>
 
                     <!-- Feature 4 -->
                     <div class="feature-card">
                         <div class="feature-icon">
-                            <i class="fas fa-paperclip"></i>
+                            <i class="fas fa-bug"></i>
                         </div>
-                        <h3>Task Attachments</h3>
-                        <p>Upload files and images directly to task items. Keep your screenshots, wireframes, and documents contextually linked to the tasks themselves.</p>
+                        <h3>GitHub Issue Tracker</h3>
+                        <p>Report bugs directly to GitHub repositories using integrated GitHub PAT authentication for seamless developer feedback.</p>
                     </div>
 
                     <!-- Feature 5 -->
                     <div class="feature-card">
                         <div class="feature-icon">
-                            <i class="fas fa-file-import"></i>
+                            <i class="fas fa-history"></i>
                         </div>
-                        <h3>JSON Structure Imports</h3>
-                        <p>Have an existing list of tasks? Directly paste and import JSON formats to quickly initialize tasks for a project in seconds.</p>
+                        <h3>Audit History & Attachments</h3>
+                        <p>Track every task modification with granular audit logs. Upload wireframes, screenshots, and task attachments securely.</p>
                     </div>
 
                     <!-- Feature 6 -->
                     <div class="feature-card">
                         <div class="feature-icon">
-                            <i class="fas fa-palette"></i>
+                            <i class="fas fa-trash-alt"></i>
                         </div>
-                        <h3>Custom Color Themes</h3>
-                        <p>Tailor your workspace. Set specific theme colors for projects to personalize layouts and categorize work streams visually.</p>
+                        <h3>Trash & Resource Recovery</h3>
+                        <p>Soft-delete safety net for tasks, projects, and companies with an automated 30-day background pruning console command.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Live UI Showcase Gallery Section -->
+        <section class="showcase" id="showcase">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Live Application Showcase</h2>
+                    <p>Take a tour through WorkHub's modern user interface and powerful task management features.</p>
+                </div>
+
+                <div class="showcase-grid">
+                    <!-- Showcase Item 1: Inline Task Engine -->
+                    <div class="showcase-card">
+                        <div class="app-mockup">
+                            <div class="mockup-bar">
+                                <span class="mockup-dot dot-red"></span>
+                                <span class="mockup-dot dot-yellow"></span>
+                                <span class="mockup-dot dot-green"></span>
+                                <span class="mockup-url">workhub.test/tasks</span>
+                            </div>
+                            <div class="mockup-body">
+                                <img src="{{ asset('images/tasks.png') }}" alt="Inline Task Table">
+                            </div>
+                        </div>
+                        <h4 class="showcase-title">⚡ Real-Time Inline Task Grid</h4>
+                        <p class="showcase-desc">Instant attribute updates with status strikethrough, completion toggles, and toast notifications.</p>
+                    </div>
+
+                    <!-- Showcase Item 2: Project Details Board -->
+                    <div class="showcase-card">
+                        <div class="app-mockup">
+                            <div class="mockup-bar">
+                                <span class="mockup-dot dot-red"></span>
+                                <span class="mockup-dot dot-yellow"></span>
+                                <span class="mockup-dot dot-green"></span>
+                                <span class="mockup-url">workhub.test/projects/7</span>
+                            </div>
+                            <div class="mockup-body">
+                                <img src="{{ asset('images/project_details.png') }}" alt="Project Details Board">
+                            </div>
+                        </div>
+                        <h4 class="showcase-title">📁 Project Details & Task Board</h4>
+                        <p class="showcase-desc">Custom theme styling, completion analytics, team member task breakdown, and project discussions.</p>
+                    </div>
+
+                    <!-- Showcase Item 3: Rich Notes & PDF -->
+                    <div class="showcase-card">
+                        <div class="app-mockup">
+                            <div class="mockup-bar">
+                                <span class="mockup-dot dot-red"></span>
+                                <span class="mockup-dot dot-yellow"></span>
+                                <span class="mockup-dot dot-green"></span>
+                                <span class="mockup-url">workhub.test/notes/create</span>
+                            </div>
+                            <div class="mockup-body">
+                                <img src="{{ asset('images/create_note.png') }}" alt="Rich Text Note Editor">
+                            </div>
+                        </div>
+                        <h4 class="showcase-title">✍️ Rich Documentation & PDF Export</h4>
+                        <p class="showcase-desc">Quill-powered note creation with project association and instant PDF downloads.</p>
+                    </div>
+
+                    <!-- Showcase Item 4: GitHub Issue Integration -->
+                    <div class="showcase-card">
+                        <div class="app-mockup">
+                            <div class="mockup-bar">
+                                <span class="mockup-dot dot-red"></span>
+                                <span class="mockup-dot dot-yellow"></span>
+                                <span class="mockup-dot dot-green"></span>
+                                <span class="mockup-url">workhub.test/issues</span>
+                            </div>
+                            <div class="mockup-body">
+                                <img src="{{ asset('images/issues.png') }}" alt="GitHub Issue Reporting">
+                            </div>
+                        </div>
+                        <h4 class="showcase-title">🐛 GitHub Issue Tracker Integration</h4>
+                        <p class="showcase-desc">Direct bug submission to GitHub repositories with attachment upload support.</p>
+                    </div>
+
+                    <!-- Showcase Item 5: Task Audit History -->
+                    <div class="showcase-card">
+                        <div class="app-mockup">
+                            <div class="mockup-bar">
+                                <span class="mockup-dot dot-red"></span>
+                                <span class="mockup-dot dot-yellow"></span>
+                                <span class="mockup-dot dot-green"></span>
+                                <span class="mockup-url">workhub.test/tasks/26</span>
+                            </div>
+                            <div class="mockup-body">
+                                <img src="{{ asset('images/task_details.png') }}" alt="Task Details & History">
+                            </div>
+                        </div>
+                        <h4 class="showcase-title">🔍 Task Audit History & Attachments</h4>
+                        <p class="showcase-desc">Granular timestamped logs for status changes, priority shifts, and uploaded media assets.</p>
+                    </div>
+
+                    <!-- Showcase Item 6: Trash & Recovery -->
+                    <div class="showcase-card">
+                        <div class="app-mockup">
+                            <div class="mockup-bar">
+                                <span class="mockup-dot dot-red"></span>
+                                <span class="mockup-dot dot-yellow"></span>
+                                <span class="mockup-dot dot-green"></span>
+                                <span class="mockup-url">workhub.test/trash</span>
+                            </div>
+                            <div class="mockup-body">
+                                <img src="{{ asset('images/trash.png') }}" alt="Trash Bin & Recovery">
+                            </div>
+                        </div>
+                        <h4 class="showcase-title">🗑️ Soft-Delete Trash Bin</h4>
+                        <p class="showcase-desc">Safely restore or permanently delete tasks, projects, and company resources.</p>
                     </div>
                 </div>
             </div>
@@ -784,6 +975,7 @@
                 <div class="footer-links">
                     <h4>Navigation</h4>
                     <a href="#features">Features</a>
+                    <a href="#showcase">UI Showcase</a>
                     <a href="#workflow">Workflow</a>
                     @auth
                         <a href="{{ route('dashboard') }}">Go to Dashboard</a>
