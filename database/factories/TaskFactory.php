@@ -23,7 +23,7 @@ class TaskFactory extends Factory
         return [
             'title' => $this->faker->sentence(4),
             'description' => $this->faker->paragraph(2),
-            'due_date' => $this->faker->optional(0.8)->dateTimeBetween('-5 days', '+30 days')?->format('Y-m-d'),
+            'due_date' => $this->faker->boolean(80) ? $this->faker->dateTimeBetween('-5 days', '+30 days')->format('Y-m-d') : null,
             'status' => $this->faker->numberBetween(1, 4),
             'priority' => $this->faker->numberBetween(1, 4),
             'type' => $this->faker->numberBetween(1, 4),
