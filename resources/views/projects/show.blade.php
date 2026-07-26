@@ -77,12 +77,8 @@
         <p class="mt-2 text-gray-500 italic">No description provided for this project.</p>
     @endif
 </div>
-
-<div class="row">
-    <!-- Left Column (2/3 width) -->
-    <div class="col-lg-9">
-        <!-- Nav Option Tabs -->
-        <ul class="nav nav-tabs mb-4" id="projectShowTabs" role="tablist">
+<div>
+     <ul class="nav nav-tabs mb-4" id="projectShowTabs" role="tablist">
             <li class="nav-item">
                 <a class="nav-link active font-weight-bold" id="tasks-tab" data-toggle="tab" href="#tasks-content" role="tab" aria-controls="tasks-content" aria-selected="true">
                     <i class="fas fa-tasks mr-2"></i>Tasks
@@ -94,6 +90,13 @@
                 </a>
             </li>
         </ul>
+</div>
+<div class="row">
+   
+    <!-- Left Column (2/3 width) -->
+    <div class="col-lg-9">
+        <!-- Nav Option Tabs -->
+        
 
         <div class="tab-content" id="projectShowTabsContent">
             <!-- Tasks Tab Pane -->
