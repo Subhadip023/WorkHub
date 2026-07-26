@@ -100,36 +100,8 @@ class IssueController extends Controller
         if ($request->hasFile('attachment') && $request->file('attachment')->isValid()) {
             $file = $request->file('attachment');
             $attachmentName = $file->getClientOriginalName();
-
-            // First store it locally (fallback/archive)
             $path = $file->store('issues', 'public');
-
-            // Prepare file content for GitHub
-            $fileContent = base64_encode(file_get_contents($file->getRealPath()));
-            $uniqueFilename = time().'_'.preg_replace('/[^a-zA-Z0-9_.-]/', '_', $attachmentName);
-            $githubPath = "issues/attachments/{$uniqueFilename}";
-
-            // Upload directly to GitHub repository contents
-            $uploadResponse = Http::withHeaders([
-                'Accept' => 'application/vnd.github+json',
-                'Authorization' => "Bearer {$pat}",
-                'X-GitHub-Api-Version' => '2022-11-28',
-            ])
-                ->withUserAgent('WorkHub-App')
-                ->put("https://api.github.com/repos/{$owner}/{$repo}/contents/{$githubPath}", [
-                    'message' => "Upload attachment '{$attachmentName}' for issue via WorkHub",
-                    'content' => $fileContent,
-                ]);
-
-            if ($uploadResponse->successful()) {
-                $attachmentUrl = $uploadResponse->json('content.download_url');
-            } else {
-                Log::warning('GitHub attachment upload failed, falling back to local storage URL', [
-                    'status' => $uploadResponse->status(),
-                    'response' => $uploadResponse->body(),
-                ]);
-                $attachmentUrl = asset('storage/'.$path);
-            }
+            $attachmentUrl = asset('storage/'.$path);
         }
 
         // // Build Markdown Body for GitHub Issue

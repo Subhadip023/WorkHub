@@ -153,7 +153,7 @@ it('successfully fetches and displays issues from GitHub', function () {
         ->assertDontSee('Second Test Pull Request');
 });
 
-it('successfully uploads an attachment to GitHub contents and links it in the issue', function () {
+it('successfully stores attachment locally and links it in the GitHub issue', function () {
     Storage::fake('public');
 
     config([
@@ -165,11 +165,6 @@ it('successfully uploads an attachment to GitHub contents and links it in the is
     $file = UploadedFile::fake()->image('test_screenshot.png');
 
     Http::fake([
-        'https://api.github.com/repos/mock-owner/mock-repo/contents/issues/attachments/*' => Http::response([
-            'content' => [
-                'download_url' => 'https://raw.githubusercontent.com/mock-owner/mock-repo/main/issues/attachments/test_screenshot.png',
-            ],
-        ], 201),
         'https://api.github.com/repos/mock-owner/mock-repo/issues' => Http::response([
             'html_url' => 'https://github.com/mock-owner/mock-repo/issues/1',
         ], 201),
@@ -191,21 +186,13 @@ it('successfully uploads an attachment to GitHub contents and links it in the is
             'success' => true,
         ]);
 
-    Http::assertSent(function ($request) {
-        if (str_contains($request->url(), '/contents/issues/attachments/')) {
-            return $request->method() === 'PUT' &&
-                $request->header('Authorization')[0] === 'Bearer mock-pat' &&
-                ! empty($request['content']) &&
-                $request['message'] === "Upload attachment 'test_screenshot.png' for issue via WorkHub";
-        }
+    // Check that the file was stored on the public disk
+    Storage::disk('public')->assertExists('issues/'.$file->hashName());
 
-        return true;
-    });
-
-    Http::assertSent(function ($request) {
+    Http::assertSent(function ($request) use ($file) {
         if ($request->url() === 'https://api.github.com/repos/mock-owner/mock-repo/issues') {
             return $request->method() === 'POST' &&
-                str_contains($request['body'], '![test_screenshot.png](https://raw.githubusercontent.com/mock-owner/mock-repo/main/issues/attachments/test_screenshot.png)');
+                str_contains($request['body'], '![test_screenshot.png]('.asset('storage/issues/'.$file->hashName()).')');
         }
 
         return true;
