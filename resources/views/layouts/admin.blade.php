@@ -451,6 +451,141 @@
                 submitBtn.innerHTML = originalBtnHtml;
             });
         }
+
+        // Global Autocomplete Search Logic
+        const searchInput = document.getElementById('topbarSearchInput');
+        const searchDropdown = document.getElementById('searchAutocompleteDropdown');
+        let searchDebounceTimer;
+
+        if (searchInput && searchDropdown) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchDebounceTimer);
+                const query = this.value.trim();
+
+                if (query.length < 2) {
+                    searchDropdown.style.display = 'none';
+                    searchDropdown.innerHTML = '';
+                    return;
+                }
+
+                searchDebounceTimer = setTimeout(() => {
+                    fetch(`{{ route('search.index') }}?q=${encodeURIComponent(query)}`, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        let html = '';
+                        let hasResults = false;
+
+                        // Projects
+                        if (data.projects && data.projects.length > 0) {
+                            hasResults = true;
+                            html += `<h6 class="dropdown-header text-gray-500 font-weight-bold text-xs text-uppercase tracking-wider px-3 py-2 bg-light border-bottom border-top"><i class="fas fa-project-diagram mr-1 text-info"></i> Projects</h6>`;
+                            data.projects.forEach(project => {
+                                html += `
+                                    <a class="dropdown-item d-flex align-items-center py-2 px-3 border-bottom-0" href="${project.url}">
+                                        <span class="mr-2 rounded-circle" style="width: 10px; height: 10px; background-color: ${project.theme || '#4e73df'}; display: inline-block;"></span>
+                                        <span class="font-weight-bold text-gray-800 text-sm text-truncate">${escapeHtml(project.title)}</span>
+                                    </a>
+                                `;
+                            });
+                        }
+
+                        // Tasks
+                        if (data.tasks && data.tasks.length > 0) {
+                            hasResults = true;
+                            html += `<h6 class="dropdown-header text-gray-500 font-weight-bold text-xs text-uppercase tracking-wider px-3 py-2 bg-light border-bottom border-top"><i class="fas fa-check-circle mr-1 text-success"></i> Tasks</h6>`;
+                            data.tasks.forEach(task => {
+                                const iconClass = task.status === 3 ? 'fa-check-circle text-success' : 'fa-circle text-gray-400';
+                                html += `
+                                    <a class="dropdown-item d-flex align-items-center py-2 px-3 border-bottom-0" href="${task.url}">
+                                        <i class="fas ${iconClass} mr-2 text-sm"></i>
+                                        <span class="text-gray-800 text-sm text-truncate ${task.status === 3 ? 'text-line-through text-muted' : ''}">${escapeHtml(task.title)}</span>
+                                    </a>
+                                `;
+                            });
+                        }
+
+                        // Notes
+                        if (data.notes && data.notes.length > 0) {
+                            hasResults = true;
+                            html += `<h6 class="dropdown-header text-gray-500 font-weight-bold text-xs text-uppercase tracking-wider px-3 py-2 bg-light border-bottom border-top"><i class="fas fa-sticky-note mr-1 text-warning"></i> Notes</h6>`;
+                            data.notes.forEach(note => {
+                                html += `
+                                    <a class="dropdown-item d-flex align-items-center py-2 px-3 border-bottom-0" href="${note.url}">
+                                        <i class="fas fa-sticky-note mr-2 text-warning text-sm"></i>
+                                        <span class="text-gray-800 text-sm text-truncate">${escapeHtml(note.title)}</span>
+                                    </a>
+                                `;
+                            });
+                        }
+
+                        // Users
+                        if (data.users && data.users.length > 0) {
+                            hasResults = true;
+                            html += `<h6 class="dropdown-header text-gray-500 font-weight-bold text-xs text-uppercase tracking-wider px-3 py-2 bg-light border-bottom border-top"><i class="fas fa-users mr-1 text-primary"></i> Team Members</h6>`;
+                            data.users.forEach(user => {
+                                const avatar = user.profile_image 
+                                    ? `<img src="${user.profile_image}" class="rounded-circle mr-2" style="width: 20px; height: 20px; object-fit: cover;">`
+                                    : `<div class="rounded-circle bg-gray-200 text-gray-600 mr-2 d-flex align-items-center justify-content-center font-weight-bold text-xs" style="width: 20px; height: 20px; font-size: 8px;">${escapeHtml(user.title.substring(0, 1).toUpperCase())}</div>`;
+                                html += `
+                                    <a class="dropdown-item d-flex align-items-center py-2 px-3 border-bottom-0" href="#">
+                                        ${avatar}
+                                        <div class="min-width-0">
+                                            <div class="text-gray-800 text-sm font-weight-bold text-truncate">${escapeHtml(user.title)}</div>
+                                            <div class="text-muted text-xs text-truncate">${escapeHtml(user.email)}</div>
+                                        </div>
+                                    </a>
+                                `;
+                            });
+                        }
+
+                        if (hasResults) {
+                            html += `
+                                <div class="dropdown-divider m-0"></div>
+                                <a class="dropdown-item text-center text-primary font-weight-bold py-2.5 text-xs bg-light" href="{{ route('search.index') }}?q=${encodeURIComponent(query)}">
+                                    <i class="fas fa-search-plus mr-1"></i> See all results for "${escapeHtml(query)}"
+                                </a>
+                            `;
+                        } else {
+                            html = `<div class="py-4 text-center text-muted text-sm"><i class="fas fa-search-minus mr-1.5"></i> No matches found for "${escapeHtml(query)}"</div>`;
+                        }
+
+                        searchDropdown.innerHTML = html;
+                        searchDropdown.style.display = 'block';
+                    })
+                    .catch(err => {
+                        console.error('Autocomplete fetch error:', err);
+                    });
+                }, 250);
+            });
+
+            // Close dropdown on click outside
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+                    searchDropdown.style.display = 'none';
+                }
+            });
+
+            // Show dropdown again if focused and query is valid
+            searchInput.addEventListener('focus', function() {
+                if (this.value.trim().length >= 2 && searchDropdown.innerHTML !== '') {
+                    searchDropdown.style.display = 'block';
+                }
+            });
+        }
+
+        function escapeHtml(str) {
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
     </script>
 
     @stack('scripts')

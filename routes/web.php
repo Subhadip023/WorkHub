@@ -8,6 +8,7 @@ use App\Http\Controllers\NoteController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TrashController;
 use Illuminate\Support\Facades\Route;
@@ -76,6 +77,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/issues', [IssueController::class, 'index'])->name('issues.index');
     Route::post('/issues', [IssueController::class, 'store'])->name('issues.store');
+
+    Route::get('/search', [SearchController::class, 'index'])->name('search.index');
 });
 
 require __DIR__.'/auth.php';
