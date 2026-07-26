@@ -74,6 +74,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return view('permissions.index');
     })->name('permissions.index');
 
+    Route::get('/issues', [IssueController::class, 'index'])->name('issues.index');
     Route::post('/issues', [IssueController::class, 'store'])->name('issues.store');
 });
 

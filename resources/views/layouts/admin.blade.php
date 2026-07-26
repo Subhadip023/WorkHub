@@ -34,6 +34,67 @@
                 readAll: "{{ route('notifications.readAll') }}"
             }
         };
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const icons = {
+                success: 'fa-check-circle text-success',
+                error: 'fa-exclamation-circle text-danger',
+                warning: 'fa-exclamation-triangle text-warning',
+                info: 'fa-info-circle text-info'
+            };
+            const borderColors = {
+                success: '#1cc88a',
+                error: '#e74a3b',
+                warning: '#f6c23e',
+                info: '#36b9cc'
+            };
+
+            const icon = icons[type] || icons.success;
+            const borderColor = borderColors[type] || borderColors.success;
+
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification alert alert-dismissible fade show p-3 border-0';
+            toast.role = 'alert';
+            toast.style.cssText = `
+                background: rgba(255, 255, 255, 0.98); 
+                backdrop-filter: blur(8px); 
+                -webkit-backdrop-filter: blur(8px); 
+                border-left: 5px solid ${borderColor} !important; 
+                box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15); 
+                border-radius: 8px; 
+                color: #333;
+                margin-bottom: 12px;
+                display: block;
+            `;
+
+            toast.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas ${icon} fa-lg mr-3"></i>
+                    <div style="flex-grow: 1; font-weight: 600; font-size: 0.9rem; padding-right: 20px;">
+                        ${message}
+                    </div>
+                    <button type="button" class="close p-2" data-dismiss="alert" aria-label="Close" style="top: 50%; transform: translateY(-50%); right: 5px;">
+                        <span aria-hidden="true" class="text-gray-500">&times;</span>
+                    </button>
+                </div>
+            `;
+
+            container.appendChild(toast);
+
+            // Auto-dismiss after 4 seconds using jQuery if available, otherwise native JS
+            setTimeout(function() {
+                if (window.jQuery) {
+                    $(toast).fadeTo(500, 0).slideUp(500, function(){
+                        $(this).remove(); 
+                    });
+                } else {
+                    toast.remove();
+                }
+            }, 4000);
+        }
     </script>
 </head>
 
@@ -55,7 +116,7 @@
         ];
     @endphp
 
-    <div style="position: fixed; top: 25px; right: 25px; z-index: 1050; max-width: 380px; min-width: 280px;">
+    <div id="toastContainer" style="position: fixed; top: 25px; right: 25px; z-index: 1050; max-width: 380px; min-width: 280px;">
         @foreach (['success', 'error', 'warning', 'info'] as $type)
             @if(session($type))
                 <div class="toast-notification alert alert-dismissible fade show p-3 border-0" role="alert" 
@@ -318,11 +379,16 @@
                             <textarea class="form-control" id="issueDescription" rows="5" placeholder="Please describe the steps to reproduce the issue..." required></textarea>
                         </div>
                     </div>
-                    <div class="modal-footer bg-light p-3 border-top-0">
-                        <button class="btn btn-secondary font-weight-bold" type="button" data-dismiss="modal">Cancel</button>
-                        <button class="btn btn-primary font-weight-bold" type="submit" id="submitIssueBtn">
-                            <i class="fas fa-paper-plane mr-1"></i> Submit Issue
-                        </button>
+                    <div class="modal-footer bg-light p-3 border-top-0 d-flex justify-content-between align-items-center">
+                        <a href="{{ route('issues.index') }}" class="btn btn-link text-primary font-weight-bold px-0">
+                            <i class="fas fa-list mr-1"></i> View Existing Issues
+                        </a>
+                        <div>
+                            <button class="btn btn-secondary font-weight-bold mr-1" type="button" data-dismiss="modal">Cancel</button>
+                            <button class="btn btn-primary font-weight-bold" type="submit" id="submitIssueBtn">
+                                <i class="fas fa-paper-plane mr-1"></i> Submit Issue
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -368,17 +434,17 @@
             .then(response => response.json().then(data => ({ status: response.status, body: data })))
             .then(result => {
                 if (result.status === 200 && result.body.success) {
-                    alert('Issue successfully submitted to GitHub!\nIssue URL: ' + result.body.url);
+                    showToast('Issue successfully submitted to GitHub!', 'success');
                     form.reset();
                     document.querySelector('.custom-file-label').innerText = 'Choose file';
                     $('#reportIssueModal').modal('hide');
                 } else {
-                    alert('Error: ' + (result.body.message || 'Something went wrong.'));
+                    showToast('Error: ' + (result.body.message || 'Something went wrong.'), 'error');
                 }
             })
             .catch(error => {
                 console.error('Error submitting issue:', error);
-                alert('An error occurred while submitting the issue. Please try again.');
+                showToast('An error occurred while submitting the issue. Please try again.', 'error');
             })
             .finally(() => {
                 submitBtn.disabled = false;

@@ -57,6 +57,12 @@
             <span>Organizations</span>
         </a>
     </li>
+    <li class="nav-item {{request()->routeIs('issues.*') ? 'active' : ''}}">
+        <a class="nav-link" href="{{ route('issues.index') }}">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>Issues</span>
+        </a>
+    </li>
     <li class="nav-item {{Route::currentRouteName() == 'permissions.index' ? 'active' : ''}}">
         <a class="nav-link" href="{{ route('permissions.index') }}">
             <i class="fas fa-shield-alt"></i>

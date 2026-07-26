@@ -9,6 +9,66 @@ use Illuminate\Support\Facades\Log;
 class IssueController extends Controller
 {
     /**
+     * Display a listing of existing issues.
+     */
+    public function index(Request $request)
+    {
+        $state = $request->query('state', 'all');
+        if (! in_array($state, ['open', 'closed', 'all'])) {
+            $state = 'all';
+        }
+
+        $pat = config('services.github.pat');
+        $owner = config('services.github.owner');
+        $repo = config('services.github.repo');
+
+        if (empty($pat)) {
+            return view('issues.index', [
+                'issues' => collect(),
+                'error' => 'GitHub Personal Access Token (PAT) is not configured in the server environment (.env).',
+                'state' => $state,
+                'owner' => $owner,
+                'repo' => $repo,
+            ]);
+        }
+
+        // Send GET request to GitHub API
+        $response = Http::withHeaders([
+            'Accept' => 'application/vnd.github+json',
+            'Authorization' => "Bearer {$pat}",
+            'X-GitHub-Api-Version' => '2022-11-28',
+        ])
+            ->withUserAgent('WorkHub-App')
+            ->get("https://api.github.com/repos/{$owner}/{$repo}/issues", [
+                'state' => $state,
+                'per_page' => 100,
+            ]);
+
+        $issues = collect();
+        $error = null;
+
+        if ($response->successful()) {
+            $issues = collect($response->json())->filter(function ($issue) {
+                return ! isset($issue['pull_request']);
+            });
+        } else {
+            $error = 'Failed to fetch issues from GitHub: '.($response->json('message') ?: 'Unknown error');
+            Log::error('GitHub Issue list fetch failed', [
+                'status' => $response->status(),
+                'response' => $response->body(),
+            ]);
+        }
+
+        return view('issues.index', [
+            'issues' => $issues,
+            'error' => $error,
+            'state' => $state,
+            'owner' => $owner,
+            'repo' => $repo,
+        ]);
+    }
+
+    /**
      * Submit an issue report to GitHub.
      */
     public function store(Request $request)
@@ -38,9 +98,38 @@ class IssueController extends Controller
         $attachmentUrl = null;
         $attachmentName = null;
         if ($request->hasFile('attachment') && $request->file('attachment')->isValid()) {
-            $path = $request->file('attachment')->store('issues', 'public');
-            $attachmentUrl = asset('storage/'.$path);
-            $attachmentName = $request->file('attachment')->getClientOriginalName();
+            $file = $request->file('attachment');
+            $attachmentName = $file->getClientOriginalName();
+
+            // First store it locally (fallback/archive)
+            $path = $file->store('issues', 'public');
+
+            // Prepare file content for GitHub
+            $fileContent = base64_encode(file_get_contents($file->getRealPath()));
+            $uniqueFilename = time().'_'.preg_replace('/[^a-zA-Z0-9_.-]/', '_', $attachmentName);
+            $githubPath = "issues/attachments/{$uniqueFilename}";
+
+            // Upload directly to GitHub repository contents
+            $uploadResponse = Http::withHeaders([
+                'Accept' => 'application/vnd.github+json',
+                'Authorization' => "Bearer {$pat}",
+                'X-GitHub-Api-Version' => '2022-11-28',
+            ])
+                ->withUserAgent('WorkHub-App')
+                ->put("https://api.github.com/repos/{$owner}/{$repo}/contents/{$githubPath}", [
+                    'message' => "Upload attachment '{$attachmentName}' for issue via WorkHub",
+                    'content' => $fileContent,
+                ]);
+
+            if ($uploadResponse->successful()) {
+                $attachmentUrl = $uploadResponse->json('content.download_url');
+            } else {
+                Log::warning('GitHub attachment upload failed, falling back to local storage URL', [
+                    'status' => $uploadResponse->status(),
+                    'response' => $uploadResponse->body(),
+                ]);
+                $attachmentUrl = asset('storage/'.$path);
+            }
         }
 
         // // Build Markdown Body for GitHub Issue
@@ -51,7 +140,14 @@ class IssueController extends Controller
         // $body .= '* **Priority:** '.ucfirst($request->input('priority'))."\n";
 
         if ($attachmentUrl) {
-            $body .= "* **Attachment:** [{$attachmentName}]({$attachmentUrl})\n";
+            $extension = strtolower(pathinfo($attachmentName, PATHINFO_EXTENSION));
+            $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+
+            if (in_array($extension, $imageExtensions)) {
+                $body .= "* **Attachment:**\n\n![{$attachmentName}]({$attachmentUrl})\n";
+            } else {
+                $body .= "* **Attachment:** [{$attachmentName}]({$attachmentUrl})\n";
+            }
         }
 
         $body .= "\n### 📝 Description\n\n".$request->input('description')."\n\n";
