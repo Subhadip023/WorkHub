@@ -243,6 +243,15 @@ class TaskController extends Controller
             'status' => $newStatus,
         ]);
 
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Task status updated',
+                'status' => $task->status,
+                'task' => $task->fresh(['project', 'assignedUser']),
+            ]);
+        }
+
         return redirect()->back()->with('success', 'Task status updated');
     }
 
@@ -254,9 +263,10 @@ class TaskController extends Controller
         $this->checkTaskOwnership($task);
 
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
             'due_date' => 'nullable|date',
+            'project_id' => 'nullable|exists:projects,id',
             'assigned_to' => 'nullable|exists:users,id',
             'status' => 'nullable|integer|in:1,2,3,4',
             'priority' => 'nullable|integer|in:1,2,3,4',
@@ -333,6 +343,14 @@ class TaskController extends Controller
                     ['task_id' => $task->id, 'project_id' => $task->project_id, 'priority' => $task->priority, 'url' => route('tasks.show', $task->id)]
                 );
             }
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Task updated successfully',
+                'task' => $task->fresh(['project', 'assignedUser']),
+            ]);
         }
 
         return redirect()->back()->with('success', 'Task updated successfully');
