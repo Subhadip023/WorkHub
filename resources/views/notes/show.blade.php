@@ -33,17 +33,65 @@
 
 <div class="row">
     <!-- Main Content Column -->
-    <div class="col-lg-8 col-12">
+    <div class="col-12">
         <div class="card shadow mb-4">
             <div class="card-header py-3 d-flex align-items-center justify-content-between bg-white border-bottom-0">
                 <div>
                     <h1 class="h3 font-weight-bold text-gray-900 mb-1">{{ $note->title }}</h1>
-                    <div class="text-xs text-gray-500 font-weight-bold">
+                    <div class="text-xs text-gray-500 font-weight-bold mb-3">
                         @if($note->user)
                             By {{ $note->user->name }} &bull;
                         @endif
                         Created {{ $note->created_at->format('F d, Y \a\t h:i A') }} ({{ $note->created_at->diffForHumans() }})
                         &bull; Updated {{ $note->updated_at->format('F d, Y \a\t h:i A') }} ({{ $note->updated_at->diffForHumans() }})
+                    </div>
+
+                    <!-- Note Context / Metadata above the note -->
+                    <div class="d-flex flex-wrap align-items-center" style="gap: 10px;">
+                        <div>
+                            @if($note->note_type == 4)
+                                <span class="badge badge-success px-3 py-2 font-weight-bold shadow-sm" style="font-size: 0.85rem;">
+                                    <i class="fas fa-lock mr-1"></i> Private Personal Note
+                                </span>
+                            @elseif($note->note_type == 1)
+                                <span class="badge badge-primary px-3 py-2 font-weight-bold shadow-sm" style="font-size: 0.85rem;">
+                                    <i class="fas fa-project-diagram mr-1"></i> Project Specific
+                                </span>
+                            @elseif($note->note_type == 2)
+                                <span class="badge badge-warning px-3 py-2 font-weight-bold shadow-sm text-dark" style="font-size: 0.85rem;">
+                                    <i class="fas fa-tasks mr-1"></i> Task Specific
+                                </span>
+                            @elseif($note->note_type == 3)
+                                <span class="badge badge-info px-3 py-2 font-weight-bold shadow-sm" style="font-size: 0.85rem;">
+                                    <i class="fas fa-building mr-1"></i> Organization Level
+                                </span>
+                            @endif
+                        </div>
+                        @if($note->noteable)
+                            <div>
+                                @if($note->note_type == 1)
+                                    <a href="{{ route('projects.show', $note->noteable) }}" class="btn btn-outline-primary btn-sm font-weight-bold shadow-sm" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;">
+                                        <i class="fas fa-project-diagram mr-1"></i> {{ $note->noteable->name }}
+                                    </a>
+                                @elseif($note->note_type == 2)
+                                    <a href="{{ route('tasks.show', $note->noteable) }}" class="btn btn-outline-warning btn-sm font-weight-bold shadow-sm text-dark" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;">
+                                        <i class="fas fa-tasks mr-1 text-warning"></i> {{ $note->noteable->title }}
+                                    </a>
+                                @elseif($note->note_type == 3)
+                                    <span class="badge badge-light border px-3 py-2 font-weight-bold shadow-sm text-dark" style="font-size: 0.85rem;">
+                                        <i class="fas fa-building mr-1 text-info"></i> {{ $note->noteable->name }}
+                                    </span>
+                                @endif
+                            </div>
+                        @endif
+                        
+                        @if($note->note_type == 2 && $note->noteable && $note->noteable->project)
+                            <div>
+                                <a href="{{ route('projects.show', $note->noteable->project) }}" class="btn btn-outline-secondary btn-sm font-weight-bold shadow-sm" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;">
+                                    <i class="fas fa-project-diagram mr-1 text-secondary"></i> {{ $note->noteable->project->name }}
+                                </a>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -61,71 +109,6 @@
             'commentableType' => 'note',
             'commentableId' => $note->id
         ])
-    </div>
-
-    <!-- Side Metadata Column -->
-    <div class="col-lg-4 col-12">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Note Context</h6>
-            </div>
-            <div class="card-body">
-                <div class="mb-4">
-                    <div class="text-xs font-weight-bold text-gray-700 text-uppercase mb-2">Scope / Type</div>
-                    <div>
-                        @if($note->note_type == 4)
-                            <span class="badge badge-success px-3 py-2 font-weight-bold shadow-sm" style="font-size: 0.85rem;">
-                                <i class="fas fa-lock mr-1"></i> Private Personal Note
-                            </span>
-                        @elseif($note->note_type == 1)
-                            <span class="badge badge-primary px-3 py-2 font-weight-bold shadow-sm" style="font-size: 0.85rem;">
-                                <i class="fas fa-project-diagram mr-1"></i> Project Specific
-                            </span>
-                        @elseif($note->note_type == 2)
-                            <span class="badge badge-warning px-3 py-2 font-weight-bold shadow-sm text-dark" style="font-size: 0.85rem;">
-                                <i class="fas fa-tasks mr-1"></i> Task Specific
-                            </span>
-                        @elseif($note->note_type == 3)
-                            <span class="badge badge-info px-3 py-2 font-weight-bold shadow-sm" style="font-size: 0.85rem;">
-                                <i class="fas fa-building mr-1"></i> Organization Level
-                            </span>
-                        @endif
-                    </div>
-                </div>
-
-                @if($note->noteable)
-                    <div class="mb-4">
-                        <div class="text-xs font-weight-bold text-gray-700 text-uppercase mb-2">Associated Reference</div>
-                        <div>
-                            @if($note->note_type == 1)
-                                <a href="{{ route('projects.show', $note->noteable) }}" class="btn btn-outline-primary btn-block text-left shadow-sm">
-                                    <i class="fas fa-project-diagram mr-2"></i> {{ $note->noteable->name }}
-                                </a>
-                            @elseif($note->note_type == 2)
-                                <a href="{{ route('tasks.show', $note->noteable) }}" class="btn btn-outline-warning btn-block text-left shadow-sm text-dark">
-                                    <i class="fas fa-tasks mr-2 text-warning"></i> {{ $note->noteable->title }}
-                                </a>
-                            @elseif($note->note_type == 3)
-                                <div class="p-2 border rounded bg-light text-gray-800">
-                                    <i class="fas fa-building mr-2 text-info"></i> {{ $note->noteable->name }}
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-                @endif
-                
-                @if($note->note_type == 2 && $note->noteable && $note->noteable->project)
-                    <div class="mb-4">
-                        <div class="text-xs font-weight-bold text-gray-700 text-uppercase mb-2">Parent Project</div>
-                        <div>
-                            <a href="{{ route('projects.show', $note->noteable->project) }}" class="btn btn-outline-secondary btn-block text-left shadow-sm">
-                                <i class="fas fa-project-diagram mr-2 text-secondary"></i> {{ $note->noteable->project->name }}
-                            </a>
-                        </div>
-                    </div>
-                @endif
-            </div>
-        </div>
     </div>
 </div>
 @endsection
