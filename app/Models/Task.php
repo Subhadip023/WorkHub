@@ -21,7 +21,17 @@ class Task extends Model
 
     const TYPE_IMPROVEMENT = 4;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'title',
+        'description',
+        'due_date',
+        'status',
+        'priority',
+        'type',
+        'project_id',
+        'user_id',
+        'assigned_to',
+    ];
 
     protected static function booted()
     {

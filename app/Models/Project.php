@@ -15,7 +15,16 @@ class Project extends Model
     /** @use HasFactory<ProjectFactory> */
     use HasFactory, SoftDeletes;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'name',
+        'slug',
+        'description',
+        'theme',
+        'status',
+        'priority',
+        'user_id',
+        'company_id',
+    ];
 
     /**
      * @return HasMany<Task, $this>

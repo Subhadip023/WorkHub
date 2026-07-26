@@ -2,53 +2,7 @@
 
 @section('title', 'System Issues')
 
-@push('styles')
-<style>
-    .issue-card {
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-        border-left: 4px solid #858796;
-    }
-    .issue-card.priority-low { border-left-color: #1cc88a; }
-    .issue-card.priority-medium { border-left-color: #f6c23e; }
-    .issue-card.priority-high { border-left-color: #fd7e14; }
-    .issue-card.priority-critical { border-left-color: #e74a3b; }
 
-    .issue-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 0.5rem 1.5rem rgba(58, 59, 69, 0.1) !important;
-    }
-
-    #issuesFilterTab {
-        border-bottom: 2px solid #eaecf4;
-    }
-    #issuesFilterTab .nav-link {
-        border: none;
-        background: transparent;
-        color: #858796;
-        padding: 0.75rem 1.25rem;
-        border-bottom: 3px solid transparent;
-        font-weight: 700;
-        transition: all 0.15s ease-in-out;
-        border-radius: 0;
-    }
-    #issuesFilterTab .nav-link:hover {
-        color: #5a5c69;
-        border-bottom: 3px solid #dddfeb;
-    }
-    #issuesFilterTab .nav-link.active {
-        color: #4e73df !important; 
-        border-bottom: 3px solid #4e73df !important;
-    }
-    
-    .issue-description-box {
-        background-color: #f8f9fc;
-        border: 1px solid #eaecf4;
-        border-radius: 6px;
-        font-family: inherit;
-        white-space: pre-wrap;
-    }
-</style>
-@endpush
 
 @section('content')
 <!-- Page Heading -->

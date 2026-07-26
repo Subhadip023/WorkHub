@@ -86,13 +86,19 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Task::class, 'assigned_to');
     }
 
+    /**
+     * Count tasks that are not yet completed (status 1=To Do, 2=In Progress, 4=On Hold).
+     */
     public function pendingTasksCount(): int
     {
-        return $this->tasks()->where('status', 'pending')->count();
+        return $this->tasks()->whereIn('status', [1, 2, 4])->count();
     }
 
+    /**
+     * Count tasks that are completed (status 3=Completed).
+     */
     public function completedTasksCount(): int
     {
-        return $this->tasks()->where('status', 'completed')->count();
+        return $this->tasks()->where('status', 3)->count();
     }
 }

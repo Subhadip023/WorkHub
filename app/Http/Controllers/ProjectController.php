@@ -10,6 +10,7 @@ use App\Models\Project;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 
 class ProjectController extends Controller
 {
@@ -56,7 +57,7 @@ class ProjectController extends Controller
     public function store(StoreProjectRequest $request)
     {
         $data = $request->validated();
-        $data['slug'] = str_replace(' ', '-', strtolower($data['name']));
+        $data['slug'] = Str::slug($data['name']); // #13: Handles special chars correctly
 
         $company_id = $request->input('company_id');
         if ($company_id === 'personal' || empty($company_id)) {
@@ -196,7 +197,7 @@ class ProjectController extends Controller
         Gate::authorize('update', $project);
 
         $data = $request->validated();
-        $data['slug'] = str_replace(' ', '-', strtolower($data['name']));
+        $data['slug'] = Str::slug($data['name']); // #13: Handles special chars correctly
 
         $company_id = $request->input('company_id');
         if ($company_id === 'personal' || empty($company_id)) {

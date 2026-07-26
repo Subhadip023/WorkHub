@@ -3,16 +3,13 @@
 @section('title', $project->name)
 
 @push('styles')
+{{-- Only this rule stays inline because it uses the dynamic $project->theme PHP variable.
+     All other #projectShowTabs styles are in public/asset/css/admin-custom.css --}}
 <style>
-    .text-line-through {
-        text-decoration: line-through;
-    }
-    .note-card-hover {
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    }
-    .note-card-hover:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 0.75rem 2rem rgba(58, 59, 69, 0.15) !important;
+    #projectShowTabs .nav-link.active {
+        color: {{ $project->theme }} !important;
+        border-bottom: 3px solid {{ $project->theme }} !important;
+        background: transparent;
     }
     .note-description-preview {
         display: -webkit-box;
@@ -23,35 +20,6 @@
         color: #5a5c69;
         font-size: 0.9rem;
         line-height: 1.6;
-    }
-    /* Custom Modern Underline Tabs */
-    #projectShowTabs {
-        border-bottom: 2px solid #eaecf4;
-    }
-    #projectShowTabs .nav-link {
-        border: none;
-        background: transparent;
-        color: #858796;
-        padding: 0.75rem 1.25rem;
-        border-bottom: 3px solid transparent;
-        font-weight: 700;
-        transition: all 0.15s ease-in-out;
-        border-radius: 0;
-    }
-    #projectShowTabs .nav-link:hover {
-        color: #5a5c69;
-        border-bottom: 3px solid #dddfeb;
-    }
-    #projectShowTabs .nav-link.active {
-        color: {{ $project->theme }} !important;
-        border-bottom: 3px solid {{ $project->theme }} !important;
-        background: transparent;
-    }
-    #projectShowTabs .nav-link i {
-        transition: transform 0.2s;
-    }
-    #projectShowTabs .nav-link:hover i {
-        transform: translateY(-1px);
     }
 </style>
 @endpush

@@ -228,11 +228,6 @@
 </div>
 @push('styles')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
-<style>
-    .img-container img {
-        max-width: 100%;
-    }
-</style>
 @endpush
 
 <!-- Cropper Modal -->

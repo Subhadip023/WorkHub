@@ -5,18 +5,6 @@
 @push('styles')
 <!-- Quill rich text editor library styles -->
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-<style>
-    .ql-container {
-        font-size: 1rem;
-        border-bottom-left-radius: 0.35rem;
-        border-bottom-right-radius: 0.35rem;
-    }
-    .ql-toolbar {
-        border-top-left-radius: 0.35rem;
-        border-top-right-radius: 0.35rem;
-        background-color: #f8f9fc;
-    }
-</style>
 @endpush
 
 @section('content')

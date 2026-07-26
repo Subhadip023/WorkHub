@@ -2,65 +2,7 @@
 
 @section('title', 'Notes')
 
-@push('styles')
-<style>
-    .note-card-hover {
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    }
-    .note-card-hover:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 0.75rem 2rem rgba(58, 59, 69, 0.15) !important;
-    }
-    /* Custom Modern Underline Tabs for Notes */
-    #notesFilterTab {
-        border-bottom: 2px solid #eaecf4;
-    }
-    #notesFilterTab .nav-link {
-        border: none;
-        background: transparent;
-        color: #858796;
-        padding: 0.75rem 1.25rem;
-        border-bottom: 3px solid transparent;
-        font-weight: 700;
-        transition: all 0.15s ease-in-out;
-        border-radius: 0;
-    }
-    #notesFilterTab .nav-link:hover {
-        color: #5a5c69;
-        border-bottom: 3px solid #dddfeb;
-    }
-    #notesFilterTab .nav-link i {
-        transition: transform 0.2s;
-    }
-    #notesFilterTab .nav-link:hover i {
-        transform: translateY(-1px);
-    }
-    /* Specific Active colors for each tab pill underline */
-    #notesFilterTab #all-tab.active { 
-        color: #4e73df !important; 
-        border-bottom: 3px solid #4e73df !important;
-    }
-    #notesFilterTab #personal-tab.active { 
-        color: #1cc88a !important; 
-        border-bottom: 3px solid #1cc88a !important;
-    }
-    #notesFilterTab #project-tab.active { 
-        color: #4e73df !important; 
-        border-bottom: 3px solid #4e73df !important;
-    }
-    #notesFilterTab #task-tab.active { 
-        color: #f6c23e !important; 
-        border-bottom: 3px solid #f6c23e !important;
-    }
-    #notesFilterTab #org-tab.active { 
-        color: #36b9cc !important; 
-        border-bottom: 3px solid #36b9cc !important;
-    }
-    .hover-link:hover {
-        color: #4e73df !important;
-    }
-</style>
-@endpush
+
 
 @section('content')
 <!-- Page Heading -->

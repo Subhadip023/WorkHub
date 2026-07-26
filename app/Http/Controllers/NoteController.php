@@ -18,7 +18,7 @@ class NoteController extends Controller
     {
         $user = auth()->user();
 
-        $companyIds = $user->companies->pluck('company_id')->toArray();
+        $companyIds = $user->companies()->pluck('company_id')->toArray();
         $projectIds = Project::whereNull('company_id')
             ->where('user_id', $user->id)
             ->orWhereIn('company_id', $companyIds)
@@ -49,7 +49,7 @@ class NoteController extends Controller
     public function create(Request $request)
     {
         $user = auth()->user();
-        $companyIds = $user->companies->pluck('company_id')->toArray();
+        $companyIds = $user->companies()->pluck('company_id')->toArray();
 
         $projects = Project::select('id', 'name')->where(function ($q) use ($user, $companyIds) {
             $q->whereNull('company_id')
@@ -87,7 +87,7 @@ class NoteController extends Controller
         $noteDescription = $joyPixels->toImage($note->description);
 
         $pdf = Pdf::loadView('notes.pdf', compact('note', 'noteDescription'))
-            ->setOption('isRemoteEnabled', true);
+            ->setOption('isRemoteEnabled', false); // #4: Disabled to prevent SSRF attacks
 
         return $pdf->stream(Str::slug($note->title).'.pdf');
     }
@@ -126,9 +126,12 @@ class NoteController extends Controller
             'note_type_id' => $noteTypeId,
         ]);
 
-        // If the request came from project show or task show, redirect back
+        // #1: Validate redirect_back is a local URL to prevent open redirect attacks
         if ($request->has('redirect_back')) {
-            return redirect($request->input('redirect_back'))->with('success', 'Note created successfully.');
+            $back = $request->input('redirect_back');
+            if ($back && str_starts_with($back, url('/'))) {
+                return redirect($back)->with('success', 'Note created successfully.');
+            }
         }
 
         return redirect()->route('notes.index')->with('success', 'Note created successfully.');
@@ -139,7 +142,7 @@ class NoteController extends Controller
         Gate::authorize('update', $note);
 
         $user = auth()->user();
-        $companyIds = $user->companies->pluck('company_id')->toArray();
+        $companyIds = $user->companies()->pluck('company_id')->toArray();
         $projects = Project::select('id', 'name')->where(function ($q) use ($user, $companyIds) {
             $q->whereNull('company_id')
                 ->where('user_id', $user->id)
@@ -169,8 +172,12 @@ class NoteController extends Controller
             'description' => $request->description,
         ]);
 
+        // #1: Validate redirect_back is a local URL to prevent open redirect attacks
         if ($request->has('redirect_back')) {
-            return redirect($request->input('redirect_back'))->with('success', 'Note updated successfully.');
+            $back = $request->input('redirect_back');
+            if ($back && str_starts_with($back, url('/'))) {
+                return redirect($back)->with('success', 'Note updated successfully.');
+            }
         }
 
         return redirect()->route('notes.index')->with('success', 'Note updated successfully.');

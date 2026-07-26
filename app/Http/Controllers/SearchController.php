@@ -36,7 +36,7 @@ class SearchController extends Controller
         }
 
         // Get user companies, projects, tasks for access control
-        $companyIds = $user->companies->pluck('company_id')->toArray();
+        $companyIds = $user->companies()->pluck('company_id')->toArray();
 
         $projectIds = Project::whereNull('company_id')
             ->where('user_id', $user->id)

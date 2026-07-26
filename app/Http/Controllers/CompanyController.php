@@ -51,7 +51,12 @@ class CompanyController extends Controller
         ]);
         $company_id = $company->id;
         $user_id = auth()->user()->id;
-        CompanyUsers::create(['company_id' => $company_id, 'user_id' => $user_id, 'role' => 1]);
+        CompanyUsers::create([
+            'company_id' => $company_id,
+            'user_id' => $user_id,
+            'role' => 1,
+            'is_approved' => true, // #23: Creator is always an approved admin
+        ]);
 
         session(['current_company_id' => $company_id]);
 
@@ -429,8 +434,6 @@ class CompanyController extends Controller
      */
     public function rejectMemberRequest(Request $request, Company $company, User $user)
     {
-        $auth_user = auth()->user();
-
         Gate::authorize('update', $company);
 
         // Delete the pending membership

@@ -33,8 +33,13 @@ class ProfileController extends Controller
         if ($request->filled('cropped_image')) {
             $base64_image = $request->input('cropped_image');
             if (preg_match('/^data:image\/(\w+);base64,/', $base64_image, $type)) {
-                $image_base64 = base64_decode(substr($base64_image, strpos($base64_image, ',') + 1));
                 $image_type = strtolower($type[1]);
+                // #3: Whitelist safe image types to prevent SVG/XSS uploads
+                $allowed = ['jpeg', 'jpg', 'png', 'webp', 'gif'];
+                if (! in_array($image_type, $allowed)) {
+                    return Redirect::route('profile.edit')->withErrors(['profile_image' => 'Invalid image type. Allowed: jpeg, jpg, png, webp, gif.']);
+                }
+                $image_base64 = base64_decode(substr($base64_image, strpos($base64_image, ',') + 1));
                 $fileName = 'profile-images/'.uniqid().'.'.$image_type;
                 Storage::disk('public')->put($fileName, $image_base64);
                 if ($user->profile_image) {

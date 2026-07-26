@@ -26,3 +26,4 @@ Thumbs.db
 composer.lock
 temp-sb-admin/
 .env.testing
+CODE_REVIEW.txt

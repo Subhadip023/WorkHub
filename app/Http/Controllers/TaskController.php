@@ -362,20 +362,22 @@ class TaskController extends Controller
             );
         }
 
+        // #9: Capture all needed values BEFORE deleting to avoid reading deleted model state
         $previousUrl = url()->previous();
         $taskShowUrl = route('tasks.show', $task);
+        $projectId = $task->project_id;
 
         $task->delete();
 
         if ($previousUrl === $taskShowUrl || str_contains($previousUrl, "/tasks/{$task->id}")) {
-            if ($task->project_id) {
-                return redirect()->route('projects.show', $task->project_id)->with('success', 'Task deleted successfully');
+            if ($projectId) {
+                return redirect()->route('projects.show', $projectId)->with('success', 'Task deleted successfully.');
             }
 
-            return redirect()->route('tasks.index')->with('success', 'Task deleted successfully');
+            return redirect()->route('tasks.index')->with('success', 'Task deleted successfully.');
         }
 
-        return redirect()->back()->with('success', 'Task deleted successfully');
+        return redirect()->back()->with('success', 'Task deleted successfully.');
     }
 
     /**
@@ -405,25 +407,44 @@ class TaskController extends Controller
         }
 
         $count = 0;
+        $skipped = 0;
         foreach ($data as $item) {
             if (! empty($item['title'])) {
-                $status = $item['status'] ?? (($item['is_completed'] ?? false) ? 3 : 1);
-                $priority = $item['priority'] ?? 2;
-                $type = $item['type'] ?? 1;
+                // #8: Validate numeric fields are within allowed ranges
+                $status = isset($item['status']) && in_array((int) $item['status'], [1, 2, 3, 4]) ? (int) $item['status'] : (($item['is_completed'] ?? false) ? 3 : 1);
+                $priority = isset($item['priority']) && in_array((int) $item['priority'], [1, 2, 3, 4]) ? (int) $item['priority'] : 2;
+                $type = isset($item['type']) && in_array((int) $item['type'], [1, 2, 3, 4]) ? (int) $item['type'] : 1;
+                // #8: Only allow assigning to valid existing users; default to current user
+                $assignedTo = auth()->id();
+                if (! empty($item['assigned_to'])) {
+                    $assignedExists = User::where('id', (int) $item['assigned_to'])->exists();
+                    if ($assignedExists) {
+                        $assignedTo = (int) $item['assigned_to'];
+                    }
+                }
+
                 $project->tasks()->create([
                     'title' => $item['title'],
                     'description' => $item['description'] ?? null,
-                    'due_date' => $item['due_date'] ?? null,
-                    'assigned_to' => $item['assigned_to'] ?? auth()->id(),
+                    'due_date' => isset($item['due_date']) ? date('Y-m-d', strtotime($item['due_date'])) : null,
+                    'assigned_to' => $assignedTo,
+                    'user_id' => auth()->id(), // #25: Always set the creator
                     'status' => $status,
                     'priority' => $priority,
                     'type' => $type,
                 ]);
                 $count++;
+            } else {
+                $skipped++;
             }
         }
 
-        return redirect()->route('projects.show', $project)->with('success', "$count tasks imported successfully");
+        $message = "{$count} task(s) imported successfully.";
+        if ($skipped > 0) {
+            $message .= " {$skipped} item(s) skipped (missing title).";
+        }
+
+        return redirect()->route('projects.show', $project)->with('success', $message);
     }
 
     /**

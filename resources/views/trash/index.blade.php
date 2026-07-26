@@ -2,49 +2,7 @@
 
 @section('title', 'Trash Bin')
 
-@push('styles')
-<style>
-    #trashFilterTab {
-        border-bottom: 2px solid #eaecf4;
-    }
-    #trashFilterTab .nav-link {
-        border: none;
-        background: transparent;
-        color: #858796;
-        padding: 0.75rem 1.25rem;
-        border-bottom: 3px solid transparent;
-        font-weight: 700;
-        transition: all 0.15s ease-in-out;
-        border-radius: 0;
-    }
-    #trashFilterTab .nav-link:hover {
-        color: #5a5c69;
-        border-bottom: 3px solid #dddfeb;
-    }
-    #trashFilterTab #tasks-tab.active { 
-        color: #f6c23e !important; 
-        border-bottom: 3px solid #f6c23e !important;
-    }
-    #trashFilterTab #projects-tab.active { 
-        color: #4e73df !important; 
-        border-bottom: 3px solid #4e73df !important;
-    }
-    #trashFilterTab #companies-tab.active { 
-        color: #36b9cc !important; 
-        border-bottom: 3px solid #36b9cc !important;
-    }
-    #trashFilterTab #members-tab.active { 
-        color: #1cc88a !important; 
-        border-bottom: 3px solid #1cc88a !important;
-    }
-    #trashFilterTab .nav-link i {
-        transition: transform 0.2s;
-    }
-    #trashFilterTab .nav-link:hover i {
-        transform: translateY(-1px);
-    }
-</style>
-@endpush
+
 
 @section('content')
 <!-- Page Heading -->

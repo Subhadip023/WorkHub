@@ -2,19 +2,7 @@
 
 @section('title', 'Tasks')
 
-@push('styles')
-<style>
-    .text-line-through {
-        text-decoration: line-through;
-    }
-    @media (max-width: 576px) {
-        .btn-block-xs {
-            display: block;
-            width: 100%;
-        }
-    }
-</style>
-@endpush
+
 
 @section('content')
 <!-- Page Heading -->

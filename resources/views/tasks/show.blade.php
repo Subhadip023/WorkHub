@@ -5,52 +5,6 @@
 @push('styles')
 <!-- Quill rich text editor library styles -->
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-<style>
-    .ql-container {
-        font-size: 1rem;
-        border-bottom-left-radius: 0.35rem;
-        border-bottom-right-radius: 0.35rem;
-    }
-    .ql-toolbar {
-        border-top-left-radius: 0.35rem;
-        border-top-right-radius: 0.35rem;
-        background-color: #f8f9fc;
-    }
-    .image-card:hover .image-actions {
-        opacity: 1 !important;
-    }
-    .upload-zone {
-        border: 2px dashed #dddfeb;
-        border-radius: 0.35rem;
-        background-color: #f8f9fc;
-        transition: all 0.2s ease-in-out;
-        cursor: pointer;
-    }
-    .upload-zone:hover {
-        border-color: #4e73df;
-        background-color: #f0f3fc;
-    }
-    #task-info-tabs {
-        background-color: #f8f9fc;
-        border-top-left-radius: 0.35rem;
-        border-top-right-radius: 0.35rem;
-    }
-    #task-info-tabs .nav-link {
-        border: none;
-        border-bottom: 3px solid transparent;
-        color: #858796;
-        transition: all 0.2s ease;
-    }
-    #task-info-tabs .nav-link.active {
-        background-color: transparent;
-        border-bottom-color: #4e73df;
-        color: #4e73df !important;
-    }
-    #task-info-tabs .nav-link:hover:not(.active) {
-        border-bottom-color: #dddfeb;
-        color: #5a5c69;
-    }
-</style>
 @endpush
 
 @section('content')
@@ -82,7 +36,8 @@
                 </button>
             </form>
             
-            <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="mr-2 mb-0">
+            <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="mr-2 mb-0"
+                  onsubmit="return confirm('Are you sure you want to delete this task? This cannot be undone.');">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-danger btn-sm shadow-sm">

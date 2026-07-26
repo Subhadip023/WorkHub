@@ -93,7 +93,8 @@ it('allows deleting a note', function () {
     $response = $this->actingAs($user)->delete(route('notes.destroy', $note));
 
     $response->assertStatus(302);
-    $this->assertDatabaseMissing('notes', [
+    // Note: Note model now uses SoftDeletes, so the row is soft-deleted, not removed
+    $this->assertSoftDeleted('notes', [
         'id' => $note->id,
     ]);
 });
