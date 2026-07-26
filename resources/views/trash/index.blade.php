@@ -2,6 +2,50 @@
 
 @section('title', 'Trash Bin')
 
+@push('styles')
+<style>
+    #trashFilterTab {
+        border-bottom: 2px solid #eaecf4;
+    }
+    #trashFilterTab .nav-link {
+        border: none;
+        background: transparent;
+        color: #858796;
+        padding: 0.75rem 1.25rem;
+        border-bottom: 3px solid transparent;
+        font-weight: 700;
+        transition: all 0.15s ease-in-out;
+        border-radius: 0;
+    }
+    #trashFilterTab .nav-link:hover {
+        color: #5a5c69;
+        border-bottom: 3px solid #dddfeb;
+    }
+    #trashFilterTab #tasks-tab.active { 
+        color: #f6c23e !important; 
+        border-bottom: 3px solid #f6c23e !important;
+    }
+    #trashFilterTab #projects-tab.active { 
+        color: #4e73df !important; 
+        border-bottom: 3px solid #4e73df !important;
+    }
+    #trashFilterTab #companies-tab.active { 
+        color: #36b9cc !important; 
+        border-bottom: 3px solid #36b9cc !important;
+    }
+    #trashFilterTab #members-tab.active { 
+        color: #1cc88a !important; 
+        border-bottom: 3px solid #1cc88a !important;
+    }
+    #trashFilterTab .nav-link i {
+        transition: transform 0.2s;
+    }
+    #trashFilterTab .nav-link:hover i {
+        transform: translateY(-1px);
+    }
+</style>
+@endpush
+
 @section('content')
 <!-- Page Heading -->
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
@@ -28,32 +72,34 @@
 @endif
 
 <!-- Nav Tabs -->
-<div class="card shadow mb-4">
-    <div class="card-header py-3 bg-white border-bottom-0">
-        <ul class="nav nav-pills card-header-pills" id="trashTabs" role="tablist">
-            <li class="nav-item">
-                <a class="nav-link active font-weight-bold text-xs text-uppercase" id="tasks-tab" data-toggle="tab" href="#tasks" role="tab" aria-controls="tasks" aria-selected="true">
-                    <i class="fas fa-tasks mr-1"></i> Tasks ({{ $tasks->count() }})
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link font-weight-bold text-xs text-uppercase" id="projects-tab" data-toggle="tab" href="#projects" role="tab" aria-controls="projects" aria-selected="false">
-                    <i class="fas fa-folder mr-1"></i> Projects ({{ $projects->count() }})
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link font-weight-bold text-xs text-uppercase" id="companies-tab" data-toggle="tab" href="#companies" role="tab" aria-controls="companies" aria-selected="false">
-                    <i class="fas fa-building mr-1"></i> Organizations ({{ $companies->count() }})
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link font-weight-bold text-xs text-uppercase" id="members-tab" data-toggle="tab" href="#members" role="tab" aria-controls="members" aria-selected="false">
-                    <i class="fas fa-users mr-1"></i> Members ({{ $trashedMembers->count() }})
-                </a>
-            </li>
-        </ul>
-    </div>
-    <div class="card-body">
+<div class="mb-4">
+    <ul class="nav nav-tabs" id="trashFilterTab" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active font-weight-bold text-xs text-uppercase" id="tasks-tab" data-toggle="tab" href="#tasks" role="tab" aria-controls="tasks" aria-selected="true">
+                <i class="fas fa-tasks mr-1"></i> Tasks ({{ $tasks->count() }})
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link font-weight-bold text-xs text-uppercase" id="projects-tab" data-toggle="tab" href="#projects" role="tab" aria-controls="projects" aria-selected="false">
+                <i class="fas fa-folder mr-1"></i> Projects ({{ $projects->count() }})
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link font-weight-bold text-xs text-uppercase" id="companies-tab" data-toggle="tab" href="#companies" role="tab" aria-controls="companies" aria-selected="false">
+                <i class="fas fa-building mr-1"></i> Organizations ({{ $companies->count() }})
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link font-weight-bold text-xs text-uppercase" id="members-tab" data-toggle="tab" href="#members" role="tab" aria-controls="members" aria-selected="false">
+                <i class="fas fa-users mr-1"></i> Members ({{ $trashedMembers->count() }})
+            </a>
+        </li>
+    </ul>
+</div>
+
+<!-- Tab Content Card -->
+<div class="card shadow mb-4" style="border-radius: 8px; border: none;">
+    <div class="card-body p-4">
         <div class="tab-content" id="trashTabsContent">
             <!-- Tasks Tab -->
             <div class="tab-pane fade show active" id="tasks" role="tabpanel" aria-labelledby="tasks-tab">

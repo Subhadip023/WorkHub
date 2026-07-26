@@ -97,7 +97,7 @@
 
                     <!-- Actions -->
                     <div class="row no-gutters mt-2">
-                        <div class="col-5 pr-1">
+                        <div class="col-4 pr-1">
                             <a href="{{ route('projects.show', $project) }}" class="btn btn-sm btn-primary btn-block shadow-sm text-truncate" title="View Tasks">
                                 <i class="fas fa-eye mr-1"></i> View
                             </a>
@@ -107,18 +107,18 @@
                                 <i class="fas fa-edit mr-1"></i> Edit
                             </a>
                         </div>
-                        <div class="col-3 pl-1">
+                        <div class="col-4 pl-1">
                             @can('delete', $project)
                                 <form action="{{ route('projects.destroy', $project) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-outline-danger btn-block shadow-sm text-truncate" title="Delete Project">
-                                        <i class="fas fa-trash"></i>
+                                        <i class="fas fa-trash mr-1"></i> Delete
                                     </button>
                                 </form>
                             @else
                                 <button type="button" class="btn btn-sm btn-outline-secondary btn-block shadow-sm text-truncate disabled" title="Delete restricted" disabled>
-                                    <i class="fas fa-trash"></i>
+                                    <i class="fas fa-trash mr-1"></i> Delete
                                 </button>
                             @endcan
                         </div>

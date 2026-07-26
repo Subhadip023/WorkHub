@@ -194,6 +194,23 @@ html, body {
     background: rgba(0, 0, 0, 0.3) !important;
 }
 
+/* Card Hover Animations */
+.note-card-hover {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.note-card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0.75rem 2rem rgba(58, 59, 69, 0.15) !important;
+}
+
+.hover-link {
+    transition: color 0.15s ease-in-out;
+}
+.hover-link:hover {
+    color: #4e73df !important;
+}
+
+
 
 
 

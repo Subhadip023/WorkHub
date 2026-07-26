@@ -25,7 +25,7 @@
     
     <!-- Fonts & Icons -->
     <link rel="icon" type="image/svg+xml" href="{{ asset('asset/img/logo.svg') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
     <link href="{{ asset('asset/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
     
     <!-- Custom Vanilla CSS -->
@@ -33,14 +33,14 @@
         :root {
             --primary: #4e73df;
             --primary-dark: #2e59d9;
-            --primary-light: #f0f3fc;
-            --secondary: #6c757d;
-            --dark: #0f172a;
-            --light: #f8fafc;
-            --card-bg: rgba(255, 255, 255, 0.85);
-            --gradient: linear-gradient(135deg, #4e73df 0%, #8f6cf0 100%);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --font-main: 'Outfit', sans-serif;
+            --primary-light: #eaecf4;
+            --secondary: #858796;
+            --dark: #5a5c69;
+            --light: #f8f9fc;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --gradient: linear-gradient(180deg, #4e73df 10%, #224abe 100%);
+            --transition: all 0.2s ease-in-out;
+            --font-main: 'Nunito', sans-serif;
         }
 
         * {
@@ -49,12 +49,27 @@
             box-sizing: border-box;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             font-family: var(--font-main);
             color: #334155;
             background-color: var(--light);
             line-height: 1.6;
             overflow-x: hidden;
+        }
+
+        /* Full Screen Sections */
+        .hero, .features, .workflow, .cta {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 120px 0 80px;
+            box-sizing: border-box;
+            width: 100%;
         }
 
         /* Utility Classes */
@@ -130,7 +145,7 @@
             align-items: center;
             justify-content: center;
             padding: 10px 24px;
-            border-radius: 30px;
+            border-radius: .35rem;
             font-weight: 600;
             text-decoration: none;
             transition: var(--transition);
@@ -160,8 +175,7 @@
 
         /* Hero Section */
         .hero {
-            padding: 180px 0 100px;
-            background: radial-gradient(circle at 80% 20%, rgba(143, 108, 240, 0.08) 0%, rgba(248, 250, 252, 0) 50%);
+            background: radial-gradient(circle at 80% 20%, rgba(78, 115, 223, 0.08) 0%, rgba(248, 250, 252, 0) 50%);
             position: relative;
         }
 
@@ -233,7 +247,6 @@
 
         /* Features Section */
         .features {
-            padding: 100px 0;
             background-color: white;
             position: relative;
         }
@@ -265,7 +278,7 @@
         .feature-card {
             background: var(--light);
             border: 1px solid rgba(226, 232, 240, 0.7);
-            border-radius: 20px;
+            border-radius: .35rem;
             padding: 40px 30px;
             transition: var(--transition);
             position: relative;
@@ -297,7 +310,7 @@
         .feature-icon {
             width: 60px;
             height: 60px;
-            border-radius: 16px;
+            border-radius: .35rem;
             background: var(--primary-light);
             color: var(--primary);
             display: flex;
@@ -327,7 +340,6 @@
 
         /* Workflows Section */
         .workflow {
-            padding: 100px 0;
             background: radial-gradient(circle at 10% 80%, rgba(78, 115, 223, 0.05) 0%, rgba(248, 250, 252, 0) 50%);
         }
 
@@ -375,13 +387,12 @@
 
         /* CTA Section */
         .cta {
-            padding: 100px 0;
             background-color: white;
         }
 
         .cta-box {
             background: var(--gradient);
-            border-radius: 30px;
+            border-radius: .35rem;
             padding: 70px 40px;
             text-align: center;
             color: white;
@@ -429,33 +440,72 @@
 
         /* Footer */
         footer {
-            background-color: var(--dark);
-            color: #94a3b8;
-            padding: 60px 0 30px;
-            border-top: 1px solid #1e293b;
+            background-color: #f8f9fc;
+            color: #858796;
+            padding: 80px 0 40px;
+            border-top: 1px solid #e3e6f0;
         }
 
         .footer-grid {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #1e293b;
-            padding-bottom: 40px;
-            margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+            margin-bottom: 50px;
+        }
+
+        .footer-info {
+            max-width: 400px;
+        }
+
+        .footer-info p {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-top: 16px;
+            color: #858796;
         }
 
         .footer-logo {
             font-size: 24px;
             font-weight: 800;
-            color: white;
+            color: #5a5c69;
             text-decoration: none;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 10px;
         }
 
-        .footer-copyright {
+        .footer-links {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .footer-links h4 {
+            color: #5a5c69;
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .footer-links a {
+            color: #858796;
+            text-decoration: none;
+            font-size: 15px;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #e3e6f0;
+            padding-top: 30px;
             font-size: 14px;
+            color: #858796;
         }
 
         /* Responsiveness */
@@ -480,8 +530,20 @@
                 gap: 50px;
             }
             .footer-grid {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 30px;
+            }
+            .footer-info {
+                max-width: 100%;
+                margin: 0 auto;
+            }
+            .footer-links {
+                align-items: center;
+            }
+            .footer-bottom {
                 flex-direction: column;
-                gap: 20px;
+                gap: 15px;
                 text-align: center;
             }
         }
@@ -526,7 +588,7 @@
                     <defs>
                         <linearGradient id="nav-logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stop-color="#4e73df" />
-                            <stop offset="100%" stop-color="#8f6cf0" />
+                            <stop offset="100%" stop-color="#224abe" />
                         </linearGradient>
                     </defs>
                     <path d="M16 2 L28 9 L28 23 L16 30 L4 23 L4 9 Z" fill="none" stroke="url(#nav-logo-grad)" stroke-width="2.5" stroke-linejoin="round" />
@@ -702,23 +764,38 @@
     <footer>
         <div class="container">
             <div class="footer-grid">
-                 <a href="{{ url('/') }}" class="footer-logo">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" style="width: 32px; height: 32px; filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.15));">
-                        <defs>
-                            <linearGradient id="footer-logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#ffffff" />
-                                <stop offset="100%" stop-color="#cbd5e1" />
-                            </linearGradient>
-                        </defs>
-                        <path d="M16 2 L28 9 L28 23 L16 30 L4 23 L4 9 Z" fill="none" stroke="url(#footer-logo-grad)" stroke-width="2.5" stroke-linejoin="round" />
-                        <path d="M16 8 L23 12 L23 20 L16 24 L9 20 L9 12 Z" fill="url(#footer-logo-grad)" opacity="0.9" />
-                        <circle cx="16" cy="16" r="3.5" fill="#0f172a" />
-                    </svg>
-                    WorkHub
-                </a>
-                <div class="footer-copyright">
-                    &copy; {{ date('Y') }} WorkHub. All rights reserved. Made for premium project management.
+                <div class="footer-info">
+                    <a href="{{ url('/') }}" class="footer-logo">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" style="width: 32px; height: 32px; filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.15));">
+                            <defs>
+                                <linearGradient id="footer-logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#4e73df" />
+                                    <stop offset="100%" stop-color="#224abe" />
+                                </linearGradient>
+                            </defs>
+                            <path d="M16 2 L28 9 L28 23 L16 30 L4 23 L4 9 Z" fill="none" stroke="url(#footer-logo-grad)" stroke-width="2.5" stroke-linejoin="round" />
+                            <path d="M16 8 L23 12 L23 20 L16 24 L9 20 L9 12 Z" fill="url(#footer-logo-grad)" opacity="0.9" />
+                            <circle cx="16" cy="16" r="3.5" fill="#f8f9fc" />
+                        </svg>
+                        WorkHub
+                    </a>
+                    <p>Unleash team productivity with WorkHub, the ultimate collaborative platform to organize tasks, coordinate projects, and accelerate workflows.</p>
                 </div>
+                <div class="footer-links">
+                    <h4>Navigation</h4>
+                    <a href="#features">Features</a>
+                    <a href="#workflow">Workflow</a>
+                    @auth
+                        <a href="{{ route('dashboard') }}">Go to Dashboard</a>
+                    @else
+                        <a href="{{ route('login') }}">Sign In</a>
+                        <a href="{{ route('register') }}">Sign Up</a>
+                    @endauth
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div>&copy; {{ date('Y') }} WorkHub. All rights reserved.</div>
+                <div>Designed for modern development teams.</div>
             </div>
         </div>
     </footer>
