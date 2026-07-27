@@ -104,6 +104,18 @@ class ProjectController extends Controller
     }
 
     /**
+     * Display credentials for the specified project.
+     */
+    public function credentials(Project $project)
+    {
+        Gate::authorize('view', $project);
+
+        $credentials = $project->credentials()->latest()->get();
+
+        return view('projects.credentials', compact('project', 'credentials'));
+    }
+
+    /**
      * Display the specified resource.
      */
     public function show(Project $project, Request $request)

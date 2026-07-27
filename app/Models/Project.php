@@ -65,4 +65,12 @@ class Project extends Model
     {
         return $this->morphMany(Comment::class, 'commentable');
     }
+
+    /**
+     * @return HasMany<ProjectCredentials, $this>
+     */
+    public function credentials(): HasMany
+    {
+        return $this->hasMany(ProjectCredentials::class, 'project_id');
+    }
 }
