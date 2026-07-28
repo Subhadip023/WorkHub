@@ -10,6 +10,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Pennant\Concerns\HasFeatures;
 
+/**
+ * @property bool|null $beta_access
+ * @property bool|null $issues_access
+ */
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
