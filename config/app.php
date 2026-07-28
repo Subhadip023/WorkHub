@@ -123,4 +123,14 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Beta Feature User Access
+    |--------------------------------------------------------------------------
+    |
+    | Comma-separated list of user IDs permitted to access beta features.
+    |
+    */
+    'beta_user_ids' => env('BETA_FEATURE_USER_IDS', '1'),
+
 ];

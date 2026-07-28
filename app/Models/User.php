@@ -101,4 +101,14 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->tasks()->where('status', 3)->count();
     }
+
+    /**
+     * Check if user has access to beta features specified in environment configuration.
+     */
+    public function hasBetaAccess(): bool
+    {
+        $allowedIds = array_filter(array_map('trim', explode(',', (string) config('app.beta_user_ids', ''))));
+
+        return in_array((string) $this->id, $allowedIds, true);
+    }
 }
