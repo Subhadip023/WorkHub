@@ -111,8 +111,9 @@ class ProjectController extends Controller
         Gate::authorize('view', $project);
 
         $credentials = $project->credentials()->latest()->get();
+        $comments = $project->comments()->with('user')->latest()->get();
 
-        return view('projects.credentials', compact('project', 'credentials'));
+        return view('projects.credentials', compact('project', 'credentials', 'comments'));
     }
 
     /**

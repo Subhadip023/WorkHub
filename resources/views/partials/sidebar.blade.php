@@ -57,12 +57,14 @@
             <span>Organizations</span>
         </a>
     </li>
+    @feature('access-issues')
     <li class="nav-item {{request()->routeIs('issues.*') ? 'active' : ''}}">
         <a class="nav-link" href="{{ route('issues.index') }}">
             <i class="fas fa-exclamation-circle"></i>
             <span>Issues</span>
         </a>
     </li>
+    @endfeature
     <li class="nav-item {{Route::currentRouteName() == 'permissions.index' ? 'active' : ''}}">
         <a class="nav-link" href="{{ route('permissions.index') }}">
             <i class="fas fa-shield-alt"></i>
@@ -76,7 +78,15 @@
         </a>
     </li>
 
-   
-
+    @feature('manage-features')
+        <hr class="sidebar-divider my-2">
+        <div class="sidebar-heading text-warning" style="font-size: 0.65rem; letter-spacing: 0.05rem;">SUPER ADMIN</div>
+        <li class="nav-item {{ request()->routeIs('admin.features.*') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('admin.features.index') }}">
+                <i class="fas fa-user-shield text-warning"></i>
+                <span>Feature Access</span>
+            </a>
+        </li>
+    @endfeature
 </ul>
 

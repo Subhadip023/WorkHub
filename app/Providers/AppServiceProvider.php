@@ -13,6 +13,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Pennant\Middleware\EnsureFeaturesAreActive;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -64,6 +65,10 @@ class AppServiceProvider extends ServiceProvider
             } else {
                 $view->with('pendingInvitations', collect());
             }
+        });
+
+        EnsureFeaturesAreActive::whenInactive(function () {
+            abort(403);
         });
     }
 }

@@ -8,11 +8,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Pennant\Concerns\HasFeatures;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, HasFeatures, Notifiable;
+
+    public const ROLE_SUPER_ADMIN = 0;
+
+    public const ROLE_ADMIN = 1;
+
+    public const ROLE_USER = 2;
 
     /**
      * The attributes that are mass assignable.
@@ -24,6 +31,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'profile_image',
+        'role',
     ];
 
     /**
@@ -46,6 +54,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => 'integer',
         ];
     }
 
@@ -103,12 +112,18 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Check if user has access to beta features specified in environment configuration.
+     * Check if user is a Super Admin.
      */
-    public function hasBetaAccess(): bool
+    public function isSuperAdmin(): bool
     {
-        $allowedIds = array_filter(array_map('trim', explode(',', (string) config('app.beta_user_ids', ''))));
+        return (int) $this->role === self::ROLE_SUPER_ADMIN;
+    }
 
-        return in_array((string) $this->id, $allowedIds, true);
+    /**
+     * Check if user is an Admin (or Super Admin).
+     */
+    public function isAdmin(): bool
+    {
+        return (int) $this->role === self::ROLE_ADMIN || $this->isSuperAdmin();
     }
 }
