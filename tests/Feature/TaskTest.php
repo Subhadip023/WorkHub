@@ -348,6 +348,7 @@ it('allows user to upload and delete task images', function () {
     $this->assertDatabaseHas('task_images', [
         'task_id' => $task->id,
     ]);
+    $this->assertNull($task->fresh()->description);
 
     $taskImage = $task->images()->first();
     Storage::disk('public')->assertExists($taskImage->image_path);
