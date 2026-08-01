@@ -5,6 +5,22 @@
 @push('styles')
 <!-- Quill rich text editor library styles -->
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<style>
+    .task-description-content img,
+    .description-body img,
+    #editor-container .ql-editor img {
+        max-width: 100% !important;
+        height: auto !important;
+        border-radius: 6px;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    .task-description-content,
+    .description-body,
+    #editor-container .ql-editor {
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+</style>
 @endpush
 
 @section('content')
@@ -179,37 +195,61 @@
             </div>
         </div>
 
-        <!-- Description Card with Quill.js Editor -->
+        <!-- Description Card with HTML View & Toggleable Quill.js Editor -->
         <div class="card shadow mb-4">
-            <div class="card-header py-3">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-align-left mr-1"></i> Description</h6>
+                @if($canMutate)
+                    <button type="button" class="btn btn-sm btn-outline-primary shadow-sm" id="btn-edit-description">
+                        <i class="fas fa-pencil-alt fa-sm mr-1"></i> Edit Description
+                    </button>
+                @endif
             </div>
             <div class="card-body">
-                <form id="description-form" action="{{ route('tasks.update', $task) }}" method="POST">
-                    @csrf
-                    @method('PATCH')
-                    <input type="hidden" name="title" value="{{ $task->title }}">
-                    <input type="hidden" name="assigned_to" value="{{ $task->assigned_to }}">
-                    <input type="hidden" name="due_date" value="{{ $task->due_date }}">
-                    <input type="hidden" name="status" value="{{ $task->status }}">
-                    <input type="hidden" name="priority" value="{{ $task->priority }}">
-                    <input type="hidden" name="type" value="{{ $task->type }}">
-                    <input type="hidden" name="description" id="hidden-description">
-                    
-                    <div id="editor-container" style="height: 250px;">{!! $task->description !!}</div>
-                    
-                    @if($canMutate)
-                        <div class="text-right mt-3">
-                            <button type="submit" class="btn btn-primary shadow-sm">
-                                <i class="fas fa-save mr-1"></i> Save Description
-                            </button>
+                <!-- Read-only HTML View -->
+                <div id="description-read-view" class="task-description-content">
+                    @if($task->description && trim(strip_tags($task->description, '<img>')) !== '')
+                        <div class="description-body text-gray-900">{!! $task->description !!}</div>
+                    @else
+                        <div class="text-center py-4 text-muted">
+                            <i class="fas fa-align-left fa-2x mb-2 text-gray-300"></i>
+                            <p class="mb-0 italic small">No description provided for this task.</p>
+                            @if($canMutate)
+                                <button type="button" class="btn btn-sm btn-link text-primary mt-1" onclick="$('#btn-edit-description').click();">
+                                    Click here to add description
+                                </button>
+                            @endif
                         </div>
                     @endif
-                </form>
+                </div>
+
+                <!-- Edit View with Quill Editor -->
+                @if($canMutate)
+                    <div id="description-edit-view" class="d-none">
+                        <form id="description-form" action="{{ route('tasks.update', $task) }}" method="POST">
+                            @csrf
+                            @method('PATCH')
+                            <input type="hidden" name="title" value="{{ $task->title }}">
+                            <input type="hidden" name="assigned_to" value="{{ $task->assigned_to }}">
+                            <input type="hidden" name="due_date" value="{{ $task->due_date }}">
+                            <input type="hidden" name="status" value="{{ $task->status }}">
+                            <input type="hidden" name="priority" value="{{ $task->priority }}">
+                            <input type="hidden" name="type" value="{{ $task->type }}">
+                            <input type="hidden" name="description" id="hidden-description">
+                            
+                            <div id="editor-container" style="height: 250px;">{!! $task->description !!}</div>
+                            
+                            <div class="text-right mt-3">
+                                <button type="button" class="btn btn-sm btn-secondary mr-2" id="btn-cancel-edit">Cancel</button>
+                                <button type="submit" class="btn btn-sm btn-primary shadow-sm">
+                                    <i class="fas fa-save mr-1"></i> Save Description
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                @endif
             </div>
         </div>
-
-        <!-- Task Image Attachments -->
         <div class="card shadow mb-4">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-images mr-1"></i> Attachments & Images</h6>
@@ -371,37 +411,63 @@
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 <script>
     $(document).ready(function() {
-        var quill = new Quill('#editor-container', {
-            theme: 'snow',
-            readOnly: {{ $canMutate ? 'false' : 'true' }},
-            modules: {
-                toolbar: {{ $canMutate ? 'true' : 'false' }}
-            }
-        });
+        @if($canMutate)
+            var quill = new Quill('#editor-container', {
+                theme: 'snow',
+                readOnly: false,
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        ['link', 'blockquote', 'code-block'],
+                        ['clean']
+                    ]
+                }
+            });
 
-        $('#description-form').submit(function() {
-            var descHtml = quill.root.innerHTML;
-            if (descHtml === '<p><br></p>' || descHtml.trim() === '') {
-                descHtml = '';
-            }
-            $('#hidden-description').val(descHtml);
-        });
+            // Toggle Edit Mode
+            $('#btn-edit-description').click(function() {
+                $('#description-read-view').addClass('d-none');
+                $(this).addClass('d-none');
+                $('#description-edit-view').removeClass('d-none');
+                quill.focus();
+            });
 
-        // Insert image into editor
-        $('.insert-img-btn').click(function() {
-            var url = $(this).data('url');
-            var range = quill.getSelection();
-            if (range) {
-                quill.insertEmbed(range.index, 'image', url);
-                quill.setSelection(range.index + 1);
-            } else {
-                quill.insertEmbed(quill.getLength() - 1, 'image', url);
-            }
-            // Scroll to editor
-            $('html, body').animate({
-                scrollTop: $("#editor-container").offset().top - 100
-            }, 500);
-        });
+            // Cancel Edit Mode
+            $('#btn-cancel-edit').click(function() {
+                $('#description-edit-view').addClass('d-none');
+                $('#description-read-view').removeClass('d-none');
+                $('#btn-edit-description').removeClass('d-none');
+            });
+
+            $('#description-form').submit(function() {
+                var descHtml = quill.root.innerHTML;
+                if (descHtml === '<p><br></p>' || descHtml.trim() === '') {
+                    descHtml = '';
+                }
+                $('#hidden-description').val(descHtml);
+            });
+
+            // Insert image into editor
+            $('.insert-img-btn').click(function() {
+                if ($('#description-edit-view').hasClass('d-none')) {
+                    $('#btn-edit-description').click();
+                }
+                var url = $(this).data('url');
+                var range = quill.getSelection();
+                if (range) {
+                    quill.insertEmbed(range.index, 'image', url);
+                    quill.setSelection(range.index + 1);
+                } else {
+                    quill.insertEmbed(quill.getLength() - 1, 'image', url);
+                }
+                // Scroll to editor
+                $('html, body').animate({
+                    scrollTop: $("#editor-container").offset().top - 100
+                }, 500);
+            });
+        @endif
 
         // Copy URL to clipboard
         $('.copy-url-btn').click(function() {
