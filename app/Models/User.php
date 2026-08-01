@@ -19,11 +19,11 @@ class User extends Authenticatable implements MustVerifyEmail
     /** @use HasFactory<UserFactory> */
     use HasFactory, HasRoles, Notifiable;
 
-    public const ROLE_SUPER_ADMIN = 0;
+    public const ROLE_SUPER_ADMIN = 'Super Admin';
 
-    public const ROLE_ADMIN = 1;
+    public const ROLE_ADMIN = 'Admin';
 
-    public const ROLE_USER = 2;
+    public const ROLE_USER = 'User';
 
     /**
      * The attributes that are mass assignable.
@@ -35,7 +35,6 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'profile_image',
-        'role',
     ];
 
     /**
@@ -58,7 +57,6 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'role' => 'integer',
         ];
     }
 
@@ -120,7 +118,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function isSuperAdmin(): bool
     {
-        return (int) $this->role === self::ROLE_SUPER_ADMIN;
+        return $this->hasRole(self::ROLE_SUPER_ADMIN);
     }
 
     /**
@@ -128,6 +126,6 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function isAdmin(): bool
     {
-        return (int) $this->role === self::ROLE_ADMIN || $this->isSuperAdmin();
+        return $this->hasRole(self::ROLE_ADMIN) || $this->isSuperAdmin();
     }
 }

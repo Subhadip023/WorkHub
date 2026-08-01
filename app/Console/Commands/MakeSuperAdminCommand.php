@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class MakeSuperAdminCommand extends Command
 {
@@ -41,17 +42,12 @@ class MakeSuperAdminCommand extends Command
             }
 
             $choices = $allUsers->mapWithKeys(function ($u) {
-                $roleLabel = match ((int) $u->role) {
-                    User::ROLE_SUPER_ADMIN => '[Super Admin]',
-                    User::ROLE_ADMIN => '[Admin]',
-                    default => '[User]',
-                };
+                $roleName = $u->getRoleNames()->first() ?? User::ROLE_USER;
 
-                return [$u->id => "ID: {$u->id} | {$u->name} ({$u->email}) {$roleLabel}"];
+                return [$u->id => "ID: {$u->id} | {$u->name} ({$u->email}) [{$roleName}]"];
             })->toArray();
 
             $selectedId = $this->choice('Select a user to update:', $choices);
-            // Extract numeric ID from standard format or key
             preg_match('/ID: (\d+)/', $selectedId, $matches);
             $userInput = $matches[1] ?? key(array_filter($choices, fn ($v) => $v === $selectedId));
         }
@@ -66,14 +62,14 @@ class MakeSuperAdminCommand extends Command
             return Command::FAILURE;
         }
 
+        Role::findOrCreate(User::ROLE_SUPER_ADMIN);
+        Role::findOrCreate(User::ROLE_ADMIN);
+        Role::findOrCreate(User::ROLE_USER);
+
         if ($this->option('revoke')) {
-            $user->role = User::ROLE_USER;
-            $user->save();
-            if ($user->hasPermissionTo('manage-features')) {
+            $user->syncRoles([User::ROLE_USER]);
+            if ($user->hasDirectPermission('manage-features')) {
                 $user->revokePermissionTo('manage-features');
-            }
-            if ($user->hasPermissionTo('access-beta')) {
-                $user->revokePermissionTo('access-beta');
             }
 
             $this->info("Revoked: User {$user->name} ({$user->email}) has been demoted to regular User.");
@@ -83,47 +79,39 @@ class MakeSuperAdminCommand extends Command
 
         $roleOpt = strtolower((string) $this->option('role'));
         if ($roleOpt === 'admin') {
-            $user->role = User::ROLE_ADMIN;
-            $roleName = 'Admin';
+            $roleName = User::ROLE_ADMIN;
         } elseif ($roleOpt === 'user') {
-            $user->role = User::ROLE_USER;
-            $roleName = 'User';
+            $roleName = User::ROLE_USER;
         } else {
-            $user->role = User::ROLE_SUPER_ADMIN;
-            $roleName = 'Super Admin';
+            $roleName = User::ROLE_SUPER_ADMIN;
         }
 
-        $user->save();
+        $user->syncRoles([$roleName]);
 
         if ($user->isSuperAdmin()) {
-            $previousSuperAdmins = User::where('role', User::ROLE_SUPER_ADMIN)
+            $previousSuperAdmins = User::role(User::ROLE_SUPER_ADMIN)
                 ->where('id', '!=', $user->id)
                 ->get();
 
             foreach ($previousSuperAdmins as $prevAdmin) {
-                $prevAdmin->role = User::ROLE_USER;
-                $prevAdmin->save();
-                if ($prevAdmin->hasPermissionTo('manage-features')) {
+                $prevAdmin->syncRoles([User::ROLE_USER]);
+                if ($prevAdmin->hasDirectPermission('manage-features')) {
                     $prevAdmin->revokePermissionTo('manage-features');
                 }
                 $this->warn("Demoted previous Super Admin: {$prevAdmin->name} ({$prevAdmin->email}) to regular User.");
             }
 
             Permission::findOrCreate('manage-features');
-            Permission::findOrCreate('access-beta');
-            Permission::findOrCreate('access-issues');
-
-            $user->givePermissionTo(['manage-features', 'access-beta', 'access-issues']);
+            $user->givePermissionTo('manage-features');
         }
 
         $this->table(
-            ['ID', 'Name', 'Email', 'Role', 'access-beta Feature'],
+            ['ID', 'Name', 'Email', 'Role'],
             [[
                 $user->id,
                 $user->name,
                 $user->email,
                 $roleName,
-                $user->hasPermissionTo('access-beta') ? 'Active (True)' : 'Inactive (False)',
             ]]
         );
 

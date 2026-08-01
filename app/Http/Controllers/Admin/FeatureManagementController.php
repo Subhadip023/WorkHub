@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class FeatureManagementController extends Controller
 {
@@ -20,6 +21,7 @@ class FeatureManagementController extends Controller
         $search = $request->query('q');
 
         $users = User::query()
+            ->with('roles')
             ->when($search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%");
@@ -82,52 +84,43 @@ class FeatureManagementController extends Controller
         abort_unless(Gate::allows('manage-features'), 403);
 
         $request->validate([
-            'role' => 'required|integer|in:0,1,2',
+            'role' => 'required',
         ]);
 
-        $newRole = (int) $request->input('role');
+        $roleInput = $request->input('role');
+        $targetRole = match ((string) $roleInput) {
+            '0', User::ROLE_SUPER_ADMIN => User::ROLE_SUPER_ADMIN,
+            '1', User::ROLE_ADMIN => User::ROLE_ADMIN,
+            default => User::ROLE_USER,
+        };
 
         // Super Admin role cannot be assigned or revoked via web UI
-        if ($newRole === User::ROLE_SUPER_ADMIN && ! $user->isSuperAdmin()) {
+        if ($targetRole === User::ROLE_SUPER_ADMIN && ! $user->isSuperAdmin()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Super Admin role can only be assigned via console command: php artisan user:super-admin '.$user->id,
             ], 422);
         }
 
-        if ($user->isSuperAdmin() && $newRole !== User::ROLE_SUPER_ADMIN) {
+        if ($user->isSuperAdmin() && $targetRole !== User::ROLE_SUPER_ADMIN) {
             return response()->json([
                 'success' => false,
                 'message' => 'Super Admin role cannot be changed via web UI. Use CLI command: php artisan user:super-admin '.$user->id.' --revoke',
             ], 422);
         }
 
-        $user->role = $newRole;
-        $user->save();
-
-        // If promoted to Super Admin, activate feature access
-        if ($user->isSuperAdmin()) {
-            Permission::findOrCreate('access-beta');
-            $user->givePermissionTo('access-beta');
-        }
-
-        $roleNames = [
-            User::ROLE_SUPER_ADMIN => 'Super Admin',
-            User::ROLE_ADMIN => 'Admin',
-            User::ROLE_USER => 'User',
-        ];
-
-        $roleLabel = $roleNames[$newRole] ?? 'User';
+        Role::findOrCreate($targetRole);
+        $user->syncRoles([$targetRole]);
 
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'role' => $newRole,
-                'role_label' => $roleLabel,
-                'message' => "User role updated to {$roleLabel} for {$user->name}.",
+                'role' => $targetRole,
+                'role_label' => $targetRole,
+                'message' => "User role updated to {$targetRole} for {$user->name}.",
             ]);
         }
 
-        return redirect()->back()->with('success', "User role updated to {$roleLabel} for {$user->name}.");
+        return redirect()->back()->with('success', "User role updated to {$targetRole} for {$user->name}.");
     }
 }

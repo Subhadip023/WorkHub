@@ -79,8 +79,8 @@
                                     <span class="badge badge-warning px-3 py-2 font-weight-bold"><i class="fas fa-crown mr-1"></i> Super Admin</span>
                                 @else
                                     <select class="form-control form-control-sm role-select font-weight-bold" data-user-id="{{ $user->id }}" style="max-width: 130px;">
-                                        <option value="1" {{ $user->role === 1 ? 'selected' : '' }}>⭐ Admin</option>
-                                        <option value="2" {{ $user->role === 2 ? 'selected' : '' }}>👤 User</option>
+                                        <option value="Admin" {{ $user->hasRole('Admin') ? 'selected' : '' }}>⭐ Admin</option>
+                                        <option value="User" {{ $user->hasRole('User') || $user->roles->isEmpty() ? 'selected' : '' }}>👤 User</option>
                                     </select>
                                 @endif
                             </td>

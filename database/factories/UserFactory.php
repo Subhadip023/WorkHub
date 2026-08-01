@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 /**
  * @extends Factory<User>
@@ -30,8 +31,29 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
-            'role' => User::ROLE_USER,
         ];
+    }
+
+    /**
+     * Indicate that the user is a Super Admin.
+     */
+    public function superAdmin(): static
+    {
+        return $this->afterCreating(function (User $user) {
+            Role::findOrCreate(User::ROLE_SUPER_ADMIN);
+            $user->syncRoles([User::ROLE_SUPER_ADMIN]);
+        });
+    }
+
+    /**
+     * Indicate that the user is an Admin.
+     */
+    public function admin(): static
+    {
+        return $this->afterCreating(function (User $user) {
+            Role::findOrCreate(User::ROLE_ADMIN);
+            $user->syncRoles([User::ROLE_ADMIN]);
+        });
     }
 
     /**
