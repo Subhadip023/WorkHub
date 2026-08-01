@@ -42,6 +42,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/invitations/{invitation}/reject', [CompanyController::class, 'rejectInvitation'])->name('invitations.reject');
 
     Route::resource('projects', ProjectController::class);
+    Route::get('/projects/{project}/notes', [ProjectController::class, 'notes'])->name('projects.notes');
+    Route::get('/projects/{project}/note', [ProjectController::class, 'notes']);
     Route::get('/projects/{project}/credentials', [ProjectController::class, 'credentials'])->name('projects.credentials');
     Route::post('/projects/{project}/credentials', [ProjectCredentialsController::class, 'store'])->name('projects.credentials.store');
     Route::delete('/projects/{project}/credentials/{credential}', [ProjectCredentialsController::class, 'destroy'])->name('projects.credentials.destroy');

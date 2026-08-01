@@ -104,6 +104,19 @@ class ProjectController extends Controller
     }
 
     /**
+     * Display notes for the specified project.
+     */
+    public function notes(Project $project)
+    {
+        Gate::authorize('view', $project);
+
+        $notes = $project->notes()->with('user')->latest()->get();
+        $comments = $project->comments()->with('user')->latest()->get();
+
+        return view('projects.notes', compact('project', 'notes', 'comments'));
+    }
+
+    /**
      * Display credentials for the specified project.
      */
     public function credentials(Project $project)

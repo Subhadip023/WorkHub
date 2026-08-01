@@ -78,7 +78,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link font-weight-bold" href="{{ route('projects.show', $project) }}#notes-content">
+            <a class="nav-link font-weight-bold" href="{{ route('projects.notes', $project) }}">
                 <i class="fas fa-sticky-note mr-2"></i>Notes
             </a>
         </li>

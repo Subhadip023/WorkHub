@@ -190,3 +190,18 @@ it('sorts tasks in project details page by due_date ascending and priority desce
         ->and($tasks->get(3)->id)->toBe($taskE->id)
         ->and($tasks->get(4)->id)->toBe($taskA->id);
 });
+
+it('allows authenticated user to view dedicated project notes page', function () {
+    $user = User::factory()->create();
+    $project = Project::factory()->create([
+        'user_id' => $user->id,
+        'company_id' => null,
+    ]);
+
+    $this->actingAs($user);
+
+    $response = $this->get(route('projects.notes', $project));
+    $response->assertStatus(200);
+    $response->assertSee('Project Notes');
+    $response->assertSee(route('projects.show', $project));
+});

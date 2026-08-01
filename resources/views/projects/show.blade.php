@@ -80,12 +80,12 @@
 <div>
      <ul class="nav nav-tabs mb-4" id="projectShowTabs" role="tablist">
             <li class="nav-item">
-                <a class="nav-link active font-weight-bold" id="tasks-tab" data-toggle="tab" href="#tasks-content" role="tab" aria-controls="tasks-content" aria-selected="true">
+                <a class="nav-link active font-weight-bold" href="{{ route('projects.show', $project) }}">
                     <i class="fas fa-tasks mr-2"></i>Tasks
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link font-weight-bold" id="notes-tab" data-toggle="tab" href="#notes-content" role="tab" aria-controls="notes-content" aria-selected="false">
+                <a class="nav-link font-weight-bold" href="{{ route('projects.notes', $project) }}">
                     <i class="fas fa-sticky-note mr-2"></i>Notes
                 </a>
             </li>
