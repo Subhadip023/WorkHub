@@ -21,7 +21,7 @@
 <div class="card shadow mb-4 border-left-warning">
     <div class="card-header py-3 bg-white d-flex flex-column flex-md-row align-items-center justify-content-between">
         <h6 class="m-0 font-weight-bold text-warning mb-2 mb-md-0">
-            <i class="fas fa-users-cog mr-2"></i>User Permissions & Pennant Feature Flags
+            <i class="fas fa-users-cog mr-2"></i>User Roles & Spatie Permissions
         </h6>
         
         <!-- Search Form -->

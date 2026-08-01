@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Pennant\Concerns\HasFeatures;
+use Spatie\Permission\Traits\HasRoles;
 
 /**
  * @property bool|null $beta_access
@@ -17,7 +17,7 @@ use Laravel\Pennant\Concerns\HasFeatures;
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasFeatures, Notifiable;
+    use HasFactory, HasRoles, Notifiable;
 
     public const ROLE_SUPER_ADMIN = 0;
 

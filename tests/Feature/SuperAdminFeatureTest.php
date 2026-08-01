@@ -2,15 +2,17 @@
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Pennant\Feature;
+use Spatie\Permission\Models\Permission;
 
 uses(RefreshDatabase::class);
 
 function createSuperAdmin(): User
 {
+    Permission::findOrCreate('manage-features');
+    Permission::findOrCreate('access-beta');
+
     $user = User::factory()->create(['role' => User::ROLE_SUPER_ADMIN]);
-    Feature::for($user)->activate('manage-features');
-    Feature::for($user)->activate('access-beta');
+    $user->givePermissionTo(['manage-features', 'access-beta']);
 
     return $user;
 }
@@ -36,7 +38,7 @@ test('super admin can toggle feature access for any user', function () {
     $superAdmin = createSuperAdmin();
     $targetUser = User::factory()->create(['role' => User::ROLE_USER]);
 
-    expect(Feature::for($targetUser)->active('access-beta'))->toBeFalse();
+    expect($targetUser->hasDirectPermission('access-beta'))->toBeFalse();
 
     // Activate feature for target user
     $this->actingAs($superAdmin)
@@ -49,7 +51,7 @@ test('super admin can toggle feature access for any user', function () {
             'active' => true,
         ]);
 
-    expect(Feature::for($targetUser)->active('access-beta'))->toBeTrue();
+    expect($targetUser->fresh()->hasDirectPermission('access-beta'))->toBeTrue();
 
     // Deactivate feature for target user
     $this->actingAs($superAdmin)
@@ -62,7 +64,7 @@ test('super admin can toggle feature access for any user', function () {
             'active' => false,
         ]);
 
-    expect(Feature::for($targetUser)->active('access-beta'))->toBeFalse();
+    expect($targetUser->fresh()->hasDirectPermission('access-beta'))->toBeFalse();
 });
 
 test('super admin can change user role between admin and user', function () {
@@ -107,7 +109,7 @@ test('console command promotes user to super admin and demotes previous super ad
 
     expect($newSuperAdmin->fresh()->isSuperAdmin())->toBeTrue();
     expect($prevSuperAdmin->fresh()->isSuperAdmin())->toBeFalse();
-    expect(Feature::for($newSuperAdmin->fresh())->active('manage-features'))->toBeTrue();
-    expect(Feature::for($prevSuperAdmin->fresh())->active('manage-features'))->toBeFalse();
+    expect($newSuperAdmin->fresh()->hasDirectPermission('manage-features'))->toBeTrue();
+    expect($prevSuperAdmin->fresh()->hasDirectPermission('manage-features'))->toBeFalse();
     expect(User::where('role', User::ROLE_SUPER_ADMIN)->count())->toBe(1);
 });

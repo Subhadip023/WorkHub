@@ -4,11 +4,6 @@ use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
-use Laravel\Pennant\Feature;
-
-beforeEach(function () {
-    //
-});
 
 it('requires authentication to submit an issue', function () {
     $response = $this->postJson(route('issues.store'), [
@@ -23,7 +18,6 @@ it('requires authentication to submit an issue', function () {
 
 it('validates the required fields for issue submission', function () {
     $user = User::factory()->create();
-    Feature::for($user)->activate('access-issues');
     $this->actingAs($user);
 
     $response = $this->postJson(route('issues.store'), []);
@@ -35,7 +29,6 @@ it('validates the required fields for issue submission', function () {
 it('returns 500 if GITHUB_PAT is not configured', function () {
     config(['services.github.pat' => null]);
     $user = User::factory()->create();
-    Feature::for($user)->activate('access-issues');
     $this->actingAs($user);
 
     $response = $this->postJson(route('issues.store'), [
@@ -66,7 +59,6 @@ it('successfully submits an issue to GitHub when GITHUB_PAT is configured', func
     ]);
 
     $user = User::factory()->create();
-    Feature::for($user)->activate('access-issues');
     $this->actingAs($user);
 
     $response = $this->postJson(route('issues.store'), [
@@ -103,7 +95,6 @@ it('requires authentication to view issues', function () {
 it('shows a warning if GITHUB_PAT is not configured on the index page', function () {
     config(['services.github.pat' => null]);
     $user = User::factory()->create();
-    Feature::for($user)->activate('access-issues');
     $this->actingAs($user);
 
     $response = $this->get(route('issues.index'));
@@ -153,7 +144,6 @@ it('successfully fetches and displays issues from GitHub', function () {
     ]);
 
     $user = User::factory()->create();
-    Feature::for($user)->activate('access-issues');
     $this->actingAs($user);
 
     $response = $this->get(route('issues.index'));
@@ -181,7 +171,6 @@ it('successfully stores attachment locally and links it in the GitHub issue', fu
     ]);
 
     $user = User::factory()->create();
-    Feature::for($user)->activate('access-issues');
     $this->actingAs($user);
 
     $response = $this->postJson(route('issues.store'), [

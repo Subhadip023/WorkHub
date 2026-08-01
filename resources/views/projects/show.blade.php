@@ -89,13 +89,11 @@
                     <i class="fas fa-sticky-note mr-2"></i>Notes
                 </a>
             </li>
-            @feature('access-beta')
-                <li class="nav-item">
-                    <a class="nav-link font-weight-bold" href="{{ route('projects.credentials', $project) }}">
-                        <i class="fas fa-key mr-2"></i>Credentials
-                    </a>
-                </li>
-            @endfeature
+            <li class="nav-item">
+                <a class="nav-link font-weight-bold" href="{{ route('projects.credentials', $project) }}">
+                    <i class="fas fa-key mr-2"></i>Credentials
+                </a>
+            </li>
         </ul>
 </div>
 <div class="row">

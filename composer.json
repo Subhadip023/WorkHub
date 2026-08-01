@@ -13,9 +13,9 @@
         "barryvdh/laravel-dompdf": "^3.1",
         "joypixels/emoji-toolkit": "^10.0",
         "laravel/framework": "^12.0",
-        "laravel/pennant": "^1.24",
         "laravel/tinker": "^2.10.1",
-        "opcodesio/log-viewer": "*"
+        "opcodesio/log-viewer": "*",
+        "spatie/laravel-permission": "^6.25"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\User;
 use Illuminate\Console\Command;
-use Laravel\Pennant\Feature;
+use Spatie\Permission\Models\Permission;
 
 class MakeSuperAdminCommand extends Command
 {
@@ -23,7 +23,7 @@ class MakeSuperAdminCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Grant, manage, or revoke Super Admin privileges and feature flags for a user.';
+    protected $description = 'Grant, manage, or revoke Super Admin privileges and feature permissions for a user.';
 
     /**
      * Execute the console command.
@@ -69,8 +69,12 @@ class MakeSuperAdminCommand extends Command
         if ($this->option('revoke')) {
             $user->role = User::ROLE_USER;
             $user->save();
-            Feature::for($user)->deactivate('manage-features');
-            Feature::for($user)->deactivate('access-beta');
+            if ($user->hasPermissionTo('manage-features')) {
+                $user->revokePermissionTo('manage-features');
+            }
+            if ($user->hasPermissionTo('access-beta')) {
+                $user->revokePermissionTo('access-beta');
+            }
 
             $this->info("Revoked: User {$user->name} ({$user->email}) has been demoted to regular User.");
 
@@ -99,13 +103,17 @@ class MakeSuperAdminCommand extends Command
             foreach ($previousSuperAdmins as $prevAdmin) {
                 $prevAdmin->role = User::ROLE_USER;
                 $prevAdmin->save();
-                Feature::for($prevAdmin)->deactivate('manage-features');
+                if ($prevAdmin->hasPermissionTo('manage-features')) {
+                    $prevAdmin->revokePermissionTo('manage-features');
+                }
                 $this->warn("Demoted previous Super Admin: {$prevAdmin->name} ({$prevAdmin->email}) to regular User.");
             }
 
-            Feature::for($user)->activate('manage-features');
-            Feature::for($user)->activate('access-beta');
-            Feature::for($user)->activate('access-issues');
+            Permission::findOrCreate('manage-features');
+            Permission::findOrCreate('access-beta');
+            Permission::findOrCreate('access-issues');
+
+            $user->givePermissionTo(['manage-features', 'access-beta', 'access-issues']);
         }
 
         $this->table(
@@ -115,7 +123,7 @@ class MakeSuperAdminCommand extends Command
                 $user->name,
                 $user->email,
                 $roleName,
-                Feature::for($user)->active('access-beta') ? 'Active (True)' : 'Inactive (False)',
+                $user->hasPermissionTo('access-beta') ? 'Active (True)' : 'Inactive (False)',
             ]]
         );
 

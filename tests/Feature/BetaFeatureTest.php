@@ -2,22 +2,23 @@
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Pennant\Feature;
+use Spatie\Permission\Models\Permission;
 
 uses(RefreshDatabase::class);
 
-test('pennant can explicitly activate and deactivate beta access for a user in database', function () {
+test('spatie permission can explicitly activate and deactivate beta access for a user in database', function () {
     $user = User::factory()->create();
+    Permission::findOrCreate('access-beta');
 
-    expect(Feature::for($user)->active('access-beta'))->toBeFalse();
+    expect($user->hasPermissionTo('access-beta'))->toBeFalse();
 
-    // Activate feature using Pennant (persisted in DB)
-    Feature::for($user)->activate('access-beta');
+    // Activate permission using Spatie
+    $user->givePermissionTo('access-beta');
 
-    expect(Feature::for($user)->active('access-beta'))->toBeTrue();
+    expect($user->hasPermissionTo('access-beta'))->toBeTrue();
 
-    // Deactivate feature using Pennant (persisted in DB)
-    Feature::for($user)->deactivate('access-beta');
+    // Deactivate permission using Spatie
+    $user->revokePermissionTo('access-beta');
 
-    expect(Feature::for($user)->active('access-beta'))->toBeFalse();
+    expect($user->hasPermissionTo('access-beta'))->toBeFalse();
 });

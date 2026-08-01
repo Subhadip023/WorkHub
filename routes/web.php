@@ -14,7 +14,6 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TrashController;
 use Illuminate\Support\Facades\Route;
-use Laravel\Pennant\Middleware\EnsureFeaturesAreActive;
 
 Route::get('/', function () {
     return view('home');
@@ -81,14 +80,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return view('permissions.index');
     })->name('permissions.index');
 
-    Route::middleware(EnsureFeaturesAreActive::using('access-issues'))->group(function () {
-        Route::get('/issues', [IssueController::class, 'index'])->name('issues.index');
-        Route::post('/issues', [IssueController::class, 'store'])->name('issues.store');
-    });
+    Route::get('/issues', [IssueController::class, 'index'])->name('issues.index');
+    Route::post('/issues', [IssueController::class, 'store'])->name('issues.store');
 
     Route::get('/search', [SearchController::class, 'index'])->name('search.index');
 
-    Route::middleware(EnsureFeaturesAreActive::using('manage-features'))->prefix('admin')->name('admin.')->group(function () {
+    Route::middleware('can:manage-features')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/features', [FeatureManagementController::class, 'index'])->name('features.index');
         Route::post('/features/{user}/toggle-feature', [FeatureManagementController::class, 'toggleFeature'])->name('features.toggle-feature');
         Route::post('/features/{user}/toggle-role', [FeatureManagementController::class, 'toggleRole'])->name('features.toggle-role');

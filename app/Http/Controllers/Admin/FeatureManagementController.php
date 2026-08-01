@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Laravel\Pennant\Feature;
+use Illuminate\Support\Facades\Gate;
+use Spatie\Permission\Models\Permission;
 
 class FeatureManagementController extends Controller
 {
@@ -14,7 +15,7 @@ class FeatureManagementController extends Controller
      */
     public function index(Request $request)
     {
-        abort_unless(Feature::active('manage-features'), 403);
+        abort_unless(Gate::allows('manage-features'), 403);
 
         $search = $request->query('q');
 
@@ -27,10 +28,10 @@ class FeatureManagementController extends Controller
             ->paginate(5)
             ->withQueryString();
 
-        // Attach pennant feature state for each user
+        // Attach feature state for each user
         $users->getCollection()->transform(function ($user) {
-            $user->beta_access = Feature::for($user)->active('access-beta');
-            $user->issues_access = Feature::for($user)->active('access-issues');
+            $user->beta_access = $user->hasDirectPermission('access-beta');
+            $user->issues_access = $user->hasDirectPermission('access-issues');
 
             return $user;
         });
@@ -43,20 +44,22 @@ class FeatureManagementController extends Controller
      */
     public function toggleFeature(Request $request, User $user)
     {
-        abort_unless(Feature::active('manage-features'), 403);
+        abort_unless(Gate::allows('manage-features'), 403);
 
         $request->validate([
             'feature' => 'required|string',
         ]);
 
         $feature = $request->input('feature');
-        $isActive = Feature::for($user)->active($feature);
+        Permission::findOrCreate($feature);
+
+        $isActive = $user->hasDirectPermission($feature);
 
         if ($isActive) {
-            Feature::for($user)->deactivate($feature);
+            $user->revokePermissionTo($feature);
             $newStatus = false;
         } else {
-            Feature::for($user)->activate($feature);
+            $user->givePermissionTo($feature);
             $newStatus = true;
         }
 
@@ -76,7 +79,7 @@ class FeatureManagementController extends Controller
      */
     public function toggleRole(Request $request, User $user)
     {
-        abort_unless(Feature::active('manage-features'), 403);
+        abort_unless(Gate::allows('manage-features'), 403);
 
         $request->validate([
             'role' => 'required|integer|in:0,1,2',
@@ -104,7 +107,8 @@ class FeatureManagementController extends Controller
 
         // If promoted to Super Admin, activate feature access
         if ($user->isSuperAdmin()) {
-            Feature::for($user)->activate('access-beta');
+            Permission::findOrCreate('access-beta');
+            $user->givePermissionTo('access-beta');
         }
 
         $roleNames = [
