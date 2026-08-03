@@ -73,4 +73,12 @@ class Project extends Model
     {
         return $this->hasMany(ProjectCredentials::class, 'project_id');
     }
+
+    /**
+     * @return HasMany<ExternalTaskApi, $this>
+     */
+    public function externalApis(): HasMany
+    {
+        return $this->hasMany(ExternalTaskApi::class, 'project_id');
+    }
 }

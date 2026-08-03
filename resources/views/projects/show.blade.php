@@ -94,6 +94,11 @@
                     <i class="fas fa-key mr-2"></i>Credentials
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link font-weight-bold" href="{{ route('projects.external-api', $project) }}">
+                    <i class="fas fa-plug mr-2"></i>External API
+                </a>
+            </li>
         </ul>
 </div>
 <div class="row">
