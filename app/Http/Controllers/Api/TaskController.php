@@ -80,7 +80,7 @@ class TaskController extends Controller
         }
 
         if (empty($validated['assigned_to'])) {
-            $validated['assigned_to'] = $externalApiConfig?->assigned_user_id ?? null;
+            $validated['assigned_to'] = $externalApiConfig->assigned_user_id ?? null;
         }
 
         if (empty($validated['status']) && $externalApiConfig?->default_status) {
