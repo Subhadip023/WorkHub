@@ -7,6 +7,7 @@ use App\Models\ExternalTaskApi;
 use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 
 class ExternalTaskApiController extends Controller
 {
@@ -179,5 +180,159 @@ class ExternalTaskApiController extends Controller
         }
 
         return redirect()->back()->with('success', 'External Task API key revoked successfully');
+    }
+
+    /**
+     * Download Postman Collection v2.1 pre-configured with HMAC signature pre-request script.
+     */
+    public function downloadPostmanCollection(Project $project)
+    {
+        Gate::authorize('view', $project);
+
+        $activeApi = $project->externalApis()->where('is_active', true)->latest()->first();
+        $apiKey = $activeApi ? $activeApi->api_key : 'YOUR_API_KEY_HERE';
+        $apiSecret = $activeApi ? $activeApi->api_secret : 'YOUR_API_SECRET_HERE';
+
+        $baseUrl = config('app.url', 'http://localhost');
+
+        $collection = [
+            'info' => [
+                'name' => "WorkHub - External Task API ({$project->name})",
+                'description' => "API Collection for managing tasks in project '{$project->name}' using WorkHub External Task API.",
+                'schema' => 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
+            ],
+            'variable' => [
+                ['key' => 'base_url', 'value' => $baseUrl, 'type' => 'string'],
+                ['key' => 'api_key', 'value' => $apiKey, 'type' => 'string'],
+                ['key' => 'api_secret', 'value' => $apiSecret, 'type' => 'string'],
+                ['key' => 'hmac_signature', 'value' => '', 'type' => 'string'],
+            ],
+            'event' => [
+                [
+                    'listen' => 'prerequest',
+                    'script' => [
+                        'type' => 'text/javascript',
+                        'exec' => [
+                            'const secretKey = pm.variables.get("api_secret") || pm.environment.get("api_secret");',
+                            'let bodyToSign = "";',
+                            'if (pm.request.body && pm.request.body.mode === "raw") {',
+                            '    bodyToSign = pm.request.body.raw || "";',
+                            '} else if (pm.request.body && pm.request.body.mode === "formdata") {',
+                            '    let formObj = {};',
+                            '    if (pm.request.body.formdata) {',
+                            '        pm.request.body.formdata.each((item) => {',
+                            '            if (!item.disabled && item.type !== "file" && item.key !== "api_key") {',
+                            '                formObj[item.key] = item.value;',
+                            '            }',
+                            '        });',
+                            '    }',
+                            '    bodyToSign = Object.keys(formObj).length > 0 ? JSON.stringify(formObj) : "";',
+                            '}',
+                            'const signature = CryptoJS.HmacSHA256(bodyToSign, secretKey).toString(CryptoJS.enc.Hex);',
+                            'pm.variables.set("hmac_signature", signature);',
+                        ],
+                    ],
+                ],
+            ],
+            'item' => [
+                [
+                    'name' => '1. Get All Tasks',
+                    'request' => [
+                        'method' => 'GET',
+                        'header' => [
+                            ['key' => 'X-Api-Key', 'value' => '{{api_key}}', 'type' => 'text'],
+                            ['key' => 'X-Api-Signature', 'value' => '{{hmac_signature}}', 'type' => 'text'],
+                        ],
+                        'url' => [
+                            'raw' => '{{base_url}}/api/tasks?status=1',
+                            'host' => ['{{base_url}}'],
+                            'path' => ['api', 'tasks'],
+                            'query' => [
+                                ['key' => 'status', 'value' => '1'],
+                            ],
+                        ],
+                    ],
+                ],
+                [
+                    'name' => '2. Create Task (JSON Body)',
+                    'request' => [
+                        'method' => 'POST',
+                        'header' => [
+                            ['key' => 'Content-Type', 'value' => 'application/json', 'type' => 'text'],
+                            ['key' => 'X-Api-Key', 'value' => '{{api_key}}', 'type' => 'text'],
+                            ['key' => 'X-Api-Signature', 'value' => '{{hmac_signature}}', 'type' => 'text'],
+                        ],
+                        'body' => [
+                            'mode' => 'raw',
+                            'raw' => json_encode([
+                                'title' => 'Bug in Checkout Flow',
+                                'description' => 'Payment button failing on mobile',
+                                'type' => 2,
+                                'priority' => 4,
+                                'status' => 1,
+                                'image_url' => 'https://via.placeholder.com/600x400.png',
+                            ], JSON_PRETTY_PRINT),
+                        ],
+                        'url' => [
+                            'raw' => '{{base_url}}/api/tasks',
+                            'host' => ['{{base_url}}'],
+                            'path' => ['api', 'tasks'],
+                        ],
+                    ],
+                ],
+                [
+                    'name' => '3. Create Task (Multipart Form File Upload)',
+                    'request' => [
+                        'method' => 'POST',
+                        'header' => [
+                            ['key' => 'X-Api-Key', 'value' => '{{api_key}}', 'type' => 'text'],
+                            ['key' => 'X-Api-Signature', 'value' => '{{hmac_signature}}', 'type' => 'text'],
+                        ],
+                        'body' => [
+                            'mode' => 'formdata',
+                            'formdata' => [
+                                ['key' => 'title', 'value' => 'Task via Form Upload', 'type' => 'text'],
+                                ['key' => 'description', 'value' => 'Attached screenshot file', 'type' => 'text'],
+                                ['key' => 'image', 'type' => 'file', 'src' => ''],
+                            ],
+                        ],
+                        'url' => [
+                            'raw' => '{{base_url}}/api/tasks',
+                            'host' => ['{{base_url}}'],
+                            'path' => ['api', 'tasks'],
+                        ],
+                    ],
+                ],
+                [
+                    'name' => '4. Upload Image to Task',
+                    'request' => [
+                        'method' => 'POST',
+                        'header' => [
+                            ['key' => 'X-Api-Key', 'value' => '{{api_key}}', 'type' => 'text'],
+                            ['key' => 'X-Api-Signature', 'value' => '{{hmac_signature}}', 'type' => 'text'],
+                        ],
+                        'body' => [
+                            'mode' => 'formdata',
+                            'formdata' => [
+                                ['key' => 'image', 'type' => 'file', 'src' => ''],
+                            ],
+                        ],
+                        'url' => [
+                            'raw' => '{{base_url}}/api/tasks/1/images',
+                            'host' => ['{{base_url}}'],
+                            'path' => ['api', 'tasks', '1', 'images'],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $filename = Str::slug($project->name).'-api-postman-collection.json';
+
+        return response()->streamDownload(function () use ($collection) {
+            echo json_encode($collection, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        }, $filename, [
+            'Content-Type' => 'application/json',
+        ]);
     }
 }

@@ -672,3 +672,28 @@ it('allows fetching task listing via GET /api/tasks with API key scoping to proj
 
     expect($response->json('data'))->toHaveCount(2);
 });
+
+it('allows authorized user to download Postman collection for a project', function () {
+    $owner = User::factory()->create();
+    $project = Project::create([
+        'name' => 'Postman Export Project',
+        'slug' => 'postman-export-project',
+        'theme' => '#0055ff',
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $owner->id,
+        'company_id' => null,
+    ]);
+
+    $response = $this->actingAs($owner)
+        ->get(route('projects.external-api.postman', $project));
+
+    $response->assertStatus(200)
+        ->assertHeader('content-type', 'application/json');
+
+    $content = $response->streamedContent();
+    $json = json_decode($content, true);
+
+    expect($json['info']['name'])->toContain('Postman Export Project')
+        ->and($json['item'])->toHaveCount(4);
+});

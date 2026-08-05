@@ -80,9 +80,17 @@
                 <h6 class="m-0 font-weight-bold text-primary mb-0">
                     <i class="fas fa-plug mr-2"></i>External Task API Credentials & Member Assignment
                 </h6>
-                <button class="btn btn-primary btn-sm shadow-sm font-weight-bold" data-toggle="modal" data-target="#generateApiModal">
-                    <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Generate API Key
-                </button>
+                <div class="d-flex align-items-center" style="gap: 6px;">
+                    <a href="{{ route('projects.external-api.postman', $project) }}" class="btn btn-outline-warning btn-sm shadow-sm font-weight-bold" title="Download Postman Collection">
+                        <i class="fas fa-download mr-1"></i> Postman Collection
+                    </a>
+                    <button class="btn btn-info btn-sm shadow-sm font-weight-bold" data-toggle="modal" data-target="#apiDocsModal">
+                        <i class="fas fa-book mr-1"></i> Interactive Docs
+                    </button>
+                    <button class="btn btn-primary btn-sm shadow-sm font-weight-bold" data-toggle="modal" data-target="#generateApiModal">
+                        <i class="fas fa-plus fa-sm text-white-50 mr-1"></i> Generate API Key
+                    </button>
+                </div>
             </div>
             <div class="card-body">
                 <p class="text-sm text-gray-600 mb-4">
@@ -263,6 +271,256 @@
                 <p class="mb-0 text-muted" style="font-size: 10px;">
                     <i class="fas fa-info-circle text-primary mr-1"></i> Omitting status, priority, or type automatically uses the defaults pre-configured on your API key.
                 </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Interactive API Documentation & Code Snippet Playground Modal -->
+<div class="modal fade" id="apiDocsModal" tabindex="-1" role="dialog" aria-labelledby="apiDocsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-primary text-white">
+                <h5 class="modal-title font-weight-bold" id="apiDocsModalLabel">
+                    <i class="fas fa-book mr-2"></i>WorkHub External Task API Reference & Playground
+                </h5>
+                <button class="close text-white" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row">
+                    <!-- Sidebar Tabs: Endpoints -->
+                    <div class="col-md-3 border-right">
+                        <h6 class="font-weight-bold text-gray-800 text-uppercase mb-3" style="font-size: 11px; letter-spacing: 0.5px;">API Endpoints</h6>
+                        <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                            <a class="nav-link active font-weight-bold py-2 px-3 text-xs mb-2" id="v-pills-get-tab" data-toggle="pill" href="#v-pills-get" role="tab">
+                                <span class="badge badge-success mr-2 px-2 py-1">GET</span> /api/tasks
+                            </a>
+                            <a class="nav-link font-weight-bold py-2 px-3 text-xs mb-2" id="v-pills-post-json-tab" data-toggle="pill" href="#v-pills-post-json" role="tab">
+                                <span class="badge badge-primary mr-2 px-2 py-1">POST</span> /api/tasks (JSON)
+                            </a>
+                            <a class="nav-link font-weight-bold py-2 px-3 text-xs mb-2" id="v-pills-post-form-tab" data-toggle="pill" href="#v-pills-post-form" role="tab">
+                                <span class="badge badge-primary mr-2 px-2 py-1">POST</span> /api/tasks (Form)
+                            </a>
+                            <a class="nav-link font-weight-bold py-2 px-3 text-xs mb-2" id="v-pills-upload-img-tab" data-toggle="pill" href="#v-pills-upload-img" role="tab">
+                                <span class="badge badge-info mr-2 px-2 py-1">POST</span> /api/tasks/{id}/images
+                            </a>
+                            <a class="nav-link font-weight-bold py-2 px-3 text-xs text-warning mb-2" id="v-pills-postman-tab" data-toggle="pill" href="#v-pills-postman" role="tab">
+                                <i class="fas fa-rocket mr-1"></i> Postman Script Setup
+                            </a>
+                        </div>
+
+                        <hr class="my-3">
+                        <div class="card bg-light border-0 text-xs p-2 text-muted">
+                            <span class="font-weight-bold text-gray-800 d-block mb-1"><i class="fas fa-shield-alt text-primary mr-1"></i> Security Headers</span>
+                            Pass <code class="text-dark font-weight-bold">X-Api-Key</code> and <code class="text-dark font-weight-bold">X-Api-Signature</code> in all requests.
+                        </div>
+                    </div>
+
+                    <!-- Main Tab Contents -->
+                    <div class="col-md-9">
+                        <div class="tab-content" id="v-pills-tabContent">
+                            <!-- 1. GET /api/tasks -->
+                            <div class="tab-pane fade show active" id="v-pills-get" role="tabpanel">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge badge-success font-weight-bold px-2 py-1 mr-2" style="font-size: 13px;">GET</span>
+                                    <code class="h6 mb-0 text-dark font-weight-bold">{{ route('api.tasks.index') }}</code>
+                                </div>
+                                <p class="text-xs text-gray-600 mb-3">Retrieve tasks belonging to this project (scoped automatically by your API key).</p>
+
+                                <h6 class="font-weight-bold text-gray-800 text-xs mb-2">Query Parameters</h6>
+                                <table class="table table-sm table-bordered text-xs mb-3">
+                                    <thead class="thead-light">
+                                        <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td><code>status</code></td><td>Integer</td><td>1=To Do, 2=In Progress, 3=Completed, 4=On Hold</td></tr>
+                                        <tr><td><code>priority</code></td><td>Integer</td><td>1=Low, 2=Medium, 3=High, 4=Urgent</td></tr>
+                                        <tr><td><code>type</code></td><td>Integer</td><td>1=Task, 2=Bug, 3=Feature, 4=Improvement</td></tr>
+                                        <tr><td><code>search</code></td><td>String</td><td>Search title or description</td></tr>
+                                        <tr><td><code>per_page</code></td><td>Integer</td><td>Results per page (default: 15, max: 100)</td></tr>
+                                    </tbody>
+                                </table>
+
+                                <!-- Code Snippet Language Selector -->
+                                <ul class="nav nav-tabs nav-tabs-xs mb-2" id="getLangTabs" role="tablist">
+                                    <li class="nav-item"><a class="nav-link active font-weight-bold text-xs py-1 px-3" data-toggle="tab" href="#get-curl">cURL</a></li>
+                                    <li class="nav-item"><a class="nav-link font-weight-bold text-xs py-1 px-3" data-toggle="tab" href="#get-js">JavaScript (fetch)</a></li>
+                                    <li class="nav-item"><a class="nav-link font-weight-bold text-xs py-1 px-3" data-toggle="tab" href="#get-php">PHP (Laravel Http)</a></li>
+                                    <li class="nav-item"><a class="nav-link font-weight-bold text-xs py-1 px-3" data-toggle="tab" href="#get-python">Python</a></li>
+                                </ul>
+                                <div class="tab-content border rounded p-3 bg-dark text-light font-monospace text-xs">
+                                    <div class="tab-pane fade show active" id="get-curl">
+                                        <pre class="mb-0 text-light" style="font-size: 11px;">curl -X GET "{{ route('api.tasks.index') }}?status=1" \
+  -H "X-Api-Key: YOUR_PUBLIC_KEY" \
+  -H "X-Api-Signature: YOUR_HMAC_SHA256_HEX"</pre>
+                                    </div>
+                                    <div class="tab-pane fade" id="get-js">
+                                        <pre class="mb-0 text-light" style="font-size: 11px;">fetch('{{ route('api.tasks.index') }}?status=1', {
+  headers: {
+    'X-Api-Key': 'YOUR_PUBLIC_KEY',
+    'X-Api-Signature': 'YOUR_HMAC_SHA256_HEX'
+  }
+}).then(res => res.json()).then(console.log);</pre>
+                                    </div>
+                                    <div class="tab-pane fade" id="get-php">
+                                        <pre class="mb-0 text-light" style="font-size: 11px;">$response = Http::withHeaders([
+    'X-Api-Key' => 'YOUR_PUBLIC_KEY',
+    'X-Api-Signature' => 'YOUR_HMAC_SHA256_HEX',
+])->get('{{ route('api.tasks.index') }}', ['status' => 1]);</pre>
+                                    </div>
+                                    <div class="tab-pane fade" id="get-python">
+                                        <pre class="mb-0 text-light" style="font-size: 11px;">import requests
+
+headers = {
+    'X-Api-Key': 'YOUR_PUBLIC_KEY',
+    'X-Api-Signature': 'YOUR_HMAC_SHA256_HEX'
+}
+response = requests.get('{{ route('api.tasks.index') }}?status=1', headers=headers)
+print(response.json())</pre>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 2. POST /api/tasks (JSON) -->
+                            <div class="tab-pane fade" id="v-pills-post-json" role="tabpanel">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge badge-primary font-weight-bold px-2 py-1 mr-2" style="font-size: 13px;">POST</span>
+                                    <code class="h6 mb-0 text-dark font-weight-bold">{{ route('api.tasks.store') }}</code>
+                                </div>
+                                <p class="text-xs text-gray-600 mb-3">Create a new task with JSON payload. Supports optional Base64 images or Image URLs.</p>
+
+                                <ul class="nav nav-tabs nav-tabs-xs mb-2" id="postJsonLangTabs" role="tablist">
+                                    <li class="nav-item"><a class="nav-link active font-weight-bold text-xs py-1 px-3" data-toggle="tab" href="#post-json-curl">cURL</a></li>
+                                    <li class="nav-item"><a class="nav-link font-weight-bold text-xs py-1 px-3" data-toggle="tab" href="#post-json-js">JavaScript</a></li>
+                                    <li class="nav-item"><a class="nav-link font-weight-bold text-xs py-1 px-3" data-toggle="tab" href="#post-json-python">Python</a></li>
+                                </ul>
+                                <div class="tab-content border rounded p-3 bg-dark text-light font-monospace text-xs">
+                                    <div class="tab-pane fade show active" id="post-json-curl">
+                                        <pre class="mb-0 text-light" style="font-size: 11px;">curl -X POST "{{ route('api.tasks.store') }}" \
+  -H "Content-Type: application/json" \
+  -H "X-Api-Key: YOUR_PUBLIC_KEY" \
+  -H "X-Api-Signature: YOUR_HMAC_SHA256_HEX" \
+  -d '{
+    "title": "Bug in Checkout Flow",
+    "description": "Payment button failing",
+    "type": 2,
+    "priority": 4,
+    "status": 1,
+    "image_url": "https://example.com/shot.png"
+  }'</pre>
+                                    </div>
+                                    <div class="tab-pane fade" id="post-json-js">
+                                        <pre class="mb-0 text-light" style="font-size: 11px;">const body = JSON.stringify({
+  title: "Bug in Checkout Flow",
+  type: 2,
+  priority: 4,
+  image_url: "https://example.com/shot.png"
+});
+const signature = CryptoJS.HmacSHA256(body, secretKey).toString();
+
+fetch('{{ route('api.tasks.store') }}', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-Api-Key': apiKey,
+    'X-Api-Signature': signature
+  },
+  body: body
+});</pre>
+                                    </div>
+                                    <div class="tab-pane fade" id="post-json-python">
+                                        <pre class="mb-0 text-light" style="font-size: 11px;">import requests, hmac, hashlib, json
+
+payload = {
+    "title": "Bug in Checkout Flow",
+    "type": 2,
+    "priority": 4
+}
+body_bytes = json.dumps(payload).encode('utf-8')
+signature = hmac.new(secret_key.encode('utf-8'), body_bytes, hashlib.sha256).hexdigest()
+
+headers = {
+    "Content-Type": "application/json",
+    "X-Api-Key": api_key,
+    "X-Api-Signature": signature
+}
+res = requests.post('{{ route('api.tasks.store') }}', data=body_bytes, headers=headers)</pre>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3. POST /api/tasks (Form/File Upload) -->
+                            <div class="tab-pane fade" id="v-pills-post-form" role="tabpanel">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge badge-primary font-weight-bold px-2 py-1 mr-2" style="font-size: 13px;">POST</span>
+                                    <code class="h6 mb-0 text-dark font-weight-bold">{{ route('api.tasks.store') }}</code>
+                                </div>
+                                <p class="text-xs text-gray-600 mb-3">Upload binary image file(s) directly via <code>multipart/form-data</code>.</p>
+
+                                <div class="border rounded p-3 bg-dark text-light font-monospace text-xs mb-3">
+                                    <pre class="mb-0 text-light" style="font-size: 11px;">curl -X POST "{{ route('api.tasks.store') }}" \
+  -H "X-Api-Key: YOUR_PUBLIC_KEY" \
+  -H "X-Api-Signature: YOUR_HMAC_SHA256_HEX" \
+  -F "title=Task via Form Upload" \
+  -F "type=1" \
+  -F "priority=2" \
+  -F "image=@/path/to/screenshot.png"</pre>
+                                </div>
+                            </div>
+
+                            <!-- 4. Upload Image to Existing Task -->
+                            <div class="tab-pane fade" id="v-pills-upload-img" role="tabpanel">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge badge-info font-weight-bold px-2 py-1 mr-2" style="font-size: 13px;">POST</span>
+                                    <code class="h6 mb-0 text-dark font-weight-bold">{{ url('/api/tasks/{task_id}/images') }}</code>
+                                </div>
+                                <p class="text-xs text-gray-600 mb-3">Attach image(s) to an existing task using file upload, base64 string, or remote image URL.</p>
+
+                                <div class="border rounded p-3 bg-dark text-light font-monospace text-xs">
+                                    <pre class="mb-0 text-light" style="font-size: 11px;">curl -X POST "{{ url('/api/tasks/12/images') }}" \
+  -H "X-Api-Key: YOUR_PUBLIC_KEY" \
+  -H "X-Api-Signature: YOUR_HMAC_SHA256_HEX" \
+  -F "image=@/path/to/extra_screenshot.png"</pre>
+                                </div>
+                            </div>
+
+                            <!-- 5. Postman Pre-request Script Setup -->
+                            <div class="tab-pane fade" id="v-pills-postman" role="tabpanel">
+                                <h6 class="font-weight-bold text-gray-800 mb-2"><i class="fas fa-rocket text-warning mr-1"></i> Postman Pre-request HMAC Script</h6>
+                                <p class="text-xs text-gray-600">Copy & paste this script into Postman's <strong>Pre-request Script</strong> tab. It automatically computes signatures for both raw JSON and multipart form uploads!</p>
+
+                                <pre class="p-3 bg-dark text-warning border rounded font-monospace text-xs" style="font-size: 11px;">const secretKey = pm.variables.get("api_secret") || pm.environment.get("api_secret");
+
+let bodyToSign = "";
+
+if (pm.request.body && pm.request.body.mode === "raw") {
+    bodyToSign = pm.request.body.raw || "";
+} else if (pm.request.body && pm.request.body.mode === "formdata") {
+    let formObj = {};
+    if (pm.request.body.formdata) {
+        pm.request.body.formdata.each((item) => {
+            if (!item.disabled && item.type !== "file" && item.key !== "api_key") {
+                formObj[item.key] = item.value;
+            }
+        });
+    }
+    bodyToSign = Object.keys(formObj).length > 0 ? JSON.stringify(formObj) : "";
+}
+
+const signature = CryptoJS.HmacSHA256(bodyToSign, secretKey).toString(CryptoJS.enc.Hex);
+pm.variables.set("hmac_signature", signature);</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light py-2">
+                <a href="{{ route('projects.external-api.postman', $project) }}" class="btn btn-warning btn-sm font-weight-bold">
+                    <i class="fas fa-download mr-1"></i> Download Postman Collection (.json)
+                </a>
+                <button class="btn btn-secondary btn-sm" type="button" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
