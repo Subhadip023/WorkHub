@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 
 class Project extends Model
 {
@@ -64,6 +65,26 @@ class Project extends Model
     public function comments(): MorphMany
     {
         return $this->morphMany(Comment::class, 'commentable');
+    }
+
+    /**
+     * Get cached discussion comments for the project.
+     */
+    public function getCachedComments()
+    {
+        return Cache::remember(
+            "project_{$this->id}_comments",
+            3600,
+            fn () => $this->comments()->with('user')->latest()->get()
+        );
+    }
+
+    /**
+     * Clear cached discussion comments.
+     */
+    public function clearCachedComments(): void
+    {
+        Cache::forget("project_{$this->id}_comments");
     }
 
     /**

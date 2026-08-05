@@ -12,6 +12,15 @@ class TaskImage extends Model
         'image_path',
     ];
 
+    protected $appends = [
+        'url',
+    ];
+
+    public function getUrlAttribute(): string
+    {
+        return asset('storage/'.$this->image_path);
+    }
+
     /**
      * Get the task that owns the image.
      *

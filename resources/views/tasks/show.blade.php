@@ -190,6 +190,14 @@
                                 {{ $task->getTypeName() }}
                             </span>
                         </div>
+                        @if($task->externalSource)
+                            <div class="mb-2 ml-4">
+                                <span class="font-weight-bold text-xs text-uppercase d-block mb-1">Source</span>
+                                <span class="badge badge-dark p-2 shadow-sm" title="Created via External API Key">
+                                    <i class="fas fa-plug text-warning mr-1"></i> Via API: {{ $task->externalSource->externalTaskApi?->name ?? 'External API' }}
+                                </span>
+                            </div>
+                        @endif
                     </div>
                 @endif
             </div>

@@ -52,10 +52,10 @@
                 <i class="fas fa-edit fa-sm text-white-50 mr-1"></i> Edit Project
             </a>
             @can('delete', $project)
-                <form action="{{ route('projects.destroy', $project) }}" method="POST" class="d-inline ml-1">
+                <form action="{{ route('projects.destroy', $project) }}" method="POST" class="d-inline ml-1" onclick="return confirm('Are you sure you want to delete this project?');">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-danger shadow-sm" onclick="return confirm('Are you sure you want to delete this project?');">
+                    <button type="submit" class="btn btn-sm btn-danger shadow-sm">
                         <i class="fas fa-trash fa-sm text-white-50 mr-1"></i> Delete Project
                     </button>
                 </form>
@@ -70,30 +70,7 @@
 </div>
 
 <!-- Navigation Tabs Bar -->
-<div>
-    <ul class="nav nav-tabs mb-4" id="projectShowTabs" role="tablist">
-        <li class="nav-item">
-            <a class="nav-link font-weight-bold" href="{{ route('projects.show', $project) }}">
-                <i class="fas fa-tasks mr-2"></i>Tasks
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link font-weight-bold" href="{{ route('projects.notes', $project) }}">
-                <i class="fas fa-sticky-note mr-2"></i>Notes
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link font-weight-bold" href="{{ route('projects.credentials', $project) }}">
-                <i class="fas fa-key mr-2"></i>Credentials
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link active font-weight-bold" href="{{ route('projects.external-api', $project) }}">
-                <i class="fas fa-plug mr-2"></i>External API
-            </a>
-        </li>
-    </ul>
-</div>
+@include('partials.project_tabs')
 
 <!-- Main Content Area -->
 <div class="row">
@@ -123,7 +100,7 @@
                                 <th>Assigned Member</th>
                                 <th>Default Settings (Status, Priority, Type)</th>
                                 <th style="width: 80px;" class="text-center">Status</th>
-                                <th style="width: 100px;" class="text-center">Actions</th>
+                                <th style="width: 150px;" class="text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="apiListBody">
@@ -176,18 +153,25 @@
                                             <span class="badge badge-secondary px-2 py-1">Inactive</span>
                                         @endif
                                     </td>
-                                    <td class="align-middle text-center">
-                                        <button class="btn btn-sm btn-outline-warning btn-regenerate-secret mr-1" data-id="{{ $api->id }}" title="Regenerate Secret Key">
-                                            <i class="fas fa-sync-alt"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-danger btn-delete-api" data-id="{{ $api->id }}" title="Revoke API Key">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                    <td class="align-middle text-center" style="white-space: nowrap;">
+                                        <div class="d-inline-flex align-items-center" style="gap: 4px;">
+                                            <x-edit-button class="btn-edit-api"
+                                                           data-id="{{ $api->id }}" 
+                                                           data-name="{{ $api->name }}"
+                                                           data-assigned="{{ $api->assigned_user_id }}"
+                                                           data-status="{{ $api->default_status }}"
+                                                           data-priority="{{ $api->default_priority }}"
+                                                           data-type="{{ $api->default_type }}"
+                                                           data-active="{{ $api->is_active ? '1' : '0' }}"
+                                                           title="Edit API Key" />
+                                            <x-action-button variant="warning" icon="sync-alt" class="btn-regenerate-secret" data-id="{{ $api->id }}" title="Regenerate Secret Key" />
+                                            <x-delete-button class="btn-delete-api" data-id="{{ $api->id }}" title="Revoke API Key" />
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr id="emptyApiRow">
-                                    <td colspan="6" class="text-center py-4 text-muted">
+                                    <td colspan="7" class="text-center py-4 text-muted">
                                         <i class="fas fa-plug fa-2x mb-2 text-gray-400 d-block"></i>
                                         No External Task API keys generated for this project yet.
                                     </td>
@@ -223,7 +207,7 @@
                 <div class="mb-3">
                     <span class="font-weight-bold text-gray-800 d-block mb-1"><i class="fas fa-key text-primary mr-1"></i> Required Headers:</span>
                     <div class="bg-dark text-light p-2 rounded font-monospace" style="font-size: 11px; line-height: 1.5;">
-                        <span class="text-info">Content-Type:</span> application/json<br>
+                        <span class="text-info">Content-Type:</span> application/json <span class="text-warning">OR</span> multipart/form-data<br>
                         <span class="text-info">X-Api-Key:</span> &lt;YOUR_PUBLIC_KEY&gt;<br>
                         <span class="text-info">X-Api-Signature:</span> &lt;HMAC_SHA256_HEX&gt;
                     </div>
@@ -231,18 +215,39 @@
 
                 <div class="alert alert-info py-2 px-2 border-left-info text-xs mb-3">
                     <i class="fas fa-shield-alt text-info mr-1"></i> <strong>HMAC Signature:</strong><br>
-                    Compute <code class="text-dark font-weight-bold">hash_hmac('sha256', raw_json_body, secret_key)</code> and send in <code class="text-dark font-weight-bold">X-Api-Signature</code> header.
+                    Compute <code class="text-dark font-weight-bold">hash_hmac('sha256', payload, secret_key)</code> and send in <code class="text-dark font-weight-bold">X-Api-Signature</code> header.
                 </div>
 
                 <div class="mb-3">
-                    <span class="font-weight-bold text-gray-800 d-block mb-1"><i class="fas fa-code text-primary mr-1"></i> Sample Request Body:</span>
-                    <pre class="p-2 bg-light border rounded text-xs mb-0 text-dark font-monospace" style="font-size: 11px;">{
+                    <span class="font-weight-bold text-gray-800 d-block mb-1"><i class="fas fa-code text-primary mr-1"></i> Format 1: JSON Body</span>
+                    <pre class="p-2 bg-light border rounded text-xs mb-0 text-dark font-monospace" style="font-size: 10.5px;">{
   "title": "Bug in Checkout Flow",
   "description": "Payment button failing",
   "type": 2,
   "priority": 4,
-  "status": 1
+  "status": 1,
+  "image_base64": "data:image/png;base64,...",
+  "image_url": "https://example.com/shot.png"
 }</pre>
+                </div>
+
+                <div class="mb-3">
+                    <span class="font-weight-bold text-gray-800 d-block mb-1"><i class="fas fa-file-upload text-primary mr-1"></i> Format 2: Form Upload (Multipart)</span>
+                    <div class="bg-light border rounded p-2 text-xs text-dark font-monospace" style="font-size: 10.5px; line-height: 1.5;">
+                        title: "Bug in Checkout Flow"<br>
+                        description: "Payment button failing"<br>
+                        image: [file upload (.png, .jpg)]<br>
+                        images[]: [array of file uploads]
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <span class="font-weight-bold text-gray-800 d-block mb-1"><i class="fas fa-images text-primary mr-1"></i> Image Upload Options:</span>
+                    <ul class="pl-3 mb-0 text-muted" style="line-height: 1.5; font-size: 11px;">
+                        <li><strong>JSON Payload</strong>: <code class="text-dark">image_base64</code> (Base64 string) or <code class="text-dark">image_url</code> (Image link). Multiple: <code class="text-dark">images_base64[]</code> / <code class="text-dark">images_url[]</code>.</li>
+                        <li><strong>Multipart Form</strong>: Form file field <code class="text-dark">image</code> or <code class="text-dark">images[]</code>.</li>
+                        <li><strong>Existing Task Endpoint</strong>: <code class="text-dark">POST /api/tasks/{task}/images</code></li>
+                    </ul>
                 </div>
 
                 <div class="mb-3">
@@ -260,16 +265,10 @@
                 </p>
             </div>
         </div>
-
-        @if(isset($comments))
-            @include('partials.comments', [
-                'comments' => $comments,
-                'commentableType' => 'project',
-                'commentableId' => $project->id
-            ])
-        @endif
     </div>
 </div>
+
+@include('partials.discussion_drawer', ['project' => $project, 'comments' => $comments])
 
 <!-- Generate API Key Modal -->
 <div class="modal fade" id="generateApiModal" tabindex="-1" role="dialog" aria-labelledby="generateApiModalLabel" aria-hidden="true">
@@ -343,6 +342,93 @@
                 <div class="modal-footer">
                     <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Generate API Key</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit API Key Modal -->
+<div class="modal fade" id="editApiModal" tabindex="-1" role="dialog" aria-labelledby="editApiModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title font-weight-bold text-primary" id="editApiModalLabel">
+                    <i class="fas fa-edit mr-2"></i>Edit External Task API Key
+                </h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <form id="editApiForm" method="POST">
+                @csrf
+                @method('PATCH')
+                <input type="hidden" id="editApiId" name="api_id">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="editApiName" class="font-weight-bold text-gray-700">API Name / Label <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="editApiName" name="name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editAssignedUserId" class="font-weight-bold text-gray-700">Assign Tasks To Member</label>
+                        <select class="form-control" id="editAssignedUserId" name="assigned_user_id">
+                            <option value="">-- Select Member (Default / Creator) --</option>
+                            @foreach($companyUsers as $user)
+                                <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
+                            @endforeach
+                        </select>
+                        <small class="form-text text-muted">
+                            Tasks created via this API key will be automatically assigned to the selected member.
+                        </small>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="editDefaultStatus" class="font-weight-bold text-gray-700">Default Status</label>
+                                <select class="form-control" id="editDefaultStatus" name="default_status">
+                                    <option value="1">To Do</option>
+                                    <option value="2">In Progress</option>
+                                    <option value="3">Completed</option>
+                                    <option value="4">On Hold</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="editDefaultPriority" class="font-weight-bold text-gray-700">Default Priority</label>
+                                <select class="form-control" id="editDefaultPriority" name="default_priority">
+                                    <option value="1">Low</option>
+                                    <option value="2">Medium</option>
+                                    <option value="3">High</option>
+                                    <option value="4">Urgent</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="editDefaultType" class="font-weight-bold text-gray-700">Default Type</label>
+                                <select class="form-control" id="editDefaultType" name="default_type">
+                                    <option value="1">Task</option>
+                                    <option value="2">Bug</option>
+                                    <option value="3">Feature</option>
+                                    <option value="4">Improvement</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-0">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="editIsActive" name="is_active" value="1">
+                            <label class="custom-control-label font-weight-bold text-gray-700" for="editIsActive" style="cursor: pointer;">Key Enabled / Active</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update API Key</button>
                 </div>
             </form>
         </div>
@@ -526,13 +612,26 @@
                             <td class="align-middle text-center">
                                 <span class="badge badge-success px-2 py-1">Active</span>
                             </td>
-                            <td class="align-middle text-center">
-                                <button class="btn btn-sm btn-outline-warning btn-regenerate-secret mr-1" data-id="${api.id}" title="Regenerate Secret Key">
-                                    <i class="fas fa-sync-alt"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger btn-delete-api" data-id="${api.id}" title="Revoke API Key">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                            <td class="align-middle text-center" style="white-space: nowrap;">
+                                <div class="d-inline-flex align-items-center" style="gap: 4px;">
+                                    <button class="btn btn-sm btn-light border text-primary btn-edit-api shadow-xs" 
+                                            data-id="${api.id}" 
+                                            data-name="${escapeHtml(api.name)}"
+                                            data-assigned="${api.assigned_user_id || ''}"
+                                            data-status="${api.default_status || 1}"
+                                            data-priority="${api.default_priority || 2}"
+                                            data-type="${api.default_type || 1}"
+                                            data-active="1"
+                                            title="Edit API Key">
+                                        <i class="fas fa-edit mr-1"></i> Edit
+                                    </button>
+                                    <button class="btn btn-sm btn-light border text-warning btn-regenerate-secret shadow-xs" data-id="${api.id}" title="Regenerate Secret Key">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-light border text-danger btn-delete-api shadow-xs" data-id="${api.id}" title="Revoke API Key">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     `;
@@ -550,6 +649,95 @@
                 error: function(xhr) {
                     $submitBtn.prop('disabled', false).text('Generate API Key');
                     alert(xhr.responseJSON?.message || 'Error generating API key.');
+                }
+            });
+        });
+
+        // Open Edit API Modal
+        $(document).on('click', '.btn-edit-api', function() {
+            var id = $(this).data('id');
+            var name = $(this).data('name');
+            var assigned = $(this).data('assigned');
+            var status = $(this).data('status');
+            var priority = $(this).data('priority');
+            var type = $(this).data('type');
+            var active = $(this).data('active');
+
+            $('#editApiId').val(id);
+            $('#editApiName').val(name);
+            $('#editAssignedUserId').val(assigned || '');
+            $('#editDefaultStatus').val(status || 1);
+            $('#editDefaultPriority').val(priority || 2);
+            $('#editDefaultType').val(type || 1);
+            $('#editIsActive').prop('checked', active == 1 || active === true);
+
+            $('#editApiModal').modal('show');
+        });
+
+        // Submit Edit API Form via AJAX
+        $('#editApiForm').on('submit', function(e) {
+            e.preventDefault();
+            var $form = $(this);
+            var id = $('#editApiId').val();
+            var $submitBtn = $form.find('button[type="submit"]');
+            $submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Saving...');
+
+            var formData = {
+                name: $('#editApiName').val(),
+                assigned_user_id: $('#editAssignedUserId').val() || null,
+                default_status: $('#editDefaultStatus').val(),
+                default_priority: $('#editDefaultPriority').val(),
+                default_type: $('#editDefaultType').val(),
+                is_active: $('#editIsActive').is(':checked') ? 1 : 0
+            };
+
+            $.ajax({
+                url: "/external-api/" + id,
+                method: "PATCH",
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                data: formData,
+                success: function(response) {
+                    $submitBtn.prop('disabled', false).text('Update API Key');
+                    $('#editApiModal').modal('hide');
+
+                    var api = response.api;
+                    var $row = $('tr[data-id="' + api.id + '"]');
+
+                    if ($row.length) {
+                        var assignedName = api.assigned_user ? api.assigned_user.name : 'Creator (Auto)';
+                        var st = stMap[api.default_status || 1];
+                        var pr = prMap[api.default_priority || 2];
+                        var tp = tpMap[api.default_type || 1];
+
+                        // Update table row columns
+                        $row.find('td:eq(0)').html('<i class="fas fa-code-branch text-primary mr-1"></i> ' + escapeHtml(api.name));
+                        $row.find('td:eq(3)').html(`
+                            <span class="badge ${api.assigned_user ? 'badge-info' : 'badge-light border text-gray-600'} p-2">
+                                <i class="fas ${api.assigned_user ? 'fa-user-tag' : 'fa-user-clock'} mr-1"></i> ${escapeHtml(assignedName)}
+                            </span>
+                        `);
+                        $row.find('td:eq(4)').html(`
+                            <span class="badge ${st[1]} px-2 py-1 mr-1">${st[0]}</span>
+                            <span class="badge ${pr[1]} px-2 py-1 mr-1">${pr[0]}</span>
+                            <span class="badge ${tp[1]} px-2 py-1">${tp[0]}</span>
+                        `);
+                        $row.find('td:eq(5)').html(api.is_active ? '<span class="badge badge-success px-2 py-1">Active</span>' : '<span class="badge badge-secondary px-2 py-1">Inactive</span>');
+
+                        // Update edit button data attributes
+                        var $editBtn = $row.find('.btn-edit-api');
+                        $editBtn.data('name', api.name);
+                        $editBtn.data('assigned', api.assigned_user_id);
+                        $editBtn.data('status', api.default_status);
+                        $editBtn.data('priority', api.default_priority);
+                        $editBtn.data('type', api.default_type);
+                        $editBtn.data('active', api.is_active ? 1 : 0);
+                    }
+                },
+                error: function(xhr) {
+                    $submitBtn.prop('disabled', false).text('Update API Key');
+                    alert(xhr.responseJSON?.message || 'Error updating API key.');
                 }
             });
         });

@@ -139,6 +139,11 @@
                             <a href="{{ route('tasks.show', $task) }}" class="text-decoration-none text-gray-900 hover-text-primary task-title-link">
                                 {{ $task->title }}
                             </a>
+                            @if($task->externalSource)
+                                <span class="badge badge-dark px-2 py-1 text-xs shadow-sm ml-1" title="Created via External API Key: {{ $task->externalSource->externalTaskApi?->name }}">
+                                    <i class="fas fa-plug text-warning mr-1"></i>Via API
+                                </span>
+                            @endif
                         </div>
                         @if($task->description)
                             <div class="text-gray-500 small mt-1">{!! Str::limit(strip_tags($task->description), 100) !!}</div>
@@ -333,18 +338,16 @@
                             @endif
                         @endcan
                     </td>
-                    <td class="text-center align-middle">
+                    <td class="text-center align-middle" style="white-space: nowrap;">
                         @can('update', $task)
-                            <a href="{{ route('tasks.show', $task) }}" class="btn btn-sm btn-info edit-task-btn">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="d-inline ml-1 delete-task-form">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
+                            <div class="d-inline-flex align-items-center" style="gap: 4px;">
+                                <x-edit-button :href="route('tasks.show', $task)" class="edit-task-btn" title="View / Edit Task" />
+                                <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="d-inline delete-task-form">
+                                    @csrf
+                                    @method('DELETE')
+                                    <x-delete-button type="submit" title="Delete Task" />
+                                </form>
+                            </div>
                         @else
                             <span class="text-muted small font-italic">No actions</span>
                         @endcan

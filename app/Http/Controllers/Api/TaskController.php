@@ -4,158 +4,96 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ExternalTaskApi;
+use App\Models\ExternalTaskSource;
 use App\Models\Project;
 use App\Models\Task;
+use App\Models\TaskImage;
 use App\Models\User;
 use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class TaskController extends Controller
 {
     public function __construct(private readonly NotificationService $notificationService) {}
 
     /**
-     * Store a newly created task in a project via API.
+     * Display a listing of tasks via API.
      */
-    public function store(Request $request, Project $project): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $apiKey = $request->header('X-Api-Key') ?? $request->input('api_key');
-        $externalApiConfig = null;
+        $externalApiConfig = $request->attributes->get('externalApiConfig');
 
-        if ($apiKey) {
-            $externalApiConfig = ExternalTaskApi::where('api_key', $apiKey)->where('is_active', true)->first();
-            if (! $externalApiConfig) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid or inactive API key provided.',
-                ], 403);
-            }
+        $query = Task::with(['project', 'assignedUser', 'images']);
 
-            $signature = $request->header('X-Api-Signature') ?? $request->header('X-Signature');
-            if (! $signature) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Missing required HMAC signature header (X-Api-Signature).',
-                ], 403);
-            }
+        if ($externalApiConfig) {
+            $query->where('project_id', $externalApiConfig->project_id);
+        } elseif (auth()->check()) {
+            $user = auth()->user();
+            $companyIds = $user->companies()->pluck('company_id')->toArray();
+            $projectIds = Project::whereIn('company_id', $companyIds)
+                ->orWhere(function ($q) use ($user) {
+                    $q->whereNull('company_id')->where('user_id', $user->id);
+                })->pluck('id')->toArray();
 
-            $expectedSignature = hash_hmac('sha256', $request->getContent(), $externalApiConfig->api_secret);
-            if (! hash_equals($expectedSignature, $signature)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid HMAC signature.',
-                ], 403);
-            }
-        } else {
-            if (! auth()->check()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthenticated.',
-                ], 403);
-            }
-            Gate::authorize('update', $project);
+            $query->where(function ($q) use ($projectIds, $user) {
+                $q->whereIn('project_id', $projectIds)
+                    ->orWhere(function ($sub) use ($user) {
+                        $sub->whereNull('project_id')
+                            ->where(function ($inner) use ($user) {
+                                $inner->where('user_id', $user->id)
+                                    ->orWhere('assigned_to', $user->id);
+                            });
+                    });
+            });
         }
 
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'due_date' => 'nullable|date',
-            'assigned_to' => 'nullable|exists:users,id',
-            'status' => 'nullable|integer|in:1,2,3,4',
-            'priority' => 'nullable|integer|in:1,2,3,4',
-            'type' => 'nullable|integer|in:1,2,3,4',
-        ]);
-
-        $user_id = $externalApiConfig ? $externalApiConfig->user_id : auth()->id();
-        $validated['user_id'] = $user_id;
-
-        // If no explicit assignee, status, or priority is passed, check ExternalTaskApi configuration
-        if (! $externalApiConfig) {
-            $externalApiConfig = ExternalTaskApi::where('project_id', $project->id)
-                ->where('is_active', true)
-                ->latest()
-                ->first();
+        if ($request->filled('status')) {
+            $query->where('status', (int) $request->input('status'));
         }
 
-        if (empty($validated['assigned_to'])) {
-            $validated['assigned_to'] = $externalApiConfig->assigned_user_id ?? null;
+        if ($request->filled('priority')) {
+            $query->where('priority', (int) $request->input('priority'));
         }
 
-        if (empty($validated['status']) && $externalApiConfig?->default_status) {
-            $validated['status'] = $externalApiConfig->default_status;
+        if ($request->filled('type')) {
+            $query->where('type', (int) $request->input('type'));
         }
 
-        if (empty($validated['priority']) && $externalApiConfig?->default_priority) {
-            $validated['priority'] = $externalApiConfig->default_priority;
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
         }
 
-        if (empty($validated['type']) && $externalApiConfig?->default_type) {
-            $validated['type'] = $externalApiConfig->default_type;
-        }
-
-        $task = $project->tasks()->create($validated);
-
-        $assignee = $task->assignedUser ?? ($task->assigned_to ? User::find($task->assigned_to) : null);
-        if ($assignee) {
-            $this->notificationService->send(
-                $assignee,
-                'task_created',
-                'Task Assigned via API',
-                "You have been assigned the task '{$task->title}' in project '{$project->name}'.",
-                $project->company_id,
-                ['task_id' => $task->id, 'project_id' => $project->id, 'url' => route('tasks.show', $task->id)]
-            );
-        }
+        $perPage = min((int) $request->input('per_page', 15), 100);
+        $tasks = $query->latest()->paginate($perPage);
 
         return response()->json([
             'success' => true,
-            'message' => 'Task created successfully',
-            'data' => $task->fresh(['project', 'assignedUser']),
-        ], 201);
+            'message' => 'Tasks retrieved successfully',
+            'data' => $tasks->items(),
+            'pagination' => [
+                'total' => $tasks->total(),
+                'per_page' => $tasks->perPage(),
+                'current_page' => $tasks->currentPage(),
+                'last_page' => $tasks->lastPage(),
+            ],
+        ]);
     }
 
     /**
-     * Store a general task (or task with optional project_id in body) via API.
+     * Store a newly created task via API.
      */
-    public function storeGeneral(Request $request): JsonResponse
+    public function store(Request $request): JsonResponse
     {
-        $apiKey = $request->header('X-Api-Key') ?? $request->input('api_key');
-        $externalApiConfig = null;
-
-        if ($apiKey) {
-            $externalApiConfig = ExternalTaskApi::where('api_key', $apiKey)->where('is_active', true)->first();
-            if (! $externalApiConfig) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid or inactive API key provided.',
-                ], 403);
-            }
-
-            $signature = $request->header('X-Api-Signature') ?? $request->header('X-Signature');
-            if (! $signature) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Missing required HMAC signature header (X-Api-Signature).',
-                ], 403);
-            }
-
-            $expectedSignature = hash_hmac('sha256', $request->getContent(), $externalApiConfig->api_secret);
-            if (! hash_equals($expectedSignature, $signature)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid HMAC signature.',
-                ], 403);
-            }
-        } else {
-            if (! auth()->check()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthenticated.',
-                ], 403);
-            }
-        }
+        $externalApiConfig = $request->attributes->get('externalApiConfig');
 
         $validated = $request->validate([
             'project_id' => 'nullable|exists:projects,id',
@@ -166,23 +104,41 @@ class TaskController extends Controller
             'status' => 'nullable|integer|in:1,2,3,4',
             'priority' => 'nullable|integer|in:1,2,3,4',
             'type' => 'nullable|integer|in:1,2,3,4',
+            'image' => 'nullable|file|image|max:10240',
+            'images.*' => 'nullable|file|image|max:10240',
+            'image_base64' => 'nullable|string',
+            'images_base64' => 'nullable|array',
+            'images_base64.*' => 'nullable|string',
+            'image_url' => 'nullable|url',
+            'images_url' => 'nullable|array',
+            'images_url.*' => 'nullable|url',
         ]);
 
         $targetProjectId = $validated['project_id'] ?? ($externalApiConfig ? $externalApiConfig->project_id : null);
+        $project = null;
 
         if ($targetProjectId && $targetProjectId != 0) {
             $project = Project::findOrFail($targetProjectId);
-
-            return $this->store($request, $project);
+            if (! $externalApiConfig) {
+                Gate::authorize('update', $project);
+            }
+            $validated['project_id'] = $project->id;
         }
 
         $user_id = $externalApiConfig ? $externalApiConfig->user_id : auth()->id();
         $validated['user_id'] = $user_id;
 
+        if (! $externalApiConfig && $project) {
+            $externalApiConfig = ExternalTaskApi::where('project_id', $project->id)
+                ->where('is_active', true)
+                ->latest()
+                ->first();
+        }
+
         if (empty($validated['assigned_to'])) {
             if ($externalApiConfig && $externalApiConfig->assigned_user_id) {
                 $validated['assigned_to'] = $externalApiConfig->assigned_user_id;
-            } else {
+            } elseif (! $project) {
                 $validated['assigned_to'] = $user_id;
             }
         }
@@ -201,22 +157,177 @@ class TaskController extends Controller
 
         $task = Task::create($validated);
 
-        $assignee = $task->assignedUser ?? User::find($task->assigned_to);
+        // Process any attached images
+        $this->processTaskImages($request, $task);
+
+        if ($externalApiConfig) {
+            ExternalTaskSource::create([
+                'task_id' => $task->id,
+                'external_task_api_id' => $externalApiConfig->id,
+                'payload' => $request->except(['image', 'images', 'image_base64', 'images_base64']),
+                'ip_address' => $request->ip(),
+            ]);
+        }
+
+        $assignee = $task->assignedUser ?? ($task->assigned_to ? User::find($task->assigned_to) : null);
         if ($assignee) {
+            $message = $project
+                ? "You have been assigned the task '{$task->title}' in project '{$project->name}'."
+                : "You have been assigned the task '{$task->title}'.";
+
             $this->notificationService->send(
                 $assignee,
                 'task_created',
                 'Task Assigned via API',
-                "You have been assigned the task '{$task->title}'.",
-                null,
-                ['task_id' => $task->id, 'url' => route('tasks.show', $task->id)]
+                $message,
+                $project?->company_id,
+                ['task_id' => $task->id, 'project_id' => $project?->id, 'url' => route('tasks.show', $task->id)]
             );
         }
 
         return response()->json([
             'success' => true,
             'message' => 'Task created successfully',
-            'data' => $task->fresh(['project', 'assignedUser']),
+            'data' => $task->fresh(['project', 'assignedUser', 'images', 'externalSource.externalTaskApi']),
         ], 201);
+    }
+
+    /**
+     * Upload image(s) to an existing task via API.
+     */
+    public function uploadImage(Request $request, Task $task): JsonResponse
+    {
+        $externalApiConfig = $request->attributes->get('externalApiConfig');
+
+        if ($externalApiConfig) {
+            if ($task->project_id !== $externalApiConfig->project_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized: This API key cannot modify tasks outside its project.',
+                ], 403);
+            }
+        } else {
+            Gate::authorize('update', $task);
+        }
+
+        $request->validate([
+            'image' => 'nullable|file|image|max:10240',
+            'images.*' => 'nullable|file|image|max:10240',
+            'image_base64' => 'nullable|string',
+            'images_base64' => 'nullable|array',
+            'images_base64.*' => 'nullable|string',
+            'image_url' => 'nullable|url',
+            'images_url' => 'nullable|array',
+            'images_url.*' => 'nullable|url',
+        ]);
+
+        $createdImages = $this->processTaskImages($request, $task);
+
+        if (empty($createdImages)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No valid image file, base64 payload, or image URL was provided.',
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => count($createdImages).' image(s) uploaded successfully',
+            'data' => $task->fresh(['images']),
+        ], 200);
+    }
+
+    /**
+     * Helper to process image uploads (files, base64 strings, or URLs) for a task.
+     *
+     * @return array<int, TaskImage>
+     */
+    protected function processTaskImages(Request $request, Task $task): array
+    {
+        $createdImages = [];
+
+        // 1. Single or multiple uploaded files
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('task_images', 'public');
+            $createdImages[] = $task->images()->create(['image_path' => $path]);
+        }
+
+        if ($request->hasFile('images')) {
+            $files = is_array($request->file('images')) ? $request->file('images') : [$request->file('images')];
+            foreach ($files as $file) {
+                if ($file->isValid()) {
+                    $path = $file->store('task_images', 'public');
+                    $createdImages[] = $task->images()->create(['image_path' => $path]);
+                }
+            }
+        }
+
+        // 2. Base64 strings ('image_base64' or 'images_base64[]')
+        $base64List = [];
+        if ($request->filled('image_base64')) {
+            $base64List[] = $request->input('image_base64');
+        }
+        if ($request->filled('images_base64') && is_array($request->input('images_base64'))) {
+            $base64List = array_merge($base64List, $request->input('images_base64'));
+        }
+
+        foreach ($base64List as $b64) {
+            if (is_string($b64)) {
+                $extension = 'jpg';
+                if (preg_match('/^data:image\/(\w+);base64,/', $b64, $type)) {
+                    $b64Data = substr($b64, strpos($b64, ',') + 1);
+                    $ext = strtolower($type[1]);
+                    if (in_array($ext, ['jpeg', 'jpg', 'png', 'gif', 'webp'])) {
+                        $extension = $ext === 'jpeg' ? 'jpg' : $ext;
+                    }
+                } else {
+                    $b64Data = $b64;
+                }
+
+                $decoded = base64_decode($b64Data, true);
+                if ($decoded !== false) {
+                    $fileName = 'task_images/'.Str::random(40).'.'.$extension;
+                    Storage::disk('public')->put($fileName, $decoded);
+                    $createdImages[] = $task->images()->create(['image_path' => $fileName]);
+                }
+            }
+        }
+
+        // 3. Image URLs ('image_url' or 'images_url[]')
+        $urlList = [];
+        if ($request->filled('image_url')) {
+            $urlList[] = $request->input('image_url');
+        }
+        if ($request->filled('images_url') && is_array($request->input('images_url'))) {
+            $urlList = array_merge($urlList, $request->input('images_url'));
+        }
+
+        foreach ($urlList as $url) {
+            if (filter_var($url, FILTER_VALIDATE_URL)) {
+                try {
+                    $response = Http::timeout(10)->get($url);
+                    if ($response->successful()) {
+                        $contentType = $response->header('Content-Type');
+                        $extension = 'jpg';
+                        if ($contentType) {
+                            if (str_contains($contentType, 'png')) {
+                                $extension = 'png';
+                            } elseif (str_contains($contentType, 'gif')) {
+                                $extension = 'gif';
+                            } elseif (str_contains($contentType, 'webp')) {
+                                $extension = 'webp';
+                            }
+                        }
+                        $fileName = 'task_images/'.Str::random(40).'.'.$extension;
+                        Storage::disk('public')->put($fileName, $response->body());
+                        $createdImages[] = $task->images()->create(['image_path' => $fileName]);
+                    }
+                } catch (\Throwable $e) {
+                    // Silently ignore or log failed URL fetch
+                }
+            }
+        }
+
+        return $createdImages;
     }
 }

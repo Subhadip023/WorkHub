@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -73,5 +74,15 @@ class ExternalTaskApi extends Model
     public function assignedUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_user_id');
+    }
+
+    /**
+     * Tasks created using this API Key.
+     *
+     * @return HasMany<ExternalTaskSource, $this>
+     */
+    public function sources()
+    {
+        return $this->hasMany(ExternalTaskSource::class);
     }
 }

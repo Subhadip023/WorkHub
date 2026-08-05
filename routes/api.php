@@ -13,8 +13,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Add task to a project: POST /api/projects/{project}/tasks
-Route::post('/projects/{project}/tasks', [TaskController::class, 'store'])->name('api.projects.tasks.store');
+// Get tasks: GET /api/tasks
+Route::get('/tasks', [TaskController::class, 'index'])->middleware('api.key')->name('api.tasks.index');
 
-// Add task (general or project): POST /api/tasks
-Route::post('/tasks', [TaskController::class, 'storeGeneral'])->name('api.tasks.store');
+// Add task: POST /api/tasks
+Route::post('/tasks', [TaskController::class, 'store'])->middleware('api.key')->name('api.tasks.store');
+
+// Upload images to an existing task: POST /api/tasks/{task}/images
+Route::post('/tasks/{task}/images', [TaskController::class, 'uploadImage'])->middleware('api.key')->name('api.tasks.images.store');

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * @property int $id
@@ -29,6 +30,24 @@ class Comment extends Model
         'commentable_type',
         'commentable_id',
     ];
+
+    protected static function booted(): void
+    {
+        static::saved(function (Comment $comment) {
+            static::clearDiscussionCache($comment);
+        });
+
+        static::deleted(function (Comment $comment) {
+            static::clearDiscussionCache($comment);
+        });
+    }
+
+    protected static function clearDiscussionCache(Comment $comment): void
+    {
+        if ($comment->commentable_type === 'project' || $comment->commentable_type === Project::class) {
+            Cache::forget("project_{$comment->commentable_id}_comments");
+        }
+    }
 
     /**
      * Get the owning commentable model.

@@ -77,34 +77,11 @@
 </div>
 
 <!-- Navigation Tabs Bar -->
-<div>
-    <ul class="nav nav-tabs mb-4" id="projectShowTabs" role="tablist">
-        <li class="nav-item">
-            <a class="nav-link font-weight-bold" href="{{ route('projects.show', $project) }}">
-                <i class="fas fa-tasks mr-2"></i>Tasks
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link active font-weight-bold" href="{{ route('projects.notes', $project) }}">
-                <i class="fas fa-sticky-note mr-2"></i>Notes
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link font-weight-bold" href="{{ route('projects.credentials', $project) }}">
-                <i class="fas fa-key mr-2"></i>Credentials
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link font-weight-bold" href="{{ route('projects.external-api', $project) }}">
-                <i class="fas fa-plug mr-2"></i>External API
-            </a>
-        </li>
-    </ul>
-</div>
+@include('partials.project_tabs')
 
 <!-- Main Content Area -->
 <div class="row">
-    <div class="col-lg-9">
+    <div class="col-lg-12">
         <div class="card shadow mb-4">
             <div class="card-header py-3 d-flex align-items-center justify-content-between">
                 <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-sticky-note mr-1"></i> Project Notes</h6>
@@ -180,15 +157,7 @@
             </div>
         </div>
     </div>
-
-    <!-- Right Column (1/3 width) -->
-    <div class="col-lg-3">
-        <!-- Comments Section -->
-        @include('partials.comments', [
-            'comments' => $comments,
-            'commentableType' => 'project',
-            'commentableId' => $project->id
-        ])
-    </div>
 </div>
+
+@include('partials.discussion_drawer', ['project' => $project, 'comments' => $comments])
 @endsection

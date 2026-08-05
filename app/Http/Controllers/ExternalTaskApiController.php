@@ -40,7 +40,7 @@ class ExternalTaskApiController extends Controller
         }
 
         $externalApis = $project->externalApis()->with(['assignedUser', 'user'])->latest()->get();
-        $comments = $project->comments()->with('user')->latest()->get();
+        $comments = $project->getCachedComments();
 
         return view('projects.external_api', compact('project', 'companyUsers', 'user_role', 'externalApis', 'comments'));
     }

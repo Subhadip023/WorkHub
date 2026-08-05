@@ -70,34 +70,11 @@
 </div>
 
 <!-- Navigation Tabs Bar -->
-<div>
-    <ul class="nav nav-tabs mb-4" id="projectShowTabs" role="tablist">
-        <li class="nav-item">
-            <a class="nav-link font-weight-bold" href="{{ route('projects.show', $project) }}">
-                <i class="fas fa-tasks mr-2"></i>Tasks
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link font-weight-bold" href="{{ route('projects.notes', $project) }}">
-                <i class="fas fa-sticky-note mr-2"></i>Notes
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link active font-weight-bold" href="{{ route('projects.credentials', $project) }}">
-                <i class="fas fa-key mr-2"></i>Credentials
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link font-weight-bold" href="{{ route('projects.external-api', $project) }}">
-                <i class="fas fa-plug mr-2"></i>External API
-            </a>
-        </li>
-    </ul>
-</div>
+@include('partials.project_tabs')
 
 <!-- Main Content Area -->
 <div class="row">
-    <div class="col-lg-9">
+    <div class="col-lg-12">
         <div class="card shadow mb-4" style="border-left: 4px solid {{ $project->theme }};">
             <div class="card-header py-3 d-flex align-items-center justify-content-between bg-white">
                 <h6 class="m-0 font-weight-bold text-primary mb-0">
@@ -156,7 +133,7 @@
                                         </div>
                                     </td>
                                     <td class="align-middle text-center">
-                                        <button class="btn btn-sm btn-outline-danger btn-delete-cred" data-id="{{ $credential->id }}" title="Delete"><i class="fas fa-trash"></i></button>
+                                        <x-delete-button class="btn-delete-cred" data-id="{{ $credential->id }}" title="Delete" />
                                     </td>
                                 </tr>
                             @empty
@@ -172,32 +149,26 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Sidebar Info & Comments Column -->
-    <div class="col-lg-3">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 bg-light">
-                <h6 class="m-0 font-weight-bold text-gray-800">
-                    <i class="fas fa-shield-alt mr-2 text-primary"></i>Security Guidelines
-                </h6>
-            </div>
-            <div class="card-body text-xs text-gray-600">
-                <p class="mb-2"><i class="fas fa-check-circle text-success mr-1"></i> Use environment variables for API tokens & credentials.</p>
-                <p class="mb-2"><i class="fas fa-check-circle text-success mr-1"></i> Secrets are automatically encrypted in storage.</p>
-                <p class="mb-0"><i class="fas fa-info-circle text-info mr-1"></i> Route: <code>/projects/{{ $project->id }}/credentials</code></p>
             </div>
         </div>
 
-        @if(isset($comments))
-            @include('partials.comments', [
-                'comments' => $comments,
-                'commentableType' => 'project',
-                'commentableId' => $project->id
-            ])
-        @endif
+        <!-- Security Guidelines Card -->
+        <div class="card shadow mb-4 border-left-info">
+            <div class="card-body py-3 d-flex align-items-center justify-content-between text-xs text-gray-700">
+                <div>
+                    <strong class="text-primary font-weight-bold mr-2"><i class="fas fa-shield-alt mr-1"></i> Security Guidelines:</strong>
+                    <span class="mr-3"><i class="fas fa-check-circle text-success mr-1"></i> Encrypted in storage</span>
+                    <span><i class="fas fa-check-circle text-success mr-1"></i> Use env variables for API tokens</span>
+                </div>
+                <div class="text-muted">
+                    Route: <code>/projects/{{ $project->id }}/credentials</code>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+@include('partials.discussion_drawer', ['project' => $project, 'comments' => $comments])
 
 {{-- Add Credential Modal --}}
 <div class="modal fade" id="addCredentialModal" tabindex="-1" role="dialog" aria-labelledby="addCredentialModalLabel" aria-hidden="true">

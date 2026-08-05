@@ -65,6 +65,13 @@ Pending invitations are loaded in a View Composer registered in `AppServiceProvi
     - An invitation is accepted (`CompanyController@acceptInvitation`)
     - An invitation is rejected (`CompanyController@rejectInvitation`)
 
+### Project Discussion Comments
+
+Project discussion comments are fetched via `$project->getCachedComments()`.
+- **Cache Key**: `project_{project_id}_comments`
+- **Expiration**: 1 Hour (3600 seconds)
+- **Invalidation**: Automatically invalidated via `Comment` model lifecycle events (`saved` and `deleted`).
+
 ---
 
 ## 5. 📁 MVC Separation & File Architecture

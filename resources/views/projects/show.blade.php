@@ -77,34 +77,11 @@
         <p class="mt-2 text-gray-500 italic">No description provided for this project.</p>
     @endif
 </div>
-<div>
-     <ul class="nav nav-tabs mb-4" id="projectShowTabs" role="tablist">
-            <li class="nav-item">
-                <a class="nav-link active font-weight-bold" href="{{ route('projects.show', $project) }}">
-                    <i class="fas fa-tasks mr-2"></i>Tasks
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link font-weight-bold" href="{{ route('projects.notes', $project) }}">
-                    <i class="fas fa-sticky-note mr-2"></i>Notes
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link font-weight-bold" href="{{ route('projects.credentials', $project) }}">
-                    <i class="fas fa-key mr-2"></i>Credentials
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link font-weight-bold" href="{{ route('projects.external-api', $project) }}">
-                    <i class="fas fa-plug mr-2"></i>External API
-                </a>
-            </li>
-        </ul>
-</div>
+@include('partials.project_tabs')
 <div class="row">
    
-    <!-- Left Column (2/3 width) -->
-    <div class="col-lg-9">
+    <!-- Main Content Area (Full width) -->
+    <div class="col-lg-12">
         <!-- Nav Option Tabs -->
         
 
@@ -289,17 +266,9 @@
         </div> <!-- End Tab Content Container -->
 
     </div>
-
-    <!-- Right Column (1/3 width) -->
-    <div class="col-lg-3">
-        <!-- Comments Section -->
-        @include('partials.comments', [
-            'comments' => $comments,
-            'commentableType' => 'project',
-            'commentableId' => $project->id
-        ])
-    </div>
 </div>
+
+@include('partials.discussion_drawer', ['project' => $project, 'comments' => $comments])
 
 @include('partials.edit_task_modal')
 

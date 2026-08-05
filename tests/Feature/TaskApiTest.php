@@ -2,8 +2,11 @@
 
 use App\Models\ExternalTaskApi;
 use App\Models\Project;
+use App\Models\Task;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 it('allows authenticated user to create a task in a project via API', function () {
     $user = User::factory()->create();
@@ -19,7 +22,8 @@ it('allows authenticated user to create a task in a project via API', function (
 
     $this->actingAs($user);
 
-    $response = $this->postJson(route('api.projects.tasks.store', $project), [
+    $response = $this->postJson(route('api.tasks.store'), [
+        'project_id' => $project->id,
         'title' => 'API Created Task',
         'description' => 'Created via API route',
         'status' => 1,
@@ -66,7 +70,8 @@ it('prevents unauthorized user from adding task to project via API', function ()
 
     $this->actingAs($otherUser);
 
-    $response = $this->postJson(route('api.projects.tasks.store', $project), [
+    $response = $this->postJson(route('api.tasks.store'), [
+        'project_id' => $project->id,
         'title' => 'Unauthorized Task',
     ]);
 
@@ -116,7 +121,8 @@ it('validates task creation payload via API', function () {
 
     $this->actingAs($user);
 
-    $response = $this->postJson(route('api.projects.tasks.store', $project), [
+    $response = $this->postJson(route('api.tasks.store'), [
+        'project_id' => $project->id,
         // Missing title
         'status' => 999, // Invalid status
     ]);
@@ -206,7 +212,7 @@ it('auto assigns task created via external API key to the configured member', fu
     $response = $this->withHeaders([
         'X-Api-Key' => $externalApi->api_key,
         'X-Api-Signature' => $sig,
-    ])->postJson(route('api.projects.tasks.store', $project), $payloadData);
+    ])->postJson(route('api.tasks.store'), $payloadData);
 
     $response->assertStatus(201)
         ->assertJson([
@@ -256,7 +262,7 @@ it('defaults status and priority configured on external task API key', function 
     $response = $this->withHeaders([
         'X-Api-Key' => $externalApi->api_key,
         'X-Api-Signature' => $sig,
-    ])->postJson(route('api.projects.tasks.store', $project), $payloadData);
+    ])->postJson(route('api.tasks.store'), $payloadData);
 
     $response->assertStatus(201)
         ->assertJson([
@@ -429,7 +435,7 @@ it('returns JSON 403 status for invalid API key or unauthenticated request witho
             'message' => 'Invalid or inactive API key provided.',
         ]);
 
-    // 2. Missing API Key & Unauthenticated (without Accept: application/json header)
+    // 2. Missing API Key & Unauthenticated
     $responseNoAuth = $this->post(route('api.tasks.store'), [
         'title' => 'Unauthenticated Task',
     ]);
@@ -438,4 +444,231 @@ it('returns JSON 403 status for invalid API key or unauthenticated request witho
         ->assertJson([
             'success' => false,
         ]);
+});
+
+it('creates external_task_sources record when task is created via API key', function () {
+    $owner = User::factory()->create();
+    $project = Project::create([
+        'name' => 'Source Tracking Project',
+        'slug' => 'source-tracking-project',
+        'theme' => '#ff0055',
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $owner->id,
+        'company_id' => null,
+    ]);
+
+    $credentials = ExternalTaskApi::generateCredentials();
+    $externalApi = ExternalTaskApi::create([
+        'project_id' => $project->id,
+        'user_id' => $owner->id,
+        'name' => 'GitHub Action Bot',
+        'api_key' => $credentials['api_key'],
+        'api_secret' => $credentials['api_secret'],
+        'is_active' => true,
+    ]);
+
+    $payload = ['title' => 'Task via Action Bot', 'description' => 'Automated workflow'];
+    $sig = hash_hmac('sha256', json_encode($payload), $credentials['api_secret']);
+
+    $response = $this->withHeaders([
+        'X-Api-Key' => $externalApi->api_key,
+        'X-Api-Signature' => $sig,
+    ])->postJson(route('api.tasks.store'), $payload);
+
+    $response->assertStatus(201);
+    $taskId = $response->json('data.id');
+
+    $this->assertDatabaseHas('external_task_sources', [
+        'task_id' => $taskId,
+        'external_task_api_id' => $externalApi->id,
+    ]);
+
+    $task = Task::find($taskId);
+    expect($task->externalSource)->not->toBeNull();
+    expect($task->externalSource->external_task_api_id)->toBe($externalApi->id);
+    expect($task->externalSource->externalTaskApi->name)->toBe('GitHub Action Bot');
+});
+
+it('allows uploading images when creating a task via API key using base64 string', function () {
+    Storage::fake('public');
+
+    $owner = User::factory()->create();
+    $project = Project::create([
+        'name' => 'Base64 Image Project',
+        'slug' => 'b64-project',
+        'theme' => '#0055ff',
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $owner->id,
+        'company_id' => null,
+    ]);
+
+    $credentials = ExternalTaskApi::generateCredentials();
+    $externalApi = ExternalTaskApi::create([
+        'project_id' => $project->id,
+        'user_id' => $owner->id,
+        'name' => 'Image Uploader Key',
+        'api_key' => $credentials['api_key'],
+        'api_secret' => $credentials['api_secret'],
+        'is_active' => true,
+    ]);
+
+    // Simple 1x1 transparent PNG base64 string
+    $fakeBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+    $payload = [
+        'title' => 'Task with Base64 Image',
+        'image_base64' => $fakeBase64,
+    ];
+    $sig = hash_hmac('sha256', json_encode($payload), $credentials['api_secret']);
+
+    $response = $this->withHeaders([
+        'X-Api-Key' => $externalApi->api_key,
+        'X-Api-Signature' => $sig,
+    ])->postJson(route('api.tasks.store'), $payload);
+
+    $response->assertStatus(201);
+    $task = Task::find($response->json('data.id'));
+    expect($task->images)->toHaveCount(1);
+    Storage::disk('public')->assertExists($task->images->first()->image_path);
+});
+
+it('allows uploading images to existing task via POST /api/tasks/{task}/images with multipart upload', function () {
+    Storage::fake('public');
+
+    $owner = User::factory()->create();
+    $project = Project::create([
+        'name' => 'Task Image Attachment Project',
+        'slug' => 'img-attach-project',
+        'theme' => '#0055ff',
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $owner->id,
+        'company_id' => null,
+    ]);
+
+    $task = $project->tasks()->create([
+        'title' => 'Existing Task',
+        'user_id' => $owner->id,
+    ]);
+
+    $credentials = ExternalTaskApi::generateCredentials();
+    $externalApi = ExternalTaskApi::create([
+        'project_id' => $project->id,
+        'user_id' => $owner->id,
+        'name' => 'Image Attachment Key',
+        'api_key' => $credentials['api_key'],
+        'api_secret' => $credentials['api_secret'],
+        'is_active' => true,
+    ]);
+
+    $file = UploadedFile::fake()->image('screenshot.png');
+
+    $sig = hash_hmac('sha256', '', $credentials['api_secret']);
+
+    $response = $this->withHeaders([
+        'X-Api-Key' => $externalApi->api_key,
+        'X-Api-Signature' => $sig,
+    ])->post(route('api.tasks.images.store', $task), [
+        'image' => $file,
+    ]);
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'success' => true,
+        ]);
+
+    $task->refresh();
+    expect($task->images)->toHaveCount(1);
+    Storage::disk('public')->assertExists($task->images->first()->image_path);
+});
+
+it('allows uploading an image via multipart form upload during task creation on POST /api/tasks', function () {
+    Storage::fake('public');
+
+    $owner = User::factory()->create();
+    $project = Project::create([
+        'name' => 'Form Upload Project',
+        'slug' => 'form-upload-project',
+        'theme' => '#0055ff',
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $owner->id,
+        'company_id' => null,
+    ]);
+
+    $credentials = ExternalTaskApi::generateCredentials();
+    $externalApi = ExternalTaskApi::create([
+        'project_id' => $project->id,
+        'user_id' => $owner->id,
+        'name' => 'Form Upload Key',
+        'api_key' => $credentials['api_key'],
+        'api_secret' => $credentials['api_secret'],
+        'is_active' => true,
+    ]);
+
+    $file = UploadedFile::fake()->image('task_attachment.png');
+    $payload = ['title' => 'Task via Form Upload'];
+    $sig = hash_hmac('sha256', json_encode($payload), $credentials['api_secret']);
+
+    $response = $this->withHeaders([
+        'X-Api-Key' => $externalApi->api_key,
+        'X-Api-Signature' => $sig,
+    ])->post(route('api.tasks.store'), [
+        'title' => 'Task via Form Upload',
+        'image' => $file,
+    ]);
+
+    $response->assertStatus(201)
+        ->assertJson([
+            'success' => true,
+            'message' => 'Task created successfully',
+        ]);
+
+    $taskId = $response->json('data.id');
+    $task = Task::find($taskId);
+    expect($task->images)->toHaveCount(1);
+    Storage::disk('public')->assertExists($task->images->first()->image_path);
+});
+
+it('allows fetching task listing via GET /api/tasks with API key scoping to project', function () {
+    $owner = User::factory()->create();
+    $project = Project::create([
+        'name' => 'Listing Project',
+        'slug' => 'listing-project',
+        'theme' => '#0055ff',
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $owner->id,
+        'company_id' => null,
+    ]);
+
+    $task1 = $project->tasks()->create(['title' => 'Project Task 1', 'user_id' => $owner->id, 'status' => 1]);
+    $task2 = $project->tasks()->create(['title' => 'Project Task 2', 'user_id' => $owner->id, 'status' => 3]);
+
+    $credentials = ExternalTaskApi::generateCredentials();
+    $externalApi = ExternalTaskApi::create([
+        'project_id' => $project->id,
+        'user_id' => $owner->id,
+        'name' => 'Fetch Tasks Key',
+        'api_key' => $credentials['api_key'],
+        'api_secret' => $credentials['api_secret'],
+        'is_active' => true,
+    ]);
+
+    $sig = hash_hmac('sha256', '', $credentials['api_secret']);
+
+    $response = $this->withHeaders([
+        'X-Api-Key' => $externalApi->api_key,
+        'X-Api-Signature' => $sig,
+    ])->getJson(route('api.tasks.index'));
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'success' => true,
+            'message' => 'Tasks retrieved successfully',
+        ]);
+
+    expect($response->json('data'))->toHaveCount(2);
 });

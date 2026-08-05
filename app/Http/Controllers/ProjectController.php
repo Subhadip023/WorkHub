@@ -111,7 +111,7 @@ class ProjectController extends Controller
         Gate::authorize('view', $project);
 
         $notes = $project->notes()->with('user')->latest()->get();
-        $comments = $project->comments()->with('user')->latest()->get();
+        $comments = $project->getCachedComments();
 
         return view('projects.notes', compact('project', 'notes', 'comments'));
     }
@@ -124,7 +124,7 @@ class ProjectController extends Controller
         Gate::authorize('view', $project);
 
         $credentials = $project->credentials()->latest()->get();
-        $comments = $project->comments()->with('user')->latest()->get();
+        $comments = $project->getCachedComments();
 
         return view('projects.credentials', compact('project', 'credentials', 'comments'));
     }
@@ -192,7 +192,7 @@ class ProjectController extends Controller
             ]);
         }
 
-        $comments = $project->comments()->with('user')->latest()->get();
+        $comments = $project->getCachedComments();
 
         $totalTasks = $project->tasks()->count();
         $completedTasks = $project->tasks()->where('status', 3)->count();
