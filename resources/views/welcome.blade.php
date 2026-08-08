@@ -145,9 +145,6 @@
                         <a href="{{ $baseUrl }}?task_filter=overdue&per_page={{ $perPage }}" class="btn btn-xs {{ $activeTaskFilter == 'overdue' ? 'btn-danger active font-weight-bold shadow-sm' : 'btn-light border text-gray-800' }}" style="border-radius: 15px; font-size: 0.8rem; padding: 4px 10px;">
                             Overdue <span class="badge {{ $activeTaskFilter == 'overdue' ? 'badge-light text-danger' : 'badge-danger' }} ml-1">{{ $overdueCount }}</span>
                         </a>
-                        <a href="{{ $baseUrl }}?task_filter=all_pending&per_page={{ $perPage }}" class="btn btn-xs {{ $activeTaskFilter == 'all_pending' ? 'btn-primary active font-weight-bold shadow-sm' : 'btn-light border text-gray-800' }}" style="border-radius: 15px; font-size: 0.8rem; padding: 4px 10px;">
-                            All Pending <span class="badge {{ $activeTaskFilter == 'all_pending' ? 'badge-light text-primary' : 'badge-secondary' }} ml-1">{{ $allPendingCount }}</span>
-                        </a>
                     </div>
                 </div>
             </div>

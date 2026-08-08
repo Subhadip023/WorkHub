@@ -6,15 +6,17 @@ use App\Models\CompanyUsers;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\TaskImage;
-use App\Models\User;
-use App\Services\NotificationService;
+use App\Repositories\TaskRepositoryInterface;
+use App\Services\TaskServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
 
 class TaskController extends Controller
 {
-    public function __construct(private readonly NotificationService $notificationService) {}
+    public function __construct(
+        protected readonly TaskRepositoryInterface $taskRepository,
+        protected readonly TaskServiceInterface $taskService
+    ) {}
 
     /**
      * Display a listing of the resource.
@@ -22,98 +24,29 @@ class TaskController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $companyIds = $user->companies()->pluck('company_id')->toArray();
 
-        // Fetch all projects (both personal and organizational)
+        // Query accessible projects for filter dropdown
+        $companyIds = $user->companies()->pluck('company_id')->toArray();
         $projects = Project::select('id', 'name')->whereIn('company_id', $companyIds)
             ->orWhere(function ($query) use ($user) {
                 $query->whereNull('company_id')->where('user_id', $user->id);
             })
             ->get();
 
-        $projectIds = $projects->pluck('id')->toArray();
+        $companyUsers = $this->taskRepository->getAccessibleCompanyUsers($user);
+        $stats = $this->taskRepository->getTaskStatsForUser($user);
 
-        // Base query for all accessible tasks
-        $tasksQuery = Task::where(function ($query) use ($projectIds, $user) {
-            $query->whereIn('project_id', $projectIds)
-                ->orWhere(function ($q) use ($user) {
-                    $q->whereNull('project_id')
-                        ->where(function ($sub) use ($user) {
-                            $sub->where('user_id', $user->id)
-                                ->orWhere('assigned_to', $user->id);
-                        });
-                });
-        });
+        $filters = $request->only(['project', 'status', 'assignee', 'type']);
+        $tasks = $this->taskRepository->getFilteredTasksForUser($user, $filters, 5);
 
-        // Fetch all unique team members from all companies the user belongs to
-        $companyUsers = CompanyUsers::whereIn('company_id', $companyIds)
-            ->with('user')
-            ->get()
-            ->map(function ($cu) {
-                return $cu->user;
-            })
-            ->filter()
-            ->unique('id')
-            ->values();
-
-        if (! $companyUsers->contains('id', $user->id)) {
-            $companyUsers->push($user);
-        }
-
-        // Compute stats before pagination
-        $totalCount = (clone $tasksQuery)->count();
-        $completedCount = (clone $tasksQuery)->where('status', 3)->count();
-        $pendingCount = $totalCount - $completedCount;
-        $overdueCount = (clone $tasksQuery)->where('status', '!=', 3)
-            ->whereNotNull('due_date')
-            ->where('due_date', '<', now()->toDateString())
-            ->count();
-
-        // Apply filters from query parameters
-        if ($request->filled('project') && $request->project !== 'all') {
-            if ($request->project === 'none') {
-                $tasksQuery->whereNull('project_id');
-            } else {
-                $tasksQuery->where('project_id', $request->project);
-            }
-        }
-
-        if ($request->filled('status') && $request->status !== 'all') {
-            if ($request->status === 'completed') {
-                $tasksQuery->where('status', 3);
-            } elseif ($request->status === 'pending') {
-                $tasksQuery->where('status', '!=', 3);
-            }
-        }
-
-        if ($request->filled('assignee') && $request->assignee !== 'all') {
-            if ($request->assignee === 'unassigned') {
-                $tasksQuery->whereNull('assigned_to');
-            } else {
-                $tasksQuery->where('assigned_to', $request->assignee);
-            }
-        }
-
-        if ($request->filled('type') && $request->type !== 'all') {
-            $tasksQuery->where('type', $request->type);
-        }
-
-        // Fetch paginated tasks
-        $tasks = $tasksQuery->with(['project', 'assignedUser'])->paginate(5);
-
-        // Pass 1 as default role, since role is checked dynamically per task in the view now
         $user_role = 1;
 
-        return view('tasks.index', compact(
-            'tasks',
-            'projects',
-            'companyUsers',
-            'user_role',
-            'totalCount',
-            'completedCount',
-            'pendingCount',
-            'overdueCount'
-        ));
+        return view('tasks.index', array_merge([
+            'tasks' => $tasks,
+            'projects' => $projects,
+            'companyUsers' => $companyUsers,
+            'user_role' => $user_role,
+        ], $stats));
     }
 
     /**
@@ -132,51 +65,13 @@ class TaskController extends Controller
             'type' => 'nullable|integer|in:1,2,3,4',
         ]);
 
-        $user_id = auth()->id();
-        $validated['user_id'] = $user_id;
+        $project = ! empty($validated['project_id']) ? Project::findOrFail($validated['project_id']) : null;
 
-        if (! empty($validated['project_id'])) {
-            $project = Project::findOrFail($validated['project_id']);
+        if ($project) {
             Gate::authorize('update', $project);
-
-            if (empty($validated['assigned_to'])) {
-                $validated['assigned_to'] = $user_id;
-            }
-
-            $task = $project->tasks()->create($validated);
-
-            // Send notification
-            $assignee = $task->assignedUser ?? User::find($task->assigned_to);
-            if ($assignee) {
-                $this->notificationService->send(
-                    $assignee,
-                    'task_created',
-                    'Task Assigned',
-                    "You have been assigned the task '{$task->title}' in project '{$project->name}'.",
-                    $project->company_id,
-                    ['task_id' => $task->id, 'project_id' => $project->id, 'url' => route('tasks.show', $task->id)]
-                );
-            }
-        } else {
-            if (empty($validated['assigned_to'])) {
-                $validated['assigned_to'] = $user_id;
-            }
-
-            $task = Task::create($validated);
-
-            // Send notification
-            $assignee = $task->assignedUser ?? User::find($task->assigned_to);
-            if ($assignee) {
-                $this->notificationService->send(
-                    $assignee,
-                    'task_created',
-                    'Task Assigned',
-                    "You have been assigned the task '{$task->title}'.",
-                    null,
-                    ['task_id' => $task->id, 'url' => route('tasks.show', $task->id)]
-                );
-            }
         }
+
+        $this->taskService->createTask($validated, $project, auth()->user());
 
         return redirect()->route('tasks.index')->with('success', 'Task created successfully');
     }
@@ -198,27 +93,11 @@ class TaskController extends Controller
             'type' => 'nullable|integer|in:1,2,3,4',
         ]);
 
-        $user_id = auth()->id();
-        $validated['user_id'] = $user_id;
-
         if (empty($validated['assigned_to'])) {
             $validated['assigned_to'] = null;
         }
 
-        $task = $project->tasks()->create($validated);
-
-        // Send notification
-        $assignee = $task->assignedUser ?? User::find($task->assigned_to);
-        if ($assignee) {
-            $this->notificationService->send(
-                $assignee,
-                'task_created',
-                'Task Assigned',
-                "You have been assigned the task '{$task->title}' in project '{$project->name}'.",
-                $project->company_id,
-                ['task_id' => $task->id, 'project_id' => $project->id, 'url' => route('tasks.show', $task->id)]
-            );
-        }
+        $this->taskService->createTask($validated, $project, auth()->user());
 
         return redirect()->route('projects.show', $project)->with('success', 'Task created successfully');
     }
@@ -238,10 +117,7 @@ class TaskController extends Controller
     {
         $this->checkTaskOwnership($task);
 
-        $newStatus = ($task->status == 3) ? 1 : 3;
-        $task->update([
-            'status' => $newStatus,
-        ]);
+        $task = $this->taskService->toggleTaskStatus($task);
 
         if (request()->ajax() || request()->wantsJson()) {
             return response()->json([
@@ -273,77 +149,7 @@ class TaskController extends Controller
             'type' => 'nullable|integer|in:1,2,3,4',
         ]);
 
-        $oldDueDate = $task->due_date;
-        $oldAssigneeId = $task->assigned_to;
-        $oldStatus = $task->status;
-        $oldPriority = $task->priority;
-
-        $task->update($validated);
-
-        if ($task->due_date !== $oldDueDate) {
-            $assignee = $task->assignedUser ?? User::find($task->assigned_to);
-            if ($assignee) {
-                $message = $task->due_date
-                    ? "The deadline for task '{$task->title}' has been set/updated to {$task->due_date}."
-                    : "The deadline for task '{$task->title}' has been removed.";
-
-                $this->notificationService->send(
-                    $assignee,
-                    'task_deadline_updated',
-                    'Task Deadline Updated',
-                    $message,
-                    $task->project ? $task->project->company_id : null,
-                    ['task_id' => $task->id, 'project_id' => $task->project_id, 'due_date' => $task->due_date, 'url' => route('tasks.show', $task->id)]
-                );
-            }
-        }
-
-        if ($task->assigned_to !== $oldAssigneeId) {
-            $newAssignee = User::find($task->assigned_to);
-            if ($newAssignee && $task->assigned_to !== auth()->id()) {
-                $projectName = $task->project ? " in project '{$task->project->name}'" : '';
-                $this->notificationService->send(
-                    $newAssignee,
-                    'task_assigned',
-                    'Task Assigned',
-                    "You have been assigned the task '{$task->title}'{$projectName}.",
-                    $task->project ? $task->project->company_id : null,
-                    ['task_id' => $task->id, 'project_id' => $task->project_id, 'url' => route('tasks.show', $task->id)]
-                );
-            }
-        }
-
-        if ($task->status !== $oldStatus) {
-            $assignee = $task->assignedUser ?? User::find($task->assigned_to);
-            if ($assignee && $task->assigned_to !== auth()->id()) {
-                $statusNames = [1 => 'To Do', 2 => 'In Progress', 3 => 'Completed', 4 => 'On Hold'];
-                $statusStr = $statusNames[$task->status] ?? 'Unknown';
-                $this->notificationService->send(
-                    $assignee,
-                    'task_status_updated',
-                    'Task Status Updated',
-                    "The status of task '{$task->title}' has been updated to '{$statusStr}'.",
-                    $task->project ? $task->project->company_id : null,
-                    ['task_id' => $task->id, 'project_id' => $task->project_id, 'status' => $task->status, 'url' => route('tasks.show', $task->id)]
-                );
-            }
-        }
-
-        if ($task->priority !== $oldPriority) {
-            $assignee = $task->assignedUser ?? User::find($task->assigned_to);
-            if ($assignee && $task->assigned_to !== auth()->id()) {
-                $priorityNames = [1 => 'Low', 2 => 'Medium', 3 => 'High', 4 => 'Urgent'];
-                $priorityStr = $priorityNames[$task->priority] ?? 'Unknown';
-                $this->notificationService->send(
-                    $assignee,
-                    'task_priority_updated',
-                    'Task Priority Updated',
-                    "The priority of task '{$task->title}' has been set to '{$priorityStr}'.",
-                    $task->project ? $task->project->company_id : null,
-                    ['task_id' => $task->id, 'project_id' => $task->project_id, 'priority' => $task->priority, 'url' => route('tasks.show', $task->id)]
-                );
-            }
-        }
+        $task = $this->taskService->updateTask($task, $validated, auth()->user());
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
@@ -363,29 +169,11 @@ class TaskController extends Controller
     {
         $this->checkTaskOwnership($task);
 
-        // Notify assignee before deleting
-        $assignee = $task->assignedUser ?? User::find($task->assigned_to);
-        if ($assignee && $task->assigned_to !== auth()->id()) {
-            $company_id = $task->project ? $task->project->company_id : null;
-            $projectName = $task->project ? " in project '{$task->project->name}'" : '';
-            $redirectUrl = $task->project ? route('projects.show', $task->project_id) : route('tasks.index');
-
-            $this->notificationService->send(
-                $assignee,
-                'task_deleted',
-                'Task Deleted',
-                "The task '{$task->title}'{$projectName} has been deleted.",
-                $company_id,
-                ['project_id' => $task->project_id, 'url' => $redirectUrl]
-            );
-        }
-
-        // #9: Capture all needed values BEFORE deleting to avoid reading deleted model state
         $previousUrl = url()->previous();
         $taskShowUrl = route('tasks.show', $task);
         $projectId = $task->project_id;
 
-        $task->delete();
+        $this->taskService->deleteTask($task, auth()->user());
 
         if ($previousUrl === $taskShowUrl || str_contains($previousUrl, "/tasks/{$task->id}")) {
             if ($projectId) {
@@ -415,7 +203,6 @@ class TaskController extends Controller
             return redirect()->back()->with('error', 'Invalid JSON format: '.json_last_error_msg());
         }
 
-        // Normalize to array of objects if a single object was passed
         if (is_array($data) && isset($data['title'])) {
             $data = [$data];
         }
@@ -424,42 +211,11 @@ class TaskController extends Controller
             return redirect()->back()->with('error', 'JSON must be an array of tasks or a single task object.');
         }
 
-        $count = 0;
-        $skipped = 0;
-        foreach ($data as $item) {
-            if (! empty($item['title'])) {
-                // #8: Validate numeric fields are within allowed ranges
-                $status = isset($item['status']) && in_array((int) $item['status'], [1, 2, 3, 4]) ? (int) $item['status'] : (($item['is_completed'] ?? false) ? 3 : 1);
-                $priority = isset($item['priority']) && in_array((int) $item['priority'], [1, 2, 3, 4]) ? (int) $item['priority'] : 2;
-                $type = isset($item['type']) && in_array((int) $item['type'], [1, 2, 3, 4]) ? (int) $item['type'] : 1;
-                // #8: Only allow assigning to valid existing users; default to current user
-                $assignedTo = auth()->id();
-                if (! empty($item['assigned_to'])) {
-                    $assignedExists = User::where('id', (int) $item['assigned_to'])->exists();
-                    if ($assignedExists) {
-                        $assignedTo = (int) $item['assigned_to'];
-                    }
-                }
+        $res = $this->taskService->importTasks($data, $project, auth()->user());
 
-                $project->tasks()->create([
-                    'title' => $item['title'],
-                    'description' => $item['description'] ?? null,
-                    'due_date' => isset($item['due_date']) ? date('Y-m-d', strtotime($item['due_date'])) : null,
-                    'assigned_to' => $assignedTo,
-                    'user_id' => auth()->id(), // #25: Always set the creator
-                    'status' => $status,
-                    'priority' => $priority,
-                    'type' => $type,
-                ]);
-                $count++;
-            } else {
-                $skipped++;
-            }
-        }
-
-        $message = "{$count} task(s) imported successfully.";
-        if ($skipped > 0) {
-            $message .= " {$skipped} item(s) skipped (missing title).";
+        $message = "{$res['imported']} task(s) imported successfully.";
+        if ($res['skipped'] > 0) {
+            $message .= " {$res['skipped']} item(s) skipped (missing title).";
         }
 
         return redirect()->route('projects.show', $project)->with('success', $message);
@@ -476,21 +232,7 @@ class TaskController extends Controller
         Gate::authorize('view', $task);
 
         if ($project === null) {
-            $companyIds = auth()->user()->companies()->pluck('company_id')->toArray();
-            $companyUsers = CompanyUsers::whereIn('company_id', $companyIds)
-                ->with('user')
-                ->get()
-                ->map(function ($cu) {
-                    return $cu->user;
-                })
-                ->filter()
-                ->unique('id')
-                ->values();
-
-            if (! $companyUsers->contains('id', $user_id)) {
-                $companyUsers->push(auth()->user());
-            }
-
+            $companyUsers = $this->taskRepository->getAccessibleCompanyUsers(auth()->user());
             $user_role = 1;
         } elseif ($project->company_id === null) {
             $companyUsers = collect([auth()->user()]);
@@ -509,7 +251,7 @@ class TaskController extends Controller
                 ->filter()
                 ->values();
 
-            $user_role = $membership->role;
+            $user_role = $membership ? $membership->role : 1;
         }
 
         $task->load(['project', 'assignedUser', 'images', 'histories.user']);
@@ -531,11 +273,7 @@ class TaskController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('task_images', 'public');
-
-            $task->images()->create([
-                'image_path' => $path,
-            ]);
+            $this->taskService->uploadImage($task, $request->file('image'));
 
             return redirect()->back()->with('success', 'Image uploaded successfully');
         }
@@ -552,11 +290,7 @@ class TaskController extends Controller
 
         $this->checkTaskOwnership($task);
 
-        if (Storage::disk('public')->exists($image->image_path)) {
-            Storage::disk('public')->delete($image->image_path);
-        }
-
-        $image->delete();
+        $this->taskService->deleteImage($image);
 
         return redirect()->back()->with('success', 'Image deleted successfully');
     }

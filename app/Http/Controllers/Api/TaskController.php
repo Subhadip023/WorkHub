@@ -7,19 +7,19 @@ use App\Models\ExternalTaskApi;
 use App\Models\ExternalTaskSource;
 use App\Models\Project;
 use App\Models\Task;
-use App\Models\TaskImage;
 use App\Models\User;
 use App\Services\NotificationService;
+use App\Services\TaskServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class TaskController extends Controller
 {
-    public function __construct(private readonly NotificationService $notificationService) {}
+    public function __construct(
+        protected readonly NotificationService $notificationService,
+        protected readonly TaskServiceInterface $taskService
+    ) {}
 
     /**
      * Display a listing of tasks via API.
@@ -157,8 +157,8 @@ class TaskController extends Controller
 
         $task = Task::create($validated);
 
-        // Process any attached images
-        $this->processTaskImages($request, $task);
+        // Process any attached images using TaskService
+        $this->taskService->processTaskImages($request, $task);
 
         if ($externalApiConfig) {
             ExternalTaskSource::create([
@@ -221,7 +221,7 @@ class TaskController extends Controller
             'images_url.*' => 'nullable|url',
         ]);
 
-        $createdImages = $this->processTaskImages($request, $task);
+        $createdImages = $this->taskService->processTaskImages($request, $task);
 
         if (empty($createdImages)) {
             return response()->json([
@@ -235,99 +235,5 @@ class TaskController extends Controller
             'message' => count($createdImages).' image(s) uploaded successfully',
             'data' => $task->fresh(['images']),
         ], 200);
-    }
-
-    /**
-     * Helper to process image uploads (files, base64 strings, or URLs) for a task.
-     *
-     * @return array<int, TaskImage>
-     */
-    protected function processTaskImages(Request $request, Task $task): array
-    {
-        $createdImages = [];
-
-        // 1. Single or multiple uploaded files
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('task_images', 'public');
-            $createdImages[] = $task->images()->create(['image_path' => $path]);
-        }
-
-        if ($request->hasFile('images')) {
-            $files = is_array($request->file('images')) ? $request->file('images') : [$request->file('images')];
-            foreach ($files as $file) {
-                if ($file->isValid()) {
-                    $path = $file->store('task_images', 'public');
-                    $createdImages[] = $task->images()->create(['image_path' => $path]);
-                }
-            }
-        }
-
-        // 2. Base64 strings ('image_base64' or 'images_base64[]')
-        $base64List = [];
-        if ($request->filled('image_base64')) {
-            $base64List[] = $request->input('image_base64');
-        }
-        if ($request->filled('images_base64') && is_array($request->input('images_base64'))) {
-            $base64List = array_merge($base64List, $request->input('images_base64'));
-        }
-
-        foreach ($base64List as $b64) {
-            if (is_string($b64)) {
-                $extension = 'jpg';
-                if (preg_match('/^data:image\/(\w+);base64,/', $b64, $type)) {
-                    $b64Data = substr($b64, strpos($b64, ',') + 1);
-                    $ext = strtolower($type[1]);
-                    if (in_array($ext, ['jpeg', 'jpg', 'png', 'gif', 'webp'])) {
-                        $extension = $ext === 'jpeg' ? 'jpg' : $ext;
-                    }
-                } else {
-                    $b64Data = $b64;
-                }
-
-                $decoded = base64_decode($b64Data, true);
-                if ($decoded !== false) {
-                    $fileName = 'task_images/'.Str::random(40).'.'.$extension;
-                    Storage::disk('public')->put($fileName, $decoded);
-                    $createdImages[] = $task->images()->create(['image_path' => $fileName]);
-                }
-            }
-        }
-
-        // 3. Image URLs ('image_url' or 'images_url[]')
-        $urlList = [];
-        if ($request->filled('image_url')) {
-            $urlList[] = $request->input('image_url');
-        }
-        if ($request->filled('images_url') && is_array($request->input('images_url'))) {
-            $urlList = array_merge($urlList, $request->input('images_url'));
-        }
-
-        foreach ($urlList as $url) {
-            if (filter_var($url, FILTER_VALIDATE_URL)) {
-                try {
-                    $response = Http::timeout(10)->get($url);
-                    if ($response->successful()) {
-                        $contentType = $response->header('Content-Type');
-                        $extension = 'jpg';
-                        if ($contentType) {
-                            if (str_contains($contentType, 'png')) {
-                                $extension = 'png';
-                            } elseif (str_contains($contentType, 'gif')) {
-                                $extension = 'gif';
-                            } elseif (str_contains($contentType, 'webp')) {
-                                $extension = 'webp';
-                            }
-                        }
-                        $fileName = 'task_images/'.Str::random(40).'.'.$extension;
-                        Storage::disk('public')->put($fileName, $response->body());
-                        $createdImages[] = $task->images()->create(['image_path' => $fileName]);
-                    }
-                } catch (\Throwable $e) {
-                    // Silently ignore or log failed URL fetch
-                }
-            }
-        }
-
-        return $createdImages;
     }
 }

@@ -7,6 +7,10 @@ use App\Models\CompanyInvitation;
 use App\Models\Note;
 use App\Models\Project;
 use App\Models\Task;
+use App\Repositories\TaskRepository;
+use App\Repositories\TaskRepositoryInterface;
+use App\Services\TaskService;
+use App\Services\TaskServiceInterface;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -25,6 +29,9 @@ class AppServiceProvider extends ServiceProvider
         if (app()->environment('production')) {
             URL::forceScheme('https');
         }
+
+        $this->app->bind(TaskRepositoryInterface::class, TaskRepository::class);
+        $this->app->bind(TaskServiceInterface::class, TaskService::class);
     }
 
     /**
