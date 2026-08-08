@@ -23,22 +23,24 @@ class TaskRepository implements TaskRepositoryInterface
             })
             ->pluck('id')->toArray();
 
-        return Task::where(function ($query) use ($projectIds, $user) {
-            $query->whereIn('project_id', $projectIds)
-                ->orWhere(function ($q) use ($user) {
-                    $q->whereNull('project_id')
-                        ->where(function ($sub) use ($user) {
-                            $sub->where('user_id', $user->id)
-                                ->orWhere('assigned_to', $user->id);
-                        });
-                });
-        });
+        return Task::select('id', 'title', 'status', 'priority', 'type', 'due_date', 'project_id', 'assigned_to', 'user_id', 'created_at', 'updated_at')
+            ->where(function ($query) use ($projectIds, $user) {
+                $query->whereIn('project_id', $projectIds)
+                    ->orWhere(function ($q) use ($user) {
+                        $q->whereNull('project_id')
+                            ->where(function ($sub) use ($user) {
+                                $sub->where('user_id', $user->id)
+                                    ->orWhere('assigned_to', $user->id);
+                            });
+                    });
+            });
     }
 
     protected function getDashboardTaskQuery(User $user, ?Company $company = null)
     {
         if ($company) {
-            return Task::where('assigned_to', $user->id)
+            return Task::select('id', 'title', 'status', 'priority', 'type', 'due_date', 'project_id', 'assigned_to', 'user_id', 'created_at', 'updated_at')
+                ->where('assigned_to', $user->id)
                 ->where(function ($query) use ($company) {
                     $query->whereHas('project', function ($pQuery) use ($company) {
                         $pQuery->where('company_id', $company->id);
@@ -48,7 +50,8 @@ class TaskRepository implements TaskRepositoryInterface
 
         $companyIds = $user->companies()->pluck('company_id')->toArray();
 
-        return Task::where('assigned_to', $user->id)
+        return Task::select('id', 'title', 'status', 'priority', 'type', 'due_date', 'project_id', 'assigned_to', 'user_id', 'created_at', 'updated_at')
+            ->where('assigned_to', $user->id)
             ->where(function ($query) use ($companyIds, $user) {
                 $query->whereHas('project', function ($pQuery) use ($companyIds, $user) {
                     $pQuery->whereIn('company_id', $companyIds)
@@ -75,6 +78,11 @@ class TaskRepository implements TaskRepositoryInterface
             if ($filters['status'] === 'completed') {
                 $tasksQuery->where('status', 3);
             } elseif ($filters['status'] === 'pending') {
+                $tasksQuery->where('status', '!=', 3);
+            }
+        } else {
+            $showCompleted = isset($filters['show_completed']) && ($filters['show_completed'] === 'true' || $filters['show_completed'] === true);
+            if (! $showCompleted) {
                 $tasksQuery->where('status', '!=', 3);
             }
         }

@@ -124,72 +124,15 @@
     </div>
 </div>
 
-<!-- Tasks List Card -->
-<div class="card shadow mb-4 ">
-    <div class="card-header py-3 d-flex align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-primary mb-0">Project Tasks</h6>
-        <div class="custom-control custom-checkbox">
-            <input type="checkbox" class="custom-control-input" id="toggleCompletedTasks">
-            <label class="custom-control-label font-weight-bold text-gray-700 small" for="toggleCompletedTasks" style="cursor: pointer; user-select: none;padding-top: 3px">
-                Show Completed Tasks
-            </label>
-        </div>
-    </div>
-    <div class="card-body">
-        @if($project->tasks->isNotEmpty())
-            <!-- Tasks Search & Filter Bar -->
-            <div class="row mb-3 bg-light py-2 px-1 rounded mx-0 border align-items-center" style="border-radius: 8px;">
-                <div class="col-md-3 mb-2 mb-md-0">
-                    <div class="input-group input-group-sm">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text bg-white border-right-0"><i class="fas fa-search text-gray-400"></i></span>
-                        </div>
-                        <input type="text" class="form-control border-left-0" id="searchTaskInput" placeholder="Search tasks by title...">
-                    </div>
-                </div>
-                <div class="col-md-2 mb-2 mb-md-0 col-6">
-                    <select class="form-control form-control-sm text-xs font-weight-bold" id="filterTaskPriority">
-                        <option value="">All Priorities</option>
-                        <option value="1">🟢 Low</option>
-                        <option value="2">🟡 Medium</option>
-                        <option value="3">🟠 High</option>
-                        <option value="4">🔴 Urgent</option>
-                    </select>
-                </div>
-                <div class="col-md-2 mb-2 mb-md-0 col-6">
-                    <select class="form-control form-control-sm text-xs font-weight-bold" id="filterTaskStatus">
-                        <option value="">All Statuses</option>
-                        <option value="1">📝 To Do</option>
-                        <option value="2">⚙️ In Progress</option>
-                        <option value="3">✅ Completed</option>
-                        <option value="4">🛑 On Hold</option>
-                    </select>
-                </div>
-                <div class="col-md-3 col-12 mb-2 mb-md-0">
-                    <select class="form-control form-control-sm text-xs font-weight-bold" id="filterTaskType">
-                        <option value="">All Types</option>
-                        <option value="1">Task</option>
-                        <option value="2">Bug</option>
-                        <option value="3">Feature</option>
-                        <option value="4">Improvement</option>
-                    </select>
-                </div>
-                <div class="col-md-2 col-12 text-md-right text-center" id="clearFiltersContainer" style="display: none;">
-                    <button type="button" class="btn btn-sm btn-link text-danger font-weight-bold p-0 text-decoration-none" id="btnClearFilters">
-                        <i class="fas fa-times-circle mr-1"></i>Clear Filters
-                    </button>
-                </div>
-            </div>
-        @endif
-
-        <div id="tasksListWrapper">
-            @include('projects.partials.tasks_table', ['tasks' => $tasks, 'companyUsers' => $companyUsers])
-        </div>
-
-        <form action="{{ route('projects.tasks.store', $project) }}" method="POST" id="inlineAddTaskForm" style="display:none;">
-            @csrf
-        </form>
-    </div>
+<!-- Tasks Section -->
+<div id="tasksListWrapper">
+    @include('projects.partials.tasks_table', [
+        'tasks' => $tasks,
+        'companyUsers' => $companyUsers,
+        'showFilters' => true,
+        'cardTitle' => 'Project Tasks'
+        
+    ])
 </div>
             </div> <!-- End Tasks Tab Pane -->
 
@@ -327,105 +270,22 @@
             $('#projectShowTabs a[href="' + activeTab + '"]').tab('show');
         }
 
-        // Edit task modal populating is handled in the partial
-
-        // Toggle Completed Tasks filtering logic
+        // Toggle Completed Tasks logic
         var toggleCheckbox = document.getElementById('toggleCompletedTasks');
         if (toggleCheckbox) {
-            // Load preference from localStorage or default to unchecked (false)
-            var showCompleted = localStorage.getItem('showCompletedTasks') === 'true';
-            toggleCheckbox.checked = showCompleted;
+            var params = new URLSearchParams(window.location.search);
+            toggleCheckbox.checked = params.get('show_completed') === 'true' || localStorage.getItem('showCompletedTasks') === 'true';
 
-            window.applyFilter = function() {
-                var show = toggleCheckbox.checked;
-                localStorage.setItem('showCompletedTasks', show);
-                
-                var searchVal = document.getElementById('searchTaskInput') ? document.getElementById('searchTaskInput').value : '';
-                var priorityVal = document.getElementById('filterTaskPriority') ? document.getElementById('filterTaskPriority').value : '';
-                var statusVal = document.getElementById('filterTaskStatus') ? document.getElementById('filterTaskStatus').value : '';
-                var typeVal = document.getElementById('filterTaskType') ? document.getElementById('filterTaskType').value : '';
-                
-                // Show/hide Clear Filters container dynamically
-                var clearContainer = document.getElementById('clearFiltersContainer');
-                if (clearContainer) {
-                    if (searchVal || priorityVal || statusVal || typeVal) {
-                        clearContainer.style.setProperty('display', 'block', 'important');
-                    } else {
-                        clearContainer.style.setProperty('display', 'none', 'important');
-                    }
+            toggleCheckbox.addEventListener('change', function() {
+                localStorage.setItem('showCompletedTasks', toggleCheckbox.checked);
+                var currentUrl = new URL(window.location.href);
+                if (toggleCheckbox.checked) {
+                    currentUrl.searchParams.set('show_completed', 'true');
+                } else {
+                    currentUrl.searchParams.delete('show_completed');
                 }
-
-                var wrapper = document.getElementById('tasksListWrapper');
-                if (wrapper) {
-                    wrapper.style.opacity = '0.6';
-                }
-
-                $.ajax({
-                    url: window.location.pathname,
-                    type: 'GET',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    data: {
-                        search: searchVal,
-                        priority: priorityVal,
-                        status: statusVal,
-                        type: typeVal,
-                        show_completed: show
-                    },
-                    success: function(response) {
-                        if (wrapper && response.html !== undefined) {
-                            wrapper.innerHTML = response.html;
-                            wrapper.style.opacity = '1';
-                        }
-                    },
-                    error: function() {
-                        if (wrapper) {
-                            wrapper.style.opacity = '1';
-                        }
-                    }
-                });
-            };
-
-            toggleCheckbox.addEventListener('change', window.applyFilter);
-            
-            var searchInput = document.getElementById('searchTaskInput');
-            if (searchInput) {
-                var debounceTimer;
-                searchInput.addEventListener('input', function() {
-                    clearTimeout(debounceTimer);
-                    debounceTimer = setTimeout(window.applyFilter, 250);
-                });
-            }
-            
-            var prioritySelect = document.getElementById('filterTaskPriority');
-            if (prioritySelect) prioritySelect.addEventListener('change', window.applyFilter);
-            
-            var statusSelect = document.getElementById('filterTaskStatus');
-            if (statusSelect) statusSelect.addEventListener('change', window.applyFilter);
-            
-            var typeSelect = document.getElementById('filterTaskType');
-            if (typeSelect) typeSelect.addEventListener('change', window.applyFilter);
-
-            var clearBtn = document.getElementById('btnClearFilters');
-            if (clearBtn) {
-                clearBtn.addEventListener('click', function() {
-                    var searchInput = document.getElementById('searchTaskInput');
-                    var prioritySelect = document.getElementById('filterTaskPriority');
-                    var statusSelect = document.getElementById('filterTaskStatus');
-                    var typeSelect = document.getElementById('filterTaskType');
-
-                    if (searchInput) searchInput.value = '';
-                    if (prioritySelect) prioritySelect.value = '';
-                    if (statusSelect) statusSelect.value = '';
-                    if (typeSelect) typeSelect.value = '';
-
-                    window.applyFilter();
-                });
-            }
-
-            // Initial run
-            window.applyFilter();
+                window.location.href = currentUrl.toString();
+            });
         }
     });
 </script>

@@ -36,7 +36,7 @@ class TaskController extends Controller
         $companyUsers = $this->taskRepository->getAccessibleCompanyUsers($user);
         $stats = $this->taskRepository->getTaskStatsForUser($user);
 
-        $filters = $request->only(['project', 'status', 'assignee', 'type']);
+        $filters = $request->only(['project', 'status', 'assignee', 'type', 'show_completed']);
         $tasks = $this->taskRepository->getFilteredTasksForUser($user, $filters, 5);
 
         $user_role = 1;

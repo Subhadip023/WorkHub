@@ -231,4 +231,77 @@ $(document).ready(function() {
         // Poll every 30 seconds (30000ms)
         setInterval(fetchNotifications, 30000);
     }
+
+    // 6. Global Ctrl+S / Cmd+S Keyboard Shortcut to Save Active Task / Form
+    $(document).on('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+            e.preventDefault();
+
+            // 1. If Edit Task Modal is open
+            if ($('#editTaskModal').hasClass('show') || $('#editTaskModal').is(':visible')) {
+                var $editForm = $('#editTaskForm');
+                if ($editForm.length) {
+                    var $submitBtn = $editForm.find('button[type="submit"], input[type="submit"]').first();
+                    if ($submitBtn.length) {
+                        $submitBtn.click();
+                    } else {
+                        $editForm.submit();
+                    }
+                    return;
+                }
+            }
+
+            // 2. If user is currently focused inside any form input or editable area
+            var activeEl = document.activeElement;
+            if (activeEl && ($(activeEl).closest('form').length || $(activeEl).closest('#editor-container, .ql-editor').length)) {
+                var $closestForm = $(activeEl).closest('form');
+                if (!$closestForm.length && $(activeEl).closest('#editor-container, .ql-editor').length) {
+                    $closestForm = $('#description-form');
+                }
+                if ($closestForm.length && !$closestForm.hasClass('delete-task-form') && !$closestForm.hasClass('toggle-task-form')) {
+                    var $submitBtn = $closestForm.find('button[type="submit"], input[type="submit"]').first();
+                    if ($submitBtn.length) {
+                        $submitBtn.click();
+                    } else {
+                        $closestForm.submit();
+                    }
+                    return;
+                }
+            }
+
+            // 3. If Inline Add Task row is open / visible
+            if ($('#inlineAddRow').is(':visible')) {
+                var $inlineForm = $('#inlineAddTaskForm');
+                if ($inlineForm.length) {
+                    var titleVal = $('#inline_title').val();
+                    if (!titleVal || titleVal.trim() === '') {
+                        $('#inline_title').focus();
+                        return;
+                    }
+                    var $inlineSubmitBtn = $('button[form="inlineAddTaskForm"][type="submit"]');
+                    if ($inlineSubmitBtn.length) {
+                        $inlineSubmitBtn.click();
+                    } else {
+                        $inlineForm.submit();
+                    }
+                    return;
+                }
+            }
+
+            // 4. Fallback: Any visible modal with a form
+            var $openModal = $('.modal.show, .modal:visible').first();
+            if ($openModal.length) {
+                var $modalForm = $openModal.find('form').first();
+                if ($modalForm.length) {
+                    var $modalSubmitBtn = $modalForm.find('button[type="submit"], input[type="submit"]').first();
+                    if ($modalSubmitBtn.length) {
+                        $modalSubmitBtn.click();
+                    } else {
+                        $modalForm.submit();
+                    }
+                    return;
+                }
+            }
+        }
+    });
 });

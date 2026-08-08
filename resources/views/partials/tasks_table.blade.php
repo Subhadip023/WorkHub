@@ -1,3 +1,81 @@
+@if($showFilters ?? false)
+    @php
+        $hasProjectFilter = isset($projects) && ($showProjectColumn ?? true);
+        $filterColClass = $hasProjectFilter ? 'col-md-2' : 'col-md-3';
+    @endphp
+    <!-- Filters Card -->
+    <div class="card shadow mb-4">
+        <div class="card-body py-3">
+            <div class="row align-items-center">
+                @if($hasProjectFilter)
+                    <div class="col-md-3 mb-2 mb-md-0">
+                        <label for="filterProject" class="font-weight-bold text-xs text-gray-700 text-uppercase">Project</label>
+                        <select id="filterProject" class="form-control form-control-sm">
+                            <option value="all" {{ request('project') == 'all' || !request('project') ? 'selected' : '' }}>All Projects</option>
+                            <option value="none" {{ request('project') == 'none' ? 'selected' : '' }}>Personal</option>
+                            @foreach($projects as $projectItem)
+                                <option value="{{ $projectItem->id }}" {{ request('project') == $projectItem->id ? 'selected' : '' }}>{{ $projectItem->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
+                <div class="{{ $filterColClass }} mb-2 mb-md-0">
+                    <label for="filterStatus" class="font-weight-bold text-xs text-gray-700 text-uppercase">Status</label>
+                    <select id="filterStatus" class="form-control form-control-sm">
+                        <option value="all" {{ request('status') == 'all' || !request('status') ? 'selected' : '' }}>All Statuses</option>
+                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
+                    </select>
+                </div>
+                <div class="{{ $filterColClass }} mb-2 mb-md-0">
+                    <label for="filterAssignee" class="font-weight-bold text-xs text-gray-700 text-uppercase">Assignee</label>
+                    <select id="filterAssignee" class="form-control form-control-sm">
+                        <option value="all" {{ request('assignee') == 'all' || !request('assignee') ? 'selected' : '' }}>All Assignees</option>
+                        <option value="unassigned" {{ request('assignee') == 'unassigned' ? 'selected' : '' }}>Unassigned</option>
+                        @if(isset($companyUsers))
+                            @foreach($companyUsers as $cUser)
+                                <option value="{{ $cUser->id }}" {{ request('assignee') == $cUser->id ? 'selected' : '' }}>{{ $cUser->name }}</option>
+                            @endforeach
+                        @endif
+                    </select>
+                </div>
+                <div class="{{ $filterColClass }} mb-2 mb-md-0">
+                    <label for="filterType" class="font-weight-bold text-xs text-gray-700 text-uppercase">Type</label>
+                    <select id="filterType" class="form-control form-control-sm">
+                        <option value="all" {{ request('type') == 'all' || !request('type') ? 'selected' : '' }}>All Types</option>
+                        <option value="1" {{ request('type') == '1' ? 'selected' : '' }}>Task</option>
+                        <option value="2" {{ request('type') == '2' ? 'selected' : '' }}>Bug</option>
+                        <option value="3" {{ request('type') == '3' ? 'selected' : '' }}>Feature</option>
+                        <option value="4" {{ request('type') == '4' ? 'selected' : '' }}>Improvement</option>
+                    </select>
+                </div>
+                <div class="col-md-3 text-left text-md-right mt-3 mt-md-0 pt-md-4">
+                    <button id="resetFilters" class="btn btn-sm btn-secondary btn-block-xs">
+                        <i class="fas fa-undo fa-xs mr-1"></i> Reset Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
+
+@if($wrapInCard ?? ($showFilters ?? false))
+    <!-- Tasks List Card Wrapper -->
+    <div class="card shadow mb-4">
+        @if(isset($cardTitle))
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">{{ $cardTitle }}</h6> 
+                <div class="custom-control custom-checkbox">
+                    <input type="checkbox" class="custom-control-input" id="toggleCompletedTasks" {{ request('show_completed') == 'true' ? 'checked' : '' }}>
+                    <label class="custom-control-label font-weight-bold text-gray-700 small" for="toggleCompletedTasks" style="cursor: pointer; user-select: none; padding-top: 3px;">
+                        Show Completed Tasks
+                    </label>
+                </div>
+            </div>
+        @endif
+        <div class="card-body">
+@endif
+
 <div id="noTasksContainer" class="text-center py-5" style="display: {{ $tasks->isEmpty() ? 'block' : 'none' }}">
     <i class="fas fa-clipboard-list fa-3x text-gray-300 mb-3"></i>
     <h5 class="text-gray-500 font-weight-bold">
@@ -358,6 +436,25 @@
     </table>
 </div>
 
+@if($wrapInCard ?? ($showFilters ?? false))
+        </div>
+        @if(method_exists($tasks, 'hasPages') && $tasks->hasPages())
+            <div class="card-footer py-2">
+                <div class="d-flex justify-content-center">
+                    {!! $tasks->withQueryString()->links() !!}
+                </div>
+            </div>
+        @endif
+    </div>
+@endif
+
+<!-- Hidden form for inline task addition -->
+<form action="{{ route('tasks.store') }}" method="POST" id="inlineAddTaskForm" style="display:none;">
+    @csrf
+</form>
+
+@include('partials.edit_task_modal')
+
 <script>
 (function() {
     if (window.inlineTaskUpdateHandlerSet) return;
@@ -443,3 +540,87 @@
     });
 })();
 </script>
+
+@if($includeFilterScripts ?? ($showFilters ?? false))
+    @push('scripts')
+    <script src="{{ asset('asset/js/tasks.js') }}"></script>
+    <script>
+        $(document).ready(function() {
+            function applyTaskFilters() {
+                var selectedProject = $('#filterProject').val();
+                var selectedStatus = $('#filterStatus').val();
+                var selectedAssignee = $('#filterAssignee').val();
+                var selectedType = $('#filterType').val();
+
+                var params = new URLSearchParams(window.location.search);
+                
+                if (selectedProject && selectedProject !== 'all') {
+                    params.set('project', selectedProject);
+                } else {
+                    params.delete('project');
+                }
+
+                if (selectedStatus && selectedStatus !== 'all') {
+                    params.set('status', selectedStatus);
+                } else {
+                    params.delete('status');
+                }
+
+                if (selectedAssignee && selectedAssignee !== 'all') {
+                    params.set('assignee', selectedAssignee);
+                } else {
+                    params.delete('assignee');
+                }
+
+                if (selectedType && selectedType !== 'all') {
+                    params.set('type', selectedType);
+                } else {
+                    params.delete('type');
+                }
+
+                if ($('#toggleCompletedTasks').length) {
+                    if ($('#toggleCompletedTasks').is(':checked')) {
+                        params.set('show_completed', 'true');
+                    } else {
+                        params.delete('show_completed');
+                    }
+                }
+
+                params.delete('page');
+                window.location.href = window.location.pathname + '?' + params.toString();
+            }
+
+            $('#filterProject, #filterStatus, #filterAssignee, #filterType, #toggleCompletedTasks').change(function() {
+                applyTaskFilters();
+            });
+
+            $('#resetFilters').click(function() {
+                $('#filterProject').val('all');
+                $('#filterStatus').val('all');
+                $('#filterAssignee').val('all');
+                $('#filterType').val('all');
+                applyTaskFilters();
+            });
+
+            $(document).keydown(function(e) {
+                if (e.altKey && (e.key === 't' || e.key === 'T')) {
+                    e.preventDefault();
+                    if ($('#btnShowInlineAdd').length) {
+                        $('#btnShowInlineAdd').click();
+                    } else {
+                        $('#inlineAddRow').show();
+                        $('#inline_title').focus();
+                    }
+                }
+            });
+
+            $(document).keydown(function(e) {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    $('#inlineAddRow').hide();
+                }
+            });
+        });
+    </script>
+    @endpush
+@endif
