@@ -86,55 +86,61 @@
                         @csrf
                         @method('PATCH')
                         <input type="hidden" name="description" value="{{ $task->description }}">
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="task_title" class="font-weight-bold text-gray-700 text-xs text-uppercase">Task Title</label>
                             <input type="text" class="form-control form-control-lg font-weight-bold text-gray-900 border-0 bg-light" id="task_title" name="title" value="{{ $task->title }}" required>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6 form-group">
-                                <label for="assigned_to" class="font-weight-bold text-gray-700 text-xs text-uppercase">Assignee</label>
-                                <select class="form-control" name="assigned_to" id="assigned_to">
-                                    <option value="">-- Unassigned --</option>
-                                    @foreach($companyUsers as $user)
-                                        <option value="{{ $user->id }}" {{ $task->assigned_to == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
-                                    @endforeach
-                                </select>
+                        <div class="row align-items-start">
+                            <div class="col-lg-3 col-md-6 form-group mb-3">
+                                <label class="font-weight-bold text-gray-700 text-xs text-uppercase mb-2">Assignee</label>
+                                <x-assignee-badge
+                                    name="assigned_to"
+                                    :assigned-to="$task->assigned_to"
+                                    :assigned-user="$task->assignedUser"
+                                    :users="$companyUsers"
+                                    :editable="$canMutate"
+                                    wrapper="div"
+                                />
                             </div>
-                            <div class="col-md-6 form-group">
-                                <label for="due_date" class="font-weight-bold text-gray-700 text-xs text-uppercase">Due Date</label>
-                                <input type="date" class="form-control" name="due_date" id="due_date" value="{{ $task->due_date }}">
+                            <div class="col-lg-3 col-md-6 form-group mb-3">
+                                <label class="font-weight-bold text-gray-700 text-xs text-uppercase mb-2">Due Date</label>
+                                <x-due-date-badge
+                                    name="due_date"
+                                    :due-date="$task->due_date"
+                                    :status="$task->status"
+                                    :editable="$canMutate"
+                                    wrapper="div"
+                                />
+                            </div>
+                            <div class="col-lg-2 col-md-4 form-group mb-3">
+                                <label class="font-weight-bold text-gray-700 text-xs text-uppercase mb-2">Status</label>
+                                <x-task-status-badge
+                                    name="status"
+                                    :status="$task->status"
+                                    :editable="$canMutate"
+                                    wrapper="div"
+                                />
+                            </div>
+                            <div class="col-lg-2 col-md-4 form-group mb-3">
+                                <label class="font-weight-bold text-gray-700 text-xs text-uppercase mb-2">Priority</label>
+                                <x-priority-badge
+                                    name="priority"
+                                    :priority="$task->priority"
+                                    :editable="auth()->user()->can('update', $task)"
+                                    wrapper="div"
+                                />
+                            </div>
+                            <div class="col-lg-2 col-md-4 form-group mb-3">
+                                <label class="font-weight-bold text-gray-700 text-xs text-uppercase mb-2">Type</label>
+                                <x-task-type-badge
+                                    name="type"
+                                    :task-type="$task->type"
+                                    :editable="$canMutate"
+                                    wrapper="div"
+                                />
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-4 form-group">
-                                <label for="status" class="font-weight-bold text-gray-700 text-xs text-uppercase">Status</label>
-                                <select class="form-control" name="status" id="status">
-                                    <option value="1" {{ $task->status == 1 ? 'selected' : '' }}>To Do</option>
-                                    <option value="2" {{ $task->status == 2 ? 'selected' : '' }}>In Progress</option>
-                                    <option value="3" {{ $task->status == 3 ? 'selected' : '' }}>Completed</option>
-                                    <option value="4" {{ $task->status == 4 ? 'selected' : '' }}>On Hold</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 form-group">
-                                <label for="priority" class="font-weight-bold text-gray-700 text-xs text-uppercase">Priority</label>
-                                <select class="form-control" name="priority" id="priority">
-                                    <option value="1" {{ $task->priority == 1 ? 'selected' : '' }}>Low</option>
-                                    <option value="2" {{ $task->priority == 2 ? 'selected' : '' }}>Medium</option>
-                                    <option value="3" {{ $task->priority == 3 ? 'selected' : '' }}>High</option>
-                                    <option value="4" {{ $task->priority == 4 ? 'selected' : '' }}>Urgent</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 form-group">
-                                <label for="type" class="font-weight-bold text-gray-700 text-xs text-uppercase">Type</label>
-                                <select class="form-control" name="type" id="type">
-                                    <option value="1" {{ $task->type == 1 ? 'selected' : '' }}>Task</option>
-                                    <option value="2" {{ $task->type == 2 ? 'selected' : '' }}>Bug</option>
-                                    <option value="3" {{ $task->type == 3 ? 'selected' : '' }}>Feature</option>
-                                    <option value="4" {{ $task->type == 4 ? 'selected' : '' }}>Improvement</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="text-right">
+                        <div class="text-right border-top pt-3 mt-1">
                             <button type="submit" class="btn btn-sm btn-info shadow-sm">
                                 <i class="fas fa-save mr-1"></i> Update Meta Fields
                             </button>
@@ -145,50 +151,33 @@
                     <div class="d-flex align-items-center mt-3 text-gray-600 flex-wrap">
                         <div class="mr-4 mb-2">
                             <span class="font-weight-bold text-xs text-uppercase d-block mb-1">Assignee</span>
-                            @if($task->assignedUser)
-                                <span class="badge badge-light p-2 border"><i class="fas fa-user mr-1 text-primary"></i> {{ $task->assignedUser->name }}</span>
-                            @else
-                                <span class="text-muted small italic">Unassigned</span>
-                            @endif
+                            <x-assignee-badge
+                                :assigned-to="$task->assigned_to"
+                                :assigned-user="$task->assignedUser"
+                                :users="$companyUsers"
+                                :editable="false"
+                                wrapper="div"
+                            />
                         </div>
                         <div class="mr-4 mb-2">
                             <span class="font-weight-bold text-xs text-uppercase d-block mb-1">Due Date</span>
-                            @if($task->due_date)
-                                <span class="badge badge-light p-2 border"><i class="far fa-calendar-alt mr-1"></i> {{ \Carbon\Carbon::parse($task->due_date)->format('M d, Y') }}</span>
-                            @else
-                                <span class="text-muted small">-</span>
-                            @endif
+                            <x-due-date-badge :task-id="$task->id" :due-date="$task->due_date" :status="$task->status" :editable="false" wrapper="div" />
                         </div>
                         <div class="mr-4 mb-2">
                             <span class="font-weight-bold text-xs text-uppercase d-block mb-1">Status</span>
-                            @if($task->status == 1)
-                                <span class="badge badge-secondary p-2">To Do</span>
-                            @elseif($task->status == 2)
-                                <span class="badge badge-warning p-2">In Progress</span>
-                            @elseif($task->status == 3)
-                                <span class="badge badge-success p-2">Completed</span>
-                            @elseif($task->status == 4)
-                                <span class="badge badge-danger p-2">On Hold</span>
-                            @endif
+                            <x-task-status-badge :status="$task->status" :editable="false" wrapper="div" />
                         </div>
                         <div class="mr-4 mb-2">
                             <span class="font-weight-bold text-xs text-uppercase d-block mb-1">Priority</span>
-                            @if($task->priority == 1)
-                                <span class="badge badge-secondary p-2">Low</span>
-                            @elseif($task->priority == 2)
-                                <span class="badge badge-info p-2">Medium</span>
-                            @elseif($task->priority == 3)
-                                <span class="badge badge-warning p-2">High</span>
-                            @elseif($task->priority == 4)
-                                <span class="badge badge-danger p-2">Urgent</span>
-                            @endif
+                            <x-priority-badge
+                                :priority="$task->priority"
+                                :editable="auth()->user()->can('update', $task)"
+                                wrapper="div"
+                            />
                         </div>
                         <div class="mb-2">
                             <span class="font-weight-bold text-xs text-uppercase d-block mb-1">Type</span>
-                            <span class="badge {{ $task->getTypeBadgeClass() }} p-2 shadow-sm">
-                                <i class="fas {{ $task->getTypeIcon() }} mr-1"></i>
-                                {{ $task->getTypeName() }}
-                            </span>
+                            <x-task-type-badge :task-type="$task->type" :editable="false" wrapper="div" />
                         </div>
                         @if($task->externalSource)
                             <div class="mb-2 ml-4">

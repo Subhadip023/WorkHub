@@ -99,11 +99,11 @@
 </div>
 
 <div class="table-responsive" id="tasksTableContainer" style="display: {{ $tasks->isEmpty() ? 'none' : 'block' }}">
-    <table class="table table-hover table-bordered" id="tasksTable" width="100%" cellspacing="0">
-        <thead>
+    <table class="table table-hover align-middle mb-0" id="tasksTable" width="100%" cellspacing="0">
+        <thead class="bg-light text-gray-700 text-xs font-weight-bold text-uppercase">
             <tr>
-                <th style="width: 60px;" class="text-center">Done</th>
-                <th>Task Details</th>
+                <th style="width: 50px;" class="text-center">Done</th>
+                <th>Task Title</th>
                 <th class="d-none d-md-table-cell">Type</th>
                 @if($showProjectColumn ?? false)
                     <th class="d-none d-md-table-cell">Project</th>
@@ -112,17 +112,17 @@
                 <th class="d-none d-md-table-cell">Due Date</th>
                 <th class="d-none d-md-table-cell">Status</th>
                 <th class="d-none d-md-table-cell">Priority</th>
-                <th style="width: 120px;" class="text-center">Actions</th>
+                <th style="width: 100px;" class="text-center">Actions</th>
             </tr>
         </thead>
         <tbody>
             <!-- Notion-like Inline Add Row -->
             <tr id="inlineAddRow" data-user-id="{{ auth()->id() }}" style="display: none; background-color: rgba(78, 115, 223, 0.05);">
                 <td class="text-center align-middle">
-                    <i class="far fa-square fa-2x text-gray-300"></i>
+                    <i class="far fa-square fa-lg text-gray-400"></i>
                 </td>
                 <td class="align-middle">
-                    <input type="text" id="inline_title" name="title" form="inlineAddTaskForm" class="form-control form-control-sm font-weight-bold mb-1" placeholder="What needs to be done? (Press Enter to save)" required>
+                    <input type="text" id="inline_title" name="title" form="inlineAddTaskForm" class="form-control form-control-sm font-weight-bold mb-1" placeholder="What needs to be done? (Press Ctrl+S to save)" required>
                 </td>
                 <td class="align-middle d-none d-md-table-cell">
                     <select name="type" form="inlineAddTaskForm" class="form-control form-control-sm">
@@ -174,7 +174,7 @@
                     </select>
                 </td>
                 <td class="text-center align-middle">
-                    <button type="submit" form="inlineAddTaskForm" class="btn btn-sm btn-success shadow-sm" title="Save Todo">
+                    <button type="submit" form="inlineAddTaskForm" class="btn btn-sm btn-success shadow-sm" title="Save Task">
                         <i class="fas fa-check"></i>
                     </button>
                     <button type="button" class="btn btn-sm btn-secondary shadow-sm ml-1" id="cancelInlineAdd" title="Cancel">
@@ -188,44 +188,35 @@
                     data-project="{{ $task->project_id }}" 
                     data-completed="{{ $task->status == 3 ? 'completed' : 'pending' }}" 
                     data-assigned="{{ $task->assigned_to ?? 'unassigned' }}" 
-                    style="display: table-row;">
+                    style="display: table-row; {{ $task->priority == 4 && $task->status != 3 ? 'background-color: rgba(231, 74, 59, 0.03);' : '' }}">
                     <td class="text-center align-middle">
                         @can('update', $task)
                             <form action="{{ route('tasks.toggle', $task) }}" method="POST" class="toggle-task-form d-inline">
                                 @csrf
                                 @method('PATCH')
-                                <button type="submit" class="btn btn-link p-0 text-decoration-none">
+                                <button type="submit" class="btn btn-link p-0 text-decoration-none" title="Mark as {{ $task->status == 3 ? 'Pending' : 'Completed' }}">
                                     @if($task->status == 3)
-                                        <i class="far fa-check-square fa-2x text-success"></i>
+                                        <i class="far fa-check-square fa-lg text-success"></i>
                                     @else
-                                        <i class="far fa-square fa-2x text-gray-300"></i>
+                                        <i class="far fa-square fa-lg text-gray-400 hover-text-success"></i>
                                     @endif
                                 </button>
                             </form>
                         @else
-                            <span class="text-muted" style="cursor: not-allowed;" title="You can only toggle tasks assigned to you.">
-                                @if($task->status == 3)
-                                    <i class="far fa-check-square fa-2x text-success" style="opacity: 0.6;"></i>
-                                @else
-                                    <i class="far fa-square fa-2x text-gray-300"></i>
-                                @endif
-                            </span>
+                            <i class="far {{ $task->status == 3 ? 'fa-check-square text-success' : 'fa-square text-gray-300' }} fa-lg" style="opacity: 0.6;"></i>
                         @endcan
                     </td>
                     <td class="align-middle">
-                        <div class="font-weight-bold {{ $task->status == 3 ? 'text-muted text-line-through' : 'text-gray-800' }}" style="font-size: 1.05rem;">
-                            <a href="{{ route('tasks.show', $task) }}" class="text-decoration-none text-gray-900 hover-text-primary task-title-link">
+                        <div class="font-weight-bold {{ $task->status == 3 ? 'text-muted text-line-through' : '' }}">
+                            <a href="{{ route('tasks.show', $task) }}" class="text-gray-900 text-decoration-none hover-primary task-title-link">
                                 {{ $task->title }}
                             </a>
                             @if($task->externalSource)
-                                <span class="badge badge-dark px-2 py-1 text-xs shadow-sm ml-1" title="Created via External API Key: {{ $task->externalSource->externalTaskApi?->name }}">
-                                    <i class="fas fa-plug text-warning mr-1"></i>Via API
+                                <span class="badge badge-dark text-xs px-1 ml-1" title="Created via External API Key: {{ $task->externalSource->externalTaskApi?->name }}">
+                                    <i class="fas fa-plug text-warning mr-1"></i>API
                                 </span>
                             @endif
                         </div>
-                        @if($task->description)
-                            <div class="text-gray-500 small mt-1">{!! Str::limit(strip_tags($task->description), 100) !!}</div>
-                        @endif
 
                         <!-- Compact details for mobile views -->
                         <div class="d-block d-md-none mt-2">
@@ -249,21 +240,21 @@
                                 @if($task->status == 1)
                                     <span class="badge badge-secondary px-2 py-1 text-xs">To Do</span>
                                 @elseif($task->status == 2)
-                                    <span class="badge badge-warning px-2 py-1 text-xs">In Progress</span>
+                                    <span class="badge badge-warning text-dark px-2 py-1 text-xs">In Progress</span>
                                 @elseif($task->status == 3)
                                     <span class="badge badge-success px-2 py-1 text-xs">Completed</span>
                                 @elseif($task->status == 4)
                                     <span class="badge badge-danger px-2 py-1 text-xs">On Hold</span>
                                 @endif
 
-                                @if($task->priority == 1)
-                                    <span class="badge badge-secondary px-2 py-1 text-xs">Low</span>
-                                @elseif($task->priority == 2)
-                                    <span class="badge badge-info px-2 py-1 text-xs">Medium</span>
+                                @if($task->priority == 4)
+                                    <span class="badge badge-danger px-2 py-1 text-xs font-weight-bold"><i class="fas fa-fire mr-1"></i> Urgent</span>
                                 @elseif($task->priority == 3)
-                                    <span class="badge badge-warning px-2 py-1 text-xs">High</span>
-                                @elseif($task->priority == 4)
-                                    <span class="badge badge-danger px-2 py-1 text-xs">Urgent</span>
+                                    <span class="badge badge-warning text-dark px-2 py-1 text-xs font-weight-bold"><i class="fas fa-arrow-up mr-1"></i> High</span>
+                                @elseif($task->priority == 2)
+                                    <span class="badge badge-info px-2 py-1 text-xs font-weight-bold"><i class="fas fa-minus mr-1"></i> Medium</span>
+                                @else
+                                    <span class="badge badge-secondary px-2 py-1 text-xs"><i class="fas fa-arrow-down mr-1"></i> Low</span>
                                 @endif
 
                                 @if($task->assignedUser)
@@ -276,146 +267,48 @@
 
                                 @if($task->due_date)
                                     @php
-                                        $isOverdue = $task->status != 3 && \Carbon\Carbon::parse($task->due_date)->isPast();
+                                        $todayStr = \Carbon\Carbon::today()->toDateString();
+                                        $isOverdue = $task->status != 3 && $task->due_date < $todayStr;
                                     @endphp
                                     <span class="badge {{ $isOverdue ? 'badge-danger' : 'badge-light border text-gray-800' }} px-2 py-1 text-xs">
-                                        <i class="far fa-calendar-alt mr-1 text-danger"></i>{{ \Carbon\Carbon::parse($task->due_date)->format('M d') }}
+                                        <i class="far fa-calendar-alt mr-1"></i>{{ \Carbon\Carbon::parse($task->due_date)->format('M d') }}
                                     </span>
                                 @endif
                             </div>
                         </div>
                     </td>
-                    <td class="align-middle d-none d-md-table-cell">
-                        @can('update', $task)
-                            <select class="form-control form-control-sm inline-task-update font-weight-bold" 
-                                    data-task-id="{{ $task->id }}" data-field="type" style="min-width: 110px;">
-                                <option value="1" {{ $task->type == 1 ? 'selected' : '' }}>Task</option>
-                                <option value="2" {{ $task->type == 2 ? 'selected' : '' }}>Bug</option>
-                                <option value="3" {{ $task->type == 3 ? 'selected' : '' }}>Feature</option>
-                                <option value="4" {{ $task->type == 4 ? 'selected' : '' }}>Improvement</option>
-                            </select>
-                        @else
-                            <span class="badge {{ $task->getTypeBadgeClass() }} p-2 shadow-sm">
-                                <i class="fas {{ $task->getTypeIcon() }} mr-1"></i>
-                                {{ $task->getTypeName() }}
-                            </span>
-                        @endcan
-                    </td>
+                    <x-task-type-badge
+                        :task-type="$task->type"
+                        :editable="auth()->user()->can('update', $task)"
+                    />
                     @if($showProjectColumn ?? false)
-                        <td class="align-middle d-none d-md-table-cell">
-                            @can('update', $task)
-                                <select class="form-control form-control-sm inline-task-update" 
-                                        data-task-id="{{ $task->id }}" data-field="project_id" style="min-width: 130px;">
-                                    <option value="" {{ is_null($task->project_id) ? 'selected' : '' }}>-- Personal --</option>
-                                    @if(isset($projects))
-                                        @foreach($projects as $proj)
-                                            <option value="{{ $proj->id }}" {{ $task->project_id == $proj->id ? 'selected' : '' }}>{{ $proj->name }}</option>
-                                        @endforeach
-                                    @endif
-                                </select>
-                            @else
-                                @if($task->project)
-                                    <a href="{{ route('projects.show', $task->project) }}" class="badge text-white p-2 shadow-sm" style="background-color: {{ $task->project->theme }}">
-                                        <i class="fas fa-project-diagram mr-1"></i>
-                                        {{ $task->project->name }}
-                                    </a>
-                                @else
-                                    <span class="badge badge-light border text-muted p-2 shadow-sm">
-                                        <i class="fas fa-user-lock mr-1"></i>Personal
-                                    </span>
-                                @endif
-                            @endcan
-                        </td>
+                        <x-project-badge
+                            :project-id="$task->project_id"
+                            :project="$task->project"
+                            :projects="$projects ?? []"
+                            :editable="auth()->user()->can('update', $task)"
+                        />
                     @endif
-                    <td class="align-middle d-none d-md-table-cell">
-                        @can('update', $task)
-                            <select class="form-control form-control-sm inline-task-update" 
-                                    data-task-id="{{ $task->id }}" data-field="assigned_to" style="min-width: 130px;">
-                                <option value="" {{ is_null($task->assigned_to) ? 'selected' : '' }}>-- Unassigned --</option>
-                                @if(isset($companyUsers))
-                                    @foreach($companyUsers as $u)
-                                        <option value="{{ $u->id }}" {{ $task->assigned_to == $u->id ? 'selected' : '' }}>{{ $u->name }}</option>
-                                    @endforeach
-                                @endif
-                            </select>
-                        @else
-                            @if($task->assignedUser)
-                                <span class="badge badge-light p-2 border text-gray-800">
-                                    <i class="fas fa-user fa-sm mr-1 text-primary"></i>
-                                    {{ $task->assignedUser->name }}
-                                </span>
-                            @else
-                                <span class="text-muted small font-italic">Unassigned</span>
-                            @endif
-                        @endcan
-                    </td>
-                    <td class="align-middle d-none d-md-table-cell">
-                        @can('update', $task)
-                            <input type="date" class="form-control form-control-sm inline-task-update" 
-                                   data-task-id="{{ $task->id }}" data-field="due_date" value="{{ $task->due_date }}" style="width: 135px;">
-                        @else
-                            @if($task->due_date)
-                                @php
-                                    $isOverdue = $task->status != 3 && \Carbon\Carbon::parse($task->due_date)->isPast();
-                                @endphp
-                                <span class="badge {{ $isOverdue ? 'badge-danger' : 'badge-secondary' }} p-2">
-                                    <i class="far fa-calendar-alt fa-sm mr-1"></i>
-                                    {{ \Carbon\Carbon::parse($task->due_date)->format('M d, Y') }}
-                                    @if($isOverdue)
-                                        (Overdue)
-                                    @endif
-                                </span>
-                            @else
-                                <span class="text-muted small">-</span>
-                            @endif
-                        @endcan
-                    </td>
-                    <td class="align-middle d-none d-md-table-cell">
-                        @can('update', $task)
-                            <select class="form-control form-control-sm inline-task-update font-weight-bold" 
-                                    data-task-id="{{ $task->id }}" data-field="status" style="min-width: 120px;">
-                                <option value="1" {{ $task->status == 1 ? 'selected' : '' }}>To Do</option>
-                                <option value="2" {{ $task->status == 2 ? 'selected' : '' }}>In Progress</option>
-                                <option value="3" {{ $task->status == 3 ? 'selected' : '' }}>Completed</option>
-                                <option value="4" {{ $task->status == 4 ? 'selected' : '' }}>On Hold</option>
-                            </select>
-                        @else
-                            @if($task->status == 1)
-                                <span class="badge badge-secondary p-2">To Do</span>
-                            @elseif($task->status == 2)
-                                <span class="badge badge-warning p-2">In Progress</span>
-                            @elseif($task->status == 3)
-                                <span class="badge badge-success p-2">Completed</span>
-                            @elseif($task->status == 4)
-                                <span class="badge badge-danger p-2">On Hold</span>
-                            @else
-                                <span class="badge badge-light p-2">To Do</span>
-                            @endif
-                        @endcan
-                    </td>
-                    <td class="align-middle d-none d-md-table-cell">
-                        @can('update', $task)
-                            <select class="form-control form-control-sm inline-task-update font-weight-bold" 
-                                    data-task-id="{{ $task->id }}" data-field="priority" style="min-width: 110px;">
-                                <option value="1" {{ $task->priority == 1 ? 'selected' : '' }}>Low</option>
-                                <option value="2" {{ $task->priority == 2 ? 'selected' : '' }}>Medium</option>
-                                <option value="3" {{ $task->priority == 3 ? 'selected' : '' }}>High</option>
-                                <option value="4" {{ $task->priority == 4 ? 'selected' : '' }}>Urgent</option>
-                            </select>
-                        @else
-                            @if($task->priority == 1)
-                                <span class="badge badge-secondary p-2">Low</span>
-                            @elseif($task->priority == 2)
-                                <span class="badge badge-info p-2">Medium</span>
-                            @elseif($task->priority == 3)
-                                <span class="badge badge-warning p-2">High</span>
-                            @elseif($task->priority == 4)
-                                <span class="badge badge-danger p-2">Urgent</span>
-                            @else
-                                <span class="badge badge-info p-2">Medium</span>
-                            @endif
-                        @endcan
-                    </td>
+                    <x-assignee-badge
+                        :assigned-to="$task->assigned_to"
+                        :assigned-user="$task->assignedUser"
+                        :users="$companyUsers ?? []"
+                        :editable="auth()->user()->can('update', $task)"
+                    />
+                    <x-due-date-badge
+                        :task-id="$task->id"
+                        :due-date="$task->due_date"
+                        :status="$task->status"
+                        :editable="auth()->user()->can('update', $task)"
+                    />
+                    <x-task-status-badge
+                        :status="$task->status"
+                        :editable="auth()->user()->can('update', $task)"
+                    />
+                    <x-priority-badge
+                        :priority="$task->priority"
+                        :editable="auth()->user()->can('update', $task)"
+                    />
                     <td class="text-center align-middle" style="white-space: nowrap;">
                         @can('update', $task)
                             <div class="d-inline-flex align-items-center" style="gap: 4px;">
@@ -454,6 +347,7 @@
 </form>
 
 @include('partials.edit_task_modal')
+
 
 <script>
 (function() {
@@ -511,7 +405,7 @@
                             titleLink.classList.add('text-muted', 'text-line-through');
                         }
                         if (toggleIcon) {
-                            toggleIcon.className = 'far fa-check-square fa-2x text-success';
+                            toggleIcon.className = 'far fa-check-square fa-lg text-success';
                         }
                     } else {
                         tr.classList.remove('completed-task');
@@ -520,7 +414,7 @@
                             titleLink.classList.remove('text-muted', 'text-line-through');
                         }
                         if (toggleIcon) {
-                            toggleIcon.className = 'far fa-square fa-2x text-gray-300';
+                            toggleIcon.className = 'far fa-square fa-lg text-gray-400 hover-text-success';
                         }
                     }
                 }

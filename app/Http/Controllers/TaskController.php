@@ -27,7 +27,7 @@ class TaskController extends Controller
 
         // Query accessible projects for filter dropdown
         $companyIds = $user->companies()->pluck('company_id')->toArray();
-        $projects = Project::select('id', 'name')->whereIn('company_id', $companyIds)
+        $projects = Project::select('id', 'name', 'theme')->whereIn('company_id', $companyIds)
             ->orWhere(function ($query) use ($user) {
                 $query->whereNull('company_id')->where('user_id', $user->id);
             })
