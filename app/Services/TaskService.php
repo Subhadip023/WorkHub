@@ -44,7 +44,7 @@ class TaskService implements TaskServiceInterface
                 );
             }
         } else {
-            if (! isset($validated['assigned_to']) || $validated['assigned_to'] === null) {
+            if (empty($validated['assigned_to'])) {
                 $validated['assigned_to'] = $user_id;
             }
 
