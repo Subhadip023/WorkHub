@@ -10,10 +10,10 @@ $(document).ready(function() {
         });
     }, 4000);
 
-    // 2. Alert Banner Auto-Close
+    // 2. Alert Banner Auto-Close (Only for auto-dismiss alerts, not static UI banners)
     setTimeout(() => {
-        $('.alert').alert('close');
-    }, 3000);
+        $('.alert-auto-dismiss').alert('close');
+    }, 4000);
 
     // 3. Sidebar Responsive Behavior
     // Ensure sidebar is closed on initial load for mobile

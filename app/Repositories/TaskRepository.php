@@ -23,7 +23,7 @@ class TaskRepository implements TaskRepositoryInterface
             })
             ->pluck('id')->toArray();
 
-        return Task::select('id', 'title', 'status', 'priority', 'type', 'due_date', 'project_id', 'assigned_to', 'user_id', 'created_at', 'updated_at')
+        return Task::select('id', 'title', 'status', 'priority', 'type', 'points', 'due_date', 'project_id', 'assigned_to', 'user_id', 'created_at', 'updated_at')
             ->where(function ($query) use ($projectIds, $user) {
                 $query->whereIn('project_id', $projectIds)
                     ->orWhere(function ($q) use ($user) {
@@ -39,7 +39,7 @@ class TaskRepository implements TaskRepositoryInterface
     protected function getDashboardTaskQuery(User $user, ?Company $company = null)
     {
         if ($company) {
-            return Task::select('id', 'title', 'status', 'priority', 'type', 'due_date', 'project_id', 'assigned_to', 'user_id', 'created_at', 'updated_at')
+            return Task::select('id', 'title', 'status', 'priority', 'type', 'points', 'due_date', 'project_id', 'assigned_to', 'user_id', 'created_at', 'updated_at')
                 ->where('assigned_to', $user->id)
                 ->where(function ($query) use ($company) {
                     $query->whereHas('project', function ($pQuery) use ($company) {
@@ -50,7 +50,7 @@ class TaskRepository implements TaskRepositoryInterface
 
         $companyIds = $user->companies()->pluck('company_id')->toArray();
 
-        return Task::select('id', 'title', 'status', 'priority', 'type', 'due_date', 'project_id', 'assigned_to', 'user_id', 'created_at', 'updated_at')
+        return Task::select('id', 'title', 'status', 'priority', 'type', 'points', 'due_date', 'project_id', 'assigned_to', 'user_id', 'created_at', 'updated_at')
             ->where('assigned_to', $user->id)
             ->where(function ($query) use ($companyIds, $user) {
                 $query->whereHas('project', function ($pQuery) use ($companyIds, $user) {

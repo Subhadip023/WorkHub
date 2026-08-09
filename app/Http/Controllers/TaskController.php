@@ -63,6 +63,7 @@ class TaskController extends Controller
             'status' => 'nullable|integer|in:1,2,3,4',
             'priority' => 'nullable|integer|in:1,2,3,4',
             'type' => 'nullable|integer|in:1,2,3,4',
+            'points' => 'nullable|integer|min:0|max:99999',
         ]);
 
         $project = ! empty($validated['project_id']) ? Project::findOrFail($validated['project_id']) : null;
@@ -91,6 +92,7 @@ class TaskController extends Controller
             'status' => 'nullable|integer|in:1,2,3,4',
             'priority' => 'nullable|integer|in:1,2,3,4',
             'type' => 'nullable|integer|in:1,2,3,4',
+            'points' => 'nullable|integer|min:0|max:99999',
         ]);
 
         if (empty($validated['assigned_to'])) {
@@ -147,6 +149,7 @@ class TaskController extends Controller
             'status' => 'nullable|integer|in:1,2,3,4',
             'priority' => 'nullable|integer|in:1,2,3,4',
             'type' => 'nullable|integer|in:1,2,3,4',
+            'points' => 'nullable|integer|min:0|max:99999',
         ]);
 
         $task = $this->taskService->updateTask($task, $validated, auth()->user());
@@ -184,6 +187,27 @@ class TaskController extends Controller
         }
 
         return redirect()->back()->with('success', 'Task deleted successfully.');
+    }
+
+    /**
+     * Copy / Duplicate the specified task.
+     */
+    public function copy(Task $task)
+    {
+        $this->checkTaskOwnership($task);
+
+        $newTask = $this->taskService->copyTask($task, auth()->user());
+
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Task copied successfully',
+                'task' => $newTask,
+                'redirect' => route('tasks.show', $newTask),
+            ]);
+        }
+
+        return redirect()->route('tasks.show', $newTask)->with('success', 'Task copied successfully');
     }
 
     /**
@@ -254,11 +278,44 @@ class TaskController extends Controller
             $user_role = $membership ? $membership->role : 1;
         }
 
-        $task->load(['project', 'assignedUser', 'images', 'histories.user']);
+        $task->load(['project', 'parent', 'subtasks.assignedUser', 'subtasks.project', 'images', 'histories.user']);
 
         $comments = $task->comments()->with('user')->latest()->get();
 
-        return view('tasks.show', compact('task', 'companyUsers', 'user_role', 'comments'));
+        $user = auth()->user();
+        $companyIds = $user->companies()->pluck('company_id')->toArray();
+        $projects = Project::select('id', 'name', 'theme')->whereIn('company_id', $companyIds)
+            ->orWhere(function ($query) use ($user) {
+                $query->whereNull('company_id')->where('user_id', $user->id);
+            })
+            ->get();
+
+        $subtaskProgress = $this->taskService->getSubtaskProgress($task);
+
+        return view('tasks.show', compact('task', 'companyUsers', 'user_role', 'comments', 'subtaskProgress', 'projects'));
+    }
+
+    /**
+     * Store a newly created subtask under a parent task.
+     */
+    public function storeSubtask(Request $request, Task $task)
+    {
+        $this->checkTaskOwnership($task);
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'due_date' => 'nullable|date',
+            'assigned_to' => 'nullable|exists:users,id',
+            'status' => 'nullable|integer|in:1,2,3,4',
+            'priority' => 'nullable|integer|in:1,2,3,4',
+            'type' => 'nullable|integer|in:1,2,3,4',
+            'points' => 'nullable|integer|min:0|max:99999',
+        ]);
+
+        $this->taskService->createSubtask($task, $validated, auth()->user());
+
+        return redirect()->back()->with('success', 'Subtask created successfully.');
     }
 
     /**

@@ -98,6 +98,10 @@ class TaskHistory extends Model
         $old = $this->old_value;
         $new = $this->new_value;
 
+        if ($field === 'copied_from' || $field === 'copy') {
+            return 'Task copied from "'.e($new).'"';
+        }
+
         if ($field === 'status') {
             if ($old === null) {
                 return 'Task created with status '.self::getStatusName((int) $new);
@@ -120,6 +124,14 @@ class TaskHistory extends Model
             }
 
             return 'Type changed to '.self::getTypeName((int) $new);
+        }
+
+        if ($field === 'points') {
+            if ($old === null) {
+                return 'Points set to '.e($new);
+            }
+
+            return 'Points changed to '.e($new);
         }
 
         if ($field === 'title') {
@@ -151,6 +163,16 @@ class TaskHistory extends Model
             return 'Assigned to '.$userName;
         }
 
+        if ($field === 'project_id') {
+            if ($new === null || $new === '' || $new === '0') {
+                return 'Moved to Personal Space';
+            }
+            $project = Project::find($new);
+            $projectName = $project ? $project->name : 'Unknown Project';
+
+            return 'Moved to project "'.$projectName.'"';
+        }
+
         return 'Updated '.$field;
     }
 
@@ -178,6 +200,10 @@ class TaskHistory extends Model
             return 'From: '.self::getTypeName((int) $old);
         }
 
+        if ($field === 'points') {
+            return 'From: '.e($old);
+        }
+
         if ($field === 'title') {
             return 'From: "'.e($old).'"';
         }
@@ -198,6 +224,16 @@ class TaskHistory extends Model
             $userName = $user ? $user->name : 'Unknown User';
 
             return 'From: '.$userName;
+        }
+
+        if ($field === 'project_id') {
+            if ($old === null || $old === '' || $old === '0') {
+                return 'From: Personal Space';
+            }
+            $project = Project::find($old);
+            $projectName = $project ? $project->name : 'Unknown Project';
+
+            return 'From: '.$projectName;
         }
 
         return null;

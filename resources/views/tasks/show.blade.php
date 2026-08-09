@@ -43,6 +43,10 @@
     </nav>
     <div class="d-flex align-items-center flex-wrap">
         @if($canMutate)
+            <button type="button" class="btn btn-primary btn-sm shadow-sm mr-2 mb-0" data-toggle="modal" data-target="#addSubtaskModal">
+                <i class="fas fa-plus fa-sm mr-1"></i> Add Subtask
+            </button>
+
             <form action="{{ route('tasks.toggle', $task) }}" method="POST" class="mr-2 mb-0">
                 @csrf
                 @method('PATCH')
@@ -51,6 +55,21 @@
                     Mark as {{ $task->status == 3 ? 'Pending' : 'Completed' }}
                 </button>
             </form>
+
+            <form action="{{ route('tasks.copy', $task) }}" method="POST" class="mr-2 mb-0">
+                @csrf
+                <button type="submit" class="btn btn-outline-info btn-sm shadow-sm" title="Copy Task">
+                    <i class="fas fa-copy fa-sm mr-1"></i> Copy Task
+                </button>
+            </form>
+
+            <button type="button" class="btn btn-outline-primary btn-sm shadow-sm mr-2 mb-0 move-task-btn"
+                    data-id="{{ $task->id }}"
+                    data-title="{{ $task->title }}"
+                    data-project_id="{{ $task->project_id }}"
+                    data-action="{{ route('tasks.update', $task) }}">
+                <i class="fas fa-exchange-alt fa-sm mr-1"></i> Move Task
+            </button>
             
             <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="mr-2 mb-0"
                   onsubmit="return confirm('Are you sure you want to delete this task? This cannot be undone.');">
@@ -74,6 +93,23 @@
     </div>
 </div>
 
+@if($task->parent)
+    <div class="alert alert-info py-2 px-3 mb-4 d-flex align-items-center justify-content-between shadow-sm rounded border-left-info" style="background: linear-gradient(135deg, #eaecf4 0%, #e3f2fd 100%);">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-sitemap text-primary fa-lg mr-3"></i>
+            <div>
+                <span class="text-xs text-uppercase font-weight-bold text-gray-600 d-block">Parent Task</span>
+                <a href="{{ route('tasks.show', $task->parent) }}" class="font-weight-bold text-primary text-decoration-none h6 mb-0">
+                    {{ $task->parent->title }}
+                </a>
+            </div>
+        </div>
+        <a href="{{ route('tasks.show', $task->parent) }}" class="btn btn-sm btn-primary shadow-sm font-weight-bold">
+            <i class="fas fa-arrow-left fa-sm mr-1"></i> Go to Parent Task
+        </a>
+    </div>
+@endif
+
 <div class="row">
     <!-- Left Column: Task Header, Description & Image Gallery -->
     <div class="col-lg-8">
@@ -86,12 +122,18 @@
                         @csrf
                         @method('PATCH')
                         <input type="hidden" name="description" value="{{ $task->description }}">
-                        <div class="form-group mb-3">
-                            <label for="task_title" class="font-weight-bold text-gray-700 text-xs text-uppercase">Task Title</label>
-                            <input type="text" class="form-control form-control-lg font-weight-bold text-gray-900 border-0 bg-light" id="task_title" name="title" value="{{ $task->title }}" required>
+                        <div class="form-row align-items-center mb-3">
+                            <div class="col">
+                                <label for="task_title" class="font-weight-bold text-gray-700 text-xs text-uppercase mb-1 d-block">Task Title</label>
+                                <input type="text" class="form-control form-control-lg font-weight-bold text-gray-900 border-0 bg-light" id="task_title" name="title" value="{{ $task->title }}" required>
+                            </div>
+                            <div class="col-auto">
+                                <label for="task_points" class="font-weight-bold text-gray-700 text-xs text-uppercase mb-1 d-block">Points</label>
+                                <input type="number" name="points" id="task_points" class="form-control form-control-lg font-weight-bold text-gray-900 border-0 bg-light" style="width: 110px;" value="{{ $task->points }}" min="0" max="99999" placeholder="Pts">
+                            </div>
                         </div>
                         <div class="row align-items-start">
-                            <div class="col-lg-3 col-md-6 form-group mb-3">
+                            <div class="col-lg col-md-6 form-group mb-3">
                                 <label class="font-weight-bold text-gray-700 text-xs text-uppercase mb-2">Assignee</label>
                                 <x-assignee-badge
                                     name="assigned_to"
@@ -102,7 +144,7 @@
                                     wrapper="div"
                                 />
                             </div>
-                            <div class="col-lg-3 col-md-6 form-group mb-3">
+                            <div class="col-lg col-md-6 form-group mb-3">
                                 <label class="font-weight-bold text-gray-700 text-xs text-uppercase mb-2">Due Date</label>
                                 <x-due-date-badge
                                     name="due_date"
@@ -112,7 +154,7 @@
                                     wrapper="div"
                                 />
                             </div>
-                            <div class="col-lg-2 col-md-4 form-group mb-3">
+                            <div class="col-lg col-md-4 form-group mb-3">
                                 <label class="font-weight-bold text-gray-700 text-xs text-uppercase mb-2">Status</label>
                                 <x-task-status-badge
                                     name="status"
@@ -121,7 +163,7 @@
                                     wrapper="div"
                                 />
                             </div>
-                            <div class="col-lg-2 col-md-4 form-group mb-3">
+                            <div class="col-lg col-md-4 form-group mb-3">
                                 <label class="font-weight-bold text-gray-700 text-xs text-uppercase mb-2">Priority</label>
                                 <x-priority-badge
                                     name="priority"
@@ -130,7 +172,7 @@
                                     wrapper="div"
                                 />
                             </div>
-                            <div class="col-lg-2 col-md-4 form-group mb-3">
+                            <div class="col-lg col-md-4 form-group mb-3">
                                 <label class="font-weight-bold text-gray-700 text-xs text-uppercase mb-2">Type</label>
                                 <x-task-type-badge
                                     name="type"
@@ -147,7 +189,14 @@
                         </div>
                     </form>
                 @else
-                    <h2 class="font-weight-bold text-gray-900 mb-2">{{ $task->title }}</h2>
+                    <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap" style="gap: 12px;">
+                        <h2 class="font-weight-bold text-gray-900 mb-0">{{ $task->title }}</h2>
+                        @if($task->points !== null)
+                            <span class="badge badge-light border text-primary p-2 font-weight-bold text-sm shadow-xs" title="{{ $task->points }} Points">
+                                {{ $task->points }} pts
+                            </span>
+                        @endif
+                    </div>
                     <div class="d-flex align-items-center mt-3 text-gray-600 flex-wrap">
                         <div class="mr-4 mb-2">
                             <span class="font-weight-bold text-xs text-uppercase d-block mb-1">Assignee</span>
@@ -175,7 +224,7 @@
                                 wrapper="div"
                             />
                         </div>
-                        <div class="mb-2">
+                        <div class="mr-4 mb-2">
                             <span class="font-weight-bold text-xs text-uppercase d-block mb-1">Type</span>
                             <x-task-type-badge :task-type="$task->type" :editable="false" wrapper="div" />
                         </div>
@@ -232,6 +281,7 @@
                             <input type="hidden" name="status" value="{{ $task->status }}">
                             <input type="hidden" name="priority" value="{{ $task->priority }}">
                             <input type="hidden" name="type" value="{{ $task->type }}">
+                            <input type="hidden" name="points" value="{{ $task->points }}">
                             <input type="hidden" name="description" id="hidden-description">
                             
                             <div id="editor-container" style="height: 250px;">{!! $task->description !!}</div>
@@ -247,6 +297,7 @@
                 @endif
             </div>
         </div>
+
         <div class="card shadow mb-4">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-images mr-1"></i> Attachments & Images</h6>
@@ -360,8 +411,88 @@
 
     </div>
 
-    <!-- Right Column: Discussion & History -->
+    <!-- Right Column: Subtasks, Discussion & History -->
     <div class="col-lg-4">
+        <!-- Subtasks Card -->
+        @if($subtaskProgress['total'] > 0)
+        <div class="card shadow mb-4 border-left-primary">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between flex-wrap">
+                <div class="d-flex align-items-center mb-1 mb-sm-0">
+                    <h6 class="m-0 font-weight-bold text-primary mr-2">
+                        <i class="fas fa-sitemap mr-1"></i> Subtasks
+                    </h6>
+                    <span class="badge badge-primary badge-pill">{{ $subtaskProgress['completed'] }}/{{ $subtaskProgress['total'] }}</span>
+                </div>
+                @if($canMutate)
+                    <button type="button" class="btn btn-xs btn-primary shadow-sm" data-toggle="modal" data-target="#addSubtaskModal">
+                        <i class="fas fa-plus fa-sm mr-1"></i> Add
+                    </button>
+                @endif
+            </div>
+            <div class="card-body">
+                @if($subtaskProgress['total'] > 0)
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between text-xs font-weight-bold text-gray-600 mb-1">
+                            <span>Progress</span>
+                            <span>{{ $subtaskProgress['percentage'] }}%</span>
+                        </div>
+                        <div class="progress" style="height: 8px; border-radius: 4px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ $subtaskProgress['percentage'] }}%; border-radius: 4px;" aria-valuenow="{{ $subtaskProgress['percentage'] }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+
+                    <div class="list-group list-group-flush">
+                        @foreach($task->subtasks as $subtask)
+                            <div class="list-group-item px-0 py-2 d-flex align-items-center justify-content-between border-bottom">
+                                <div class="d-flex align-items-center mr-2 text-truncate" style="max-width: 65%;">
+                                    @if($canMutate)
+                                        <form action="{{ route('tasks.toggle', $subtask) }}" method="POST" class="d-inline mr-2 mb-0">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="btn btn-link p-0 text-decoration-none border-0" title="Toggle status">
+                                                <i class="{{ $subtask->status == 3 ? 'far fa-check-circle text-success' : 'far fa-circle text-gray-400' }}"></i>
+                                            </button>
+                                        </form>
+                                    @else
+                                        <i class="{{ $subtask->status == 3 ? 'far fa-check-circle text-success' : 'far fa-circle text-gray-400' }} mr-2"></i>
+                                    @endif
+
+                                    <a href="{{ route('tasks.show', $subtask) }}" class="font-weight-bold text-gray-900 text-truncate small {{ $subtask->status == 3 ? 'text-decoration-line-through text-muted' : '' }}">
+                                        {{ $subtask->title }}
+                                    </a>
+                                </div>
+
+                                <div class="d-flex align-items-center">
+                                    <div class="mr-1">
+                                        <x-task-status-badge :status="$subtask->status" :editable="false" wrapper="div" />
+                                    </div>
+                                    @if($canMutate)
+                                        <form action="{{ route('tasks.destroy', $subtask) }}" method="POST" class="d-inline ml-1 mb-0" onsubmit="return confirm('Delete this subtask?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-link text-danger p-0 border-0" title="Delete subtask">
+                                                <i class="fas fa-trash-alt text-gray-400"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="text-center py-3 text-muted">
+                        <i class="fas fa-sitemap fa-2x mb-2 text-gray-300"></i>
+                        <p class="mb-0 italic small">No subtasks created yet.</p>
+                        @if($canMutate)
+                            <button type="button" class="btn btn-sm btn-link text-primary font-weight-bold mt-1" data-toggle="modal" data-target="#addSubtaskModal">
+                                + Add first subtask
+                            </button>
+                        @endif
+                    </div>
+                @endif
+            </div>
+        </div>
+        @endif
         <!-- Comments Section -->
         @include('partials.comments', [
             'comments' => $comments,
@@ -400,6 +531,9 @@
         </div>
     </div>
 </div>
+
+@include('partials.create_subtask_modal', ['task' => $task, 'companyUsers' => $companyUsers, 'canMutate' => $canMutate])
+@include('partials.move_task_modal')
 
 @endsection
 

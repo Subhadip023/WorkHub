@@ -5,10 +5,12 @@ namespace App\Services;
 use App\Models\Company;
 use App\Models\Project;
 use App\Models\Task;
+use App\Models\TaskHistory;
 use App\Models\TaskImage;
 use App\Models\User;
 use App\Repositories\TaskRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -173,6 +175,38 @@ class TaskService implements TaskServiceInterface
         return $this->taskRepository->deleteTask($task);
     }
 
+    public function copyTask(Task $task, ?User $creator = null): Task
+    {
+        $creatorUser = $creator ?? auth()->user();
+
+        $copyData = [
+            'title' => $task->title.' (Copy)',
+            'description' => $task->description,
+            'status' => 1,
+            'priority' => $task->priority,
+            'type' => $task->type,
+            'points' => $task->points,
+            'due_date' => $task->due_date,
+            'assigned_to' => $task->assigned_to,
+            'parent_id' => $task->parent_id,
+            'user_id' => $creatorUser ? $creatorUser->id : $task->user_id,
+        ];
+
+        $newTask = $task->project
+            ? $this->taskRepository->createProjectTask($task->project, $copyData)
+            : $this->taskRepository->createTask($copyData);
+
+        TaskHistory::create([
+            'task_id' => $newTask->id,
+            'user_id' => $creatorUser ? $creatorUser->id : auth()->id(),
+            'field' => 'copied_from',
+            'old_value' => (string) $task->id,
+            'new_value' => $task->title,
+        ]);
+
+        return $newTask;
+    }
+
     public function importTasks(array $data, Project $project, User $creator): array
     {
         $count = 0;
@@ -201,6 +235,7 @@ class TaskService implements TaskServiceInterface
                     'status' => $status,
                     'priority' => $priority,
                     'type' => $type,
+                    'points' => isset($item['points']) ? (int) $item['points'] : null,
                 ]);
                 $count++;
             } else {
@@ -330,5 +365,44 @@ class TaskService implements TaskServiceInterface
     public function getTodayTaskCounts(User $user, ?Company $company = null): array
     {
         return $this->taskRepository->getTodayTaskCounts($user, $company);
+    }
+
+    public function createSubtask(Task $parentTask, array $validated, ?User $creator = null): Task
+    {
+        $validated['parent_id'] = $parentTask->id;
+
+        if (! isset($validated['project_id']) && $parentTask->project_id) {
+            $validated['project_id'] = $parentTask->project_id;
+        }
+
+        return $this->createTask($validated, $parentTask->project, $creator);
+    }
+
+    public function getSubtasks(Task $parentTask): Collection
+    {
+        return $parentTask->subtasks()->with(['assignedUser', 'project'])->get();
+    }
+
+    public function getSubtaskProgress(Task $parentTask): array
+    {
+        $subtasks = $parentTask->subtasks;
+        $total = $subtasks->count();
+
+        if ($total === 0) {
+            return [
+                'total' => 0,
+                'completed' => 0,
+                'percentage' => 0.0,
+            ];
+        }
+
+        $completed = $subtasks->where('status', 3)->count();
+        $percentage = round(($completed / $total) * 100, 2);
+
+        return [
+            'total' => $total,
+            'completed' => $completed,
+            'percentage' => $percentage,
+        ];
     }
 }

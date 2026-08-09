@@ -112,6 +112,7 @@
                 <th class="d-none d-md-table-cell">Due Date</th>
                 <th class="d-none d-md-table-cell">Status</th>
                 <th class="d-none d-md-table-cell">Priority</th>
+                <th class="d-none d-md-table-cell text-center" style="width: 80px;">Points</th>
                 <th style="width: 100px;" class="text-center">Actions</th>
             </tr>
         </thead>
@@ -173,6 +174,9 @@
                         <option value="4">Urgent</option>
                     </select>
                 </td>
+                <td class="align-middle d-none d-md-table-cell text-center">
+                    <input type="number" name="points" form="inlineAddTaskForm" class="form-control form-control-sm text-center" placeholder="Pts" min="0" max="99999" style="width: 70px; margin: 0 auto;">
+                </td>
                 <td class="text-center align-middle">
                     <button type="submit" form="inlineAddTaskForm" class="btn btn-sm btn-success shadow-sm" title="Save Task">
                         <i class="fas fa-check"></i>
@@ -211,6 +215,11 @@
                             <a href="{{ route('tasks.show', $task) }}" class="text-gray-900 text-decoration-none hover-primary task-title-link">
                                 {{ $task->title }}
                             </a>
+                            @if($task->points !== null)
+                                <span class="badge badge-light border text-primary font-weight-bold px-2 py-1 ml-2 shadow-xs" title="{{ $task->points }} Points">
+                                    {{ $task->points }} pts
+                                </span>
+                            @endif
                             @if($task->externalSource)
                                 <span class="badge badge-dark text-xs px-1 ml-1" title="Created via External API Key: {{ $task->externalSource->externalTaskApi?->name }}">
                                     <i class="fas fa-plug text-warning mr-1"></i>API
@@ -274,6 +283,12 @@
                                         <i class="far fa-calendar-alt mr-1"></i>{{ \Carbon\Carbon::parse($task->due_date)->format('M d') }}
                                     </span>
                                 @endif
+
+                                @if($task->points !== null)
+                                    <span class="badge badge-light border text-primary px-2 py-1 text-xs font-weight-bold">
+                                        {{ $task->points }} pts
+                                    </span>
+                                @endif
                             </div>
                         </div>
                     </td>
@@ -309,10 +324,57 @@
                         :priority="$task->priority"
                         :editable="auth()->user()->can('update', $task)"
                     />
+                    <td class="align-middle d-none d-md-table-cell text-center" style="width: 80px;">
+                        @can('update', $task)
+                            <input type="number" 
+                                   class="form-control form-control-sm text-center font-weight-bold inline-task-update border-0 bg-light" 
+                                   data-task-id="{{ $task->id }}" 
+                                   data-field="points" 
+                                   value="{{ $task->points }}" 
+                                   placeholder="-" 
+                                   min="0" 
+                                   max="99999"
+                                   style="width: 65px; margin: 0 auto;">
+                        @else
+                            @if($task->points !== null)
+                                <span class="badge badge-light border text-primary font-weight-bold px-2 py-1" title="{{ $task->points }} Points">
+                                    {{ $task->points }} pts
+                                </span>
+                            @else
+                                <span class="text-muted small">-</span>
+                            @endif
+                        @endcan
+                    </td>
                     <td class="text-center align-middle" style="white-space: nowrap;">
                         @can('update', $task)
                             <div class="d-inline-flex align-items-center" style="gap: 4px;">
-                                <x-edit-button :href="route('tasks.show', $task)" class="edit-task-btn" title="View / Edit Task" />
+                                <x-edit-button 
+                                    :href="route('tasks.show', $task)" 
+                                    class="edit-task-btn" 
+                                    data-id="{{ $task->id }}"
+                                    data-title="{{ $task->title }}"
+                                    data-description="{{ $task->description }}"
+                                    data-due_date="{{ $task->due_date }}"
+                                    data-assigned_to="{{ $task->assigned_to }}"
+                                    data-status="{{ $task->status }}"
+                                    data-priority="{{ $task->priority }}"
+                                    data-type="{{ $task->type }}"
+                                    data-points="{{ $task->points }}"
+                                    data-action="{{ route('tasks.update', $task) }}"
+                                    title="View / Edit Task" 
+                                />
+                                <x-move-button 
+                                    class="move-task-btn" 
+                                    data-id="{{ $task->id }}"
+                                    data-title="{{ $task->title }}"
+                                    data-project_id="{{ $task->project_id }}"
+                                    data-action="{{ route('tasks.update', $task) }}"
+                                    title="Move Task" 
+                                />
+                                <form action="{{ route('tasks.copy', $task) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <x-copy-button type="submit" title="Copy Task" />
+                                </form>
                                 <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="d-inline delete-task-form">
                                     @csrf
                                     @method('DELETE')
@@ -347,6 +409,7 @@
 </form>
 
 @include('partials.edit_task_modal')
+@include('partials.move_task_modal')
 
 
 <script>
@@ -508,11 +571,15 @@
                 }
             });
 
-            $(document).keydown(function(e) {
-                if (e.key === 'Escape') {
-                    e.preventDefault();
-                    $('#inlineAddRow').hide();
-                }
+            $(document).on('click', '.move-task-btn', function() {
+                var title = $(this).data('title');
+                var projectId = $(this).data('project_id');
+                var action = $(this).data('action');
+
+                $('#moveTaskForm').attr('action', action);
+                $('#moveTaskTitle').text('"' + title + '"');
+                $('#move_task_project_id').val(projectId !== null && projectId !== '' ? projectId : '');
+                $('#moveTaskModal').modal('show');
             });
         });
     </script>

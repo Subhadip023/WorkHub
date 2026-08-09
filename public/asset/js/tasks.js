@@ -9,6 +9,7 @@ $(document).ready(function() {
         var status = $(this).data('status');
         var priority = $(this).data('priority');
         var type = $(this).data('type');
+        var points = $(this).data('points');
         var action = $(this).data('action');
 
         $('#editTaskForm').attr('action', action);
@@ -19,6 +20,7 @@ $(document).ready(function() {
         $('#edit_task_status').val(status);
         $('#edit_task_priority').val(priority);
         $('#edit_task_type').val(type);
+        $('#edit_task_points').val(points);
     });
 
     // 2. Inline Task Addition Visibility
@@ -57,6 +59,7 @@ $(document).ready(function() {
         $('#inlineAddRow select[name="assigned_to"]').val(defaultUserId);
         $('#inlineAddRow select[name="status"]').val('1');
         $('#inlineAddRow select[name="priority"]').val('2');
+        $('#inlineAddRow input[name="points"]').val('');
     });
 
     // 4. Submit Inline Form on Enter Key

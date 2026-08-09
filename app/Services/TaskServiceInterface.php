@@ -8,6 +8,7 @@ use App\Models\Task;
 use App\Models\TaskImage;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 
 interface TaskServiceInterface
@@ -20,6 +21,8 @@ interface TaskServiceInterface
 
     public function deleteTask(Task $task, ?User $authUser = null): bool;
 
+    public function copyTask(Task $task, ?User $creator = null): Task;
+
     public function importTasks(array $data, Project $project, User $creator): array;
 
     public function processTaskImages(Request $request, Task $task): array;
@@ -31,4 +34,10 @@ interface TaskServiceInterface
     public function getTodayTasks(User $user, ?Company $company = null, string $filter = 'today_past', int $perPage = 5): LengthAwarePaginator;
 
     public function getTodayTaskCounts(User $user, ?Company $company = null): array;
+
+    public function createSubtask(Task $parentTask, array $validated, ?User $creator = null): Task;
+
+    public function getSubtasks(Task $parentTask): Collection;
+
+    public function getSubtaskProgress(Task $parentTask): array;
 }

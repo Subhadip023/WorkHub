@@ -104,6 +104,7 @@ class TaskController extends Controller
             'status' => 'nullable|integer|in:1,2,3,4',
             'priority' => 'nullable|integer|in:1,2,3,4',
             'type' => 'nullable|integer|in:1,2,3,4',
+            'points' => 'nullable|integer|min:0|max:99999',
             'image' => 'nullable|file|image|max:10240',
             'images.*' => 'nullable|file|image|max:10240',
             'image_base64' => 'nullable|string',

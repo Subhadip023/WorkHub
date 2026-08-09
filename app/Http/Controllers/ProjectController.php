@@ -160,7 +160,7 @@ class ProjectController extends Controller
 
         // Build tasks query with filters
         $tasksQuery = $project->tasks()
-            ->select('id', 'title', 'status', 'priority', 'type', 'due_date', 'project_id', 'assigned_to', 'user_id', 'created_at', 'updated_at')
+            ->select('id', 'title', 'status', 'points', 'priority', 'type', 'due_date', 'project_id', 'assigned_to', 'user_id', 'created_at', 'updated_at')
             ->with('assignedUser');
 
         if ($request->filled('search')) {

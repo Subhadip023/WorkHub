@@ -29,7 +29,9 @@ class Task extends Model
         'status',
         'priority',
         'type',
+        'points',
         'project_id',
+        'parent_id',
         'user_id',
         'assigned_to',
     ];
@@ -64,10 +66,20 @@ class Task extends Model
                     'new_value' => (string) $task->type,
                 ]);
             }
+
+            if ($task->points !== null) {
+                TaskHistory::create([
+                    'task_id' => $task->id,
+                    'user_id' => auth()->id(),
+                    'field' => 'points',
+                    'old_value' => null,
+                    'new_value' => (string) $task->points,
+                ]);
+            }
         });
 
         static::updating(function ($task) {
-            $trackedFields = ['status', 'priority', 'type', 'title', 'description', 'due_date', 'assigned_to'];
+            $trackedFields = ['status', 'priority', 'type', 'points', 'title', 'description', 'due_date', 'assigned_to', 'project_id'];
             foreach ($trackedFields as $field) {
                 if ($task->isDirty($field)) {
                     $oldVal = $task->getOriginal($field);
@@ -130,6 +142,22 @@ class Task extends Model
             default:
                 return 'fa-tasks text-secondary';
         }
+    }
+
+    /**
+     * @return BelongsTo<Task, $this>
+     */
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Task::class, 'parent_id');
+    }
+
+    /**
+     * @return HasMany<Task, $this>
+     */
+    public function subtasks(): HasMany
+    {
+        return $this->hasMany(Task::class, 'parent_id');
     }
 
     /**

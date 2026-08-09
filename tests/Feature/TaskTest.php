@@ -820,3 +820,139 @@ it('allows user to filter tasks by personal / projectless tasks', function () {
     $response->assertSee('Personal Task');
     $response->assertDontSee('Project Task');
 });
+
+it('allows creating tasks with points and tracks points in task history', function () {
+    $user = User::factory()->create();
+    $project = Project::create([
+        'name' => 'Points Project',
+        'slug' => 'points-project',
+        'theme' => '#ff0000',
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $user->id,
+        'company_id' => null,
+    ]);
+
+    $this->actingAs($user);
+
+    $response = $this->post(route('tasks.store'), [
+        'project_id' => $project->id,
+        'title' => 'Task with points',
+        'points' => 13,
+    ]);
+
+    $response->assertRedirect();
+    $this->assertDatabaseHas('tasks', [
+        'title' => 'Task with points',
+        'points' => 13,
+    ]);
+
+    $task = Task::where('title', 'Task with points')->first();
+
+    $this->assertDatabaseHas('task_histories', [
+        'task_id' => $task->id,
+        'field' => 'points',
+        'old_value' => null,
+        'new_value' => '13',
+    ]);
+
+    // Update points
+    $response = $this->patch(route('tasks.update', $task), [
+        'points' => 21,
+    ]);
+
+    $response->assertRedirect();
+    $this->assertDatabaseHas('tasks', [
+        'id' => $task->id,
+        'points' => 21,
+    ]);
+
+    $this->assertDatabaseHas('task_histories', [
+        'task_id' => $task->id,
+        'field' => 'points',
+        'old_value' => '13',
+        'new_value' => '21',
+    ]);
+});
+
+test('it allows authenticated user to copy a task', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $project = Project::factory()->create([
+        'user_id' => $user->id,
+    ]);
+
+    $originalTask = Task::factory()->create([
+        'user_id' => $user->id,
+        'project_id' => $project->id,
+        'title' => 'Original Feature Request',
+        'description' => 'Detailed description for copying test',
+        'priority' => 3,
+        'type' => 3,
+        'points' => 8,
+    ]);
+
+    $response = $this->from(route('projects.show', $project))->post(route('tasks.copy', $originalTask));
+
+    $copiedTask = Task::where('title', 'Original Feature Request (Copy)')->first();
+    expect($copiedTask)->not->toBeNull();
+    $response->assertRedirect(route('tasks.show', $copiedTask));
+
+    expect($copiedTask->description)->toBe('Detailed description for copying test');
+    expect($copiedTask->priority)->toBe(3);
+    expect($copiedTask->type)->toBe(3);
+    expect($copiedTask->points)->toBe(8);
+    expect($copiedTask->project_id)->toBe($project->id);
+
+    $this->assertDatabaseHas('task_histories', [
+        'task_id' => $copiedTask->id,
+        'field' => 'copied_from',
+        'old_value' => (string) $originalTask->id,
+        'new_value' => 'Original Feature Request',
+    ]);
+});
+
+test('it allows authenticated user to move a task between projects or to personal space', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $project1 = Project::factory()->create(['user_id' => $user->id, 'name' => 'Project Alpha']);
+    $project2 = Project::factory()->create(['user_id' => $user->id, 'name' => 'Project Beta']);
+
+    $task = Task::factory()->create([
+        'user_id' => $user->id,
+        'project_id' => $project1->id,
+        'title' => 'Movable Task',
+    ]);
+
+    // Move from Project 1 to Project 2
+    $response = $this->patch(route('tasks.update', $task), [
+        'project_id' => $project2->id,
+    ]);
+
+    $task->refresh();
+    expect($task->project_id)->toBe($project2->id);
+
+    $this->assertDatabaseHas('task_histories', [
+        'task_id' => $task->id,
+        'field' => 'project_id',
+        'old_value' => (string) $project1->id,
+        'new_value' => (string) $project2->id,
+    ]);
+
+    // Move to Personal Space (null project_id)
+    $response = $this->patch(route('tasks.update', $task), [
+        'project_id' => null,
+    ]);
+
+    $task->refresh();
+    expect($task->project_id)->toBeNull();
+
+    $this->assertDatabaseHas('task_histories', [
+        'task_id' => $task->id,
+        'field' => 'project_id',
+        'old_value' => (string) $project2->id,
+        'new_value' => null,
+    ]);
+});

@@ -12,9 +12,15 @@
                 @csrf
                 @method('PATCH')
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label for="edit_task_title" class="font-weight-bold text-gray-700">Task Title <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="edit_task_title" name="title" required>
+                    <div class="form-row">
+                        <div class="form-group col">
+                            <label for="edit_task_title" class="font-weight-bold text-gray-700">Task Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="edit_task_title" name="title" required>
+                        </div>
+                        <div class="form-group col-auto">
+                            <label for="edit_task_points" class="font-weight-bold text-gray-700">Points</label>
+                            <input type="number" class="form-control font-weight-bold" id="edit_task_points" name="points" min="0" max="99999" placeholder="Pts" style="width: 90px;">
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="edit_task_description" class="font-weight-bold text-gray-700">Description</label>
