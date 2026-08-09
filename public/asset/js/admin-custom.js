@@ -477,6 +477,8 @@ $(document).ready(function() {
     function updateDueDate(dropdown, value) {
         var cell = dropdown.closest('.notion-date-cell');
         var state = badgeState(value);
+        var taskId = cell ? cell.getAttribute('data-task-id') : null;
+        var csrfToken = (document.querySelector('meta[name="csrf-token"]') || {}).content;
 
         dropdown.style.display = 'none';
         if (cell) {
@@ -490,6 +492,37 @@ $(document).ready(function() {
             if (hiddenInput) {
                 hiddenInput.value = value;
                 hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+
+            if (taskId) {
+                cell.style.opacity = '0.5';
+                fetch('/tasks/' + taskId, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ due_date: value || null })
+                })
+                .then(function (res) {
+                    if (!res.ok) return res.json().then(function (err) { throw err; });
+                    return res.json();
+                })
+                .then(function (data) {
+                    cell.style.opacity = '1.0';
+                    if (typeof showToast === 'function') {
+                        showToast(data.message || 'Due date updated successfully', 'success');
+                    }
+                })
+                .catch(function (err) {
+                    cell.style.opacity = '1.0';
+                    var msg = err && err.message ? err.message : 'Failed to update due date.';
+                    if (typeof showToast === 'function') {
+                        showToast(msg, 'error');
+                    }
+                });
             }
         }
     }
@@ -622,8 +655,9 @@ $(document).ready(function() {
         if (!option) return;
         var dropdown = option.closest('.notion-select-dropdown');
         if (!dropdown) return;
-        var taskId  = dropdown.getAttribute('data-task-id');
-        var field   = dropdown.getAttribute('data-field');
+        var cell = dropdown.closest('.notion-select-cell');
+        var taskId  = (dropdown && dropdown.getAttribute('data-task-id')) || (cell && cell.getAttribute('data-task-id'));
+        var field   = (dropdown && dropdown.getAttribute('data-field')) || (cell && cell.getAttribute('data-field'));
         var value   = option.getAttribute('data-value');
         var badge   = option.getAttribute('data-badge');
         var icon    = option.getAttribute('data-icon');
@@ -636,7 +670,6 @@ $(document).ready(function() {
         dropdown.style.display = 'none';
 
         // Optimistic UI — update the displayed badge
-        var cell = dropdown.closest('.notion-select-cell');
         if (cell) {
             var currentBadge = cell.querySelector('.notion-current-badge');
             if (currentBadge) {
@@ -700,6 +733,44 @@ $(document).ready(function() {
                         : 'far fa-square fa-lg text-gray-400 hover-text-success';
                 }
             }
+        }
+
+        if (taskId && field) {
+            var cellElem = cell || display;
+            if (cellElem) cellElem.style.opacity = '0.5';
+
+            var bodyData = {};
+            bodyData[field] = value;
+
+            fetch('/tasks/' + taskId, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(bodyData)
+            })
+            .then(function (res) {
+                if (!res.ok) {
+                    return res.json().then(function (err) { throw err; });
+                }
+                return res.json();
+            })
+            .then(function (data) {
+                if (cellElem) cellElem.style.opacity = '1.0';
+                if (typeof showToast === 'function') {
+                    showToast(data.message || 'Task updated successfully', 'success');
+                }
+            })
+            .catch(function (err) {
+                if (cellElem) cellElem.style.opacity = '1.0';
+                var msg = err && err.message ? err.message : 'Failed to update task.';
+                if (typeof showToast === 'function') {
+                    showToast(msg, 'error');
+                }
+            });
         }
 
     });

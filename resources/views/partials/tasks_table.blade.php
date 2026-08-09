@@ -294,6 +294,7 @@
                     </td>
                     <x-task-type-badge
                         :task-type="$task->type"
+                        :task-id="$task->id"
                         :editable="auth()->user()->can('update', $task)"
                     />
                     @if($showProjectColumn ?? false)
@@ -301,6 +302,7 @@
                             :project-id="$task->project_id"
                             :project="$task->project"
                             :projects="$projects ?? []"
+                            :task-id="$task->id"
                             :editable="auth()->user()->can('update', $task)"
                         />
                     @endif
@@ -308,6 +310,7 @@
                         :assigned-to="$task->assigned_to"
                         :assigned-user="$task->assignedUser"
                         :users="$companyUsers ?? []"
+                        :task-id="$task->id"
                         :editable="auth()->user()->can('update', $task)"
                     />
                     <x-due-date-badge
@@ -318,10 +321,12 @@
                     />
                     <x-task-status-badge
                         :status="$task->status"
+                        :task-id="$task->id"
                         :editable="auth()->user()->can('update', $task)"
                     />
                     <x-priority-badge
                         :priority="$task->priority"
+                        :task-id="$task->id"
                         :editable="auth()->user()->can('update', $task)"
                     />
                     <td class="align-middle d-none d-md-table-cell text-center" style="width: 80px;">
@@ -417,14 +422,15 @@
     if (window.inlineTaskUpdateHandlerSet) return;
     window.inlineTaskUpdateHandlerSet = true;
 
-    document.addEventListener('change', function(e) {
-        const target = e.target;
+    function handleInlineUpdate(target) {
         if (!target || !target.classList.contains('inline-task-update')) return;
 
         const taskId = target.getAttribute('data-task-id');
         const field = target.getAttribute('data-field');
         const value = target.value;
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+        if (target._lastSavedValue === value) return;
 
         target.style.opacity = '0.5';
 
@@ -448,6 +454,7 @@
             return response.json();
         })
         .then(data => {
+            target._lastSavedValue = value;
             target.style.opacity = '1.0';
             target.classList.add('is-valid');
             setTimeout(() => target.classList.remove('is-valid'), 1200);
@@ -494,6 +501,27 @@
                 alert(msg);
             }
         });
+    }
+
+    function scheduleDebouncedUpdate(target, delay) {
+        if (target._debounceTimer) {
+            clearTimeout(target._debounceTimer);
+        }
+        target._debounceTimer = setTimeout(function() {
+            handleInlineUpdate(target);
+        }, delay || 800);
+    }
+
+    document.addEventListener('input', function(e) {
+        if (e.target && e.target.classList.contains('inline-task-update')) {
+            scheduleDebouncedUpdate(e.target, 800);
+        }
+    });
+
+    document.addEventListener('change', function(e) {
+        if (e.target && e.target.classList.contains('inline-task-update')) {
+            scheduleDebouncedUpdate(e.target, 800);
+        }
     });
 })();
 </script>

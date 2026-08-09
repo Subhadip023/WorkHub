@@ -14,6 +14,8 @@
     'class'             => null,             // Extra CSS classes for display wrapper
     'label'             => null,             // Optional label text above badge
     'wrapper'           => 'td',             // 'td' | 'div' | 'none'
+    'taskId'            => null,             // Task ID for AJAX persistence
+    'field'             => null,             // Field name for Persistence
 ])
 
 @php
@@ -28,7 +30,7 @@
 @endphp
 
 @if($wrapper !== 'none')
-<{{ $wrapper }} class="{{ $wrapClass }}" style="position: relative;">
+<{{ $wrapper }} class="{{ $wrapClass }}" style="position: relative;" @if($taskId) data-task-id="{{ $taskId }}" @endif @if($field) data-field="{{ $field }}" @endif>
 @endif
 
     @if($label)
@@ -63,7 +65,7 @@
     </span>
 
     {{-- Notion dropdown options --}}
-    <div class="notion-select-dropdown" style="display: none;">
+    <div class="notion-select-dropdown" style="display: none;" @if($taskId) data-task-id="{{ $taskId }}" @endif @if($field) data-field="{{ $field }}" @endif>
         @foreach($options as $optValue => $optLabel)
             @php
                 $meta = $optionMeta[$optValue] ?? [];

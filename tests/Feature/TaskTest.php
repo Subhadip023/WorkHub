@@ -4,6 +4,7 @@ use App\Models\Company;
 use App\Models\CompanyUsers;
 use App\Models\Project;
 use App\Models\Task;
+use App\Models\TaskHistory;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -904,6 +905,8 @@ test('it allows authenticated user to copy a task', function () {
     expect($copiedTask->type)->toBe(3);
     expect($copiedTask->points)->toBe(8);
     expect($copiedTask->project_id)->toBe($project->id);
+
+    expect(TaskHistory::where('task_id', $copiedTask->id)->count())->toBe(1);
 
     $this->assertDatabaseHas('task_histories', [
         'task_id' => $copiedTask->id,

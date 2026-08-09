@@ -3,6 +3,8 @@
     'editable' => false,
     'wrapper' => 'td',
     'name' => null,
+    'taskId' => null,
+    'field' => 'status',
 ])
 
 @php
@@ -32,4 +34,6 @@
     :editable="$editable"
     :wrapper="$wrapper"
     :name="$name"
+    :task-id="$taskId"
+    :field="$field"
 />

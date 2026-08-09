@@ -31,7 +31,7 @@
 @endphp
 
 @if($wrapper !== 'none')
-<{{ $wrapper }} class="notion-date-cell{{ $wrapper === 'td' ? ' align-middle d-none d-md-table-cell' : '' }}" style="position: relative;">
+<{{ $wrapper }} class="notion-date-cell{{ $wrapper === 'td' ? ' align-middle d-none d-md-table-cell' : '' }}" style="position: relative;" @if($taskId) data-task-id="{{ $taskId }}" @endif>
 @endif
 
     @if($name)

@@ -3,15 +3,9 @@
     'editable' => false,
     'wrapper'  => 'td',
     'name'     => null,
+    'taskId'   => null,
+    'field'    => 'priority',
 ])
-
-{{--
-    Priority Badge — thin wrapper around x-notion-select.
-    Pre-configures the options, badge class, and icon for priority.
-
-    Usage (table):      <x-priority-badge :priority="$task->priority" :editable="..." />
-    Usage (standalone): <x-priority-badge :priority="$task->priority" :editable="..." wrapper="div" />
---}}
 
 @php
     $priorityOptions = [
@@ -56,4 +50,6 @@
     :editable="$editable"
     :wrapper="$wrapper"
     :name="$name"
+    :task-id="$taskId"
+    :field="$field"
 />
