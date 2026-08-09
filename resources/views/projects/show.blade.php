@@ -131,7 +131,6 @@
         'companyUsers' => $companyUsers,
         'showFilters' => true,
         'cardTitle' => 'Project Tasks'
-        
     ])
 </div>
             </div> <!-- End Tasks Tab Pane -->

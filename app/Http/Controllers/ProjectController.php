@@ -191,8 +191,9 @@ class ProjectController extends Controller
             $tasksQuery->where('status', '!=', 3);
         }
 
+        $perPage = (int) $request->input('per_page', 5);
         $tasksQuery->orderByRaw('due_date IS NULL, due_date ASC')->orderBy('priority', 'desc');
-        $tasks = $tasksQuery->get();
+        $tasks = $tasksQuery->paginate($perPage)->withQueryString();
 
         if ($request->ajax()) {
             return response()->json([

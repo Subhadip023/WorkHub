@@ -634,4 +634,89 @@ html, body {
     overflow-y: auto;
 }
 
+/* ==========================================================================
+   NOTION SELECT, PRIORITY & DUE DATE BADGES & AVATARS
+   Moved to static CSS to eliminate Flash of Unstyled Content (FOUC)
+   ========================================================================== */
+.notion-select-cell, .notion-date-cell { position: relative; min-width: 118px; white-space: nowrap; }
+.notion-select-display, .notion-date-display { display: inline-flex; }
+.notion-select-display:hover .badge, .notion-date-display:hover .badge { opacity: 0.85; }
+.notion-current-badge, .notion-date-badge { display: inline-flex; align-items: center; min-height: 30px; border-radius: 6px; letter-spacing: 0.1px; }
+
+.notion-select-avatar {
+    width: 20px !important;
+    height: 20px !important;
+    max-width: 20px !important;
+    max-height: 20px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    vertical-align: middle !important;
+    flex-shrink: 0 !important;
+}
+
+.notion-select-avatar-initials {
+    width: 20px !important;
+    height: 20px !important;
+    border-radius: 50% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #4e73df !important;
+    color: #ffffff !important;
+    font-size: 0.65rem !important;
+    line-height: 1 !important;
+    flex-shrink: 0 !important;
+}
+
+.notion-select-dropdown,
+.notion-priority-dropdown,
+.notion-date-dropdown {
+    position: absolute;
+    z-index: 9999;
+    left: 0;
+    top: calc(100% + 6px);
+    min-width: 180px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.08);
+    padding: 6px;
+    animation: notionDropIn 0.12s ease;
+}
+
+@keyframes notionDropIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.notion-select-option,
+.notion-priority-option {
+    padding: 4px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.1s;
+    display: flex;
+    align-items: center;
+}
+.notion-select-option:hover,
+.notion-priority-option:hover { background: #f1f5f9; }
+
+.notion-select-dropdown.notion-select-dropdown-up,
+.notion-date-dropdown.notion-date-dropdown-up { top: auto; bottom: calc(100% + 6px); }
+
+.notion-select-option .badge,
+.notion-priority-option .badge { width: 100%; font-size: 0.78rem; letter-spacing: 0.2px; text-align: left; }
+
+.notion-dropdown-label {
+    padding: 5px 12px 6px;
+    color: #a0aec0;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+}
+
+.notion-date-dropdown .notion-date-input { border-color: #d1d3e2; border-radius: 6px; }
+.notion-date-dropdown .notion-date-clear { width: 100%; padding: 5px 0 !important; border-top: 1px solid #eaecf4; text-align: left; }
+
+
 

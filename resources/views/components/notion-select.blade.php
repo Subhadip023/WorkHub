@@ -52,7 +52,7 @@
     {{-- Current value badge --}}
     <span class="badge {{ $currentBadge }} px-2 py-1 shadow-sm font-weight-bold notion-current-badge" @if($currentBackground) style="background-color: {{ $currentBackground }};" @endif>
         @if($currentAvatar)
-            <img src="{{ $currentAvatar }}" alt="" class="notion-select-avatar mr-1">
+            <img src="{{ $currentAvatar }}" alt="" width="20" height="20" class="notion-select-avatar mr-1" style="width: 20px; height: 20px; border-radius: 50%; object-fit: cover;">
         @elseif($currentInitials)
             <span class="notion-select-avatar notion-select-avatar-initials mr-1">{{ $currentInitials }}</span>
         @elseif($currentIcon)
@@ -86,7 +86,7 @@
                  @if($optionBackground) style="background-color: {{ $optionBackground }};" @endif>
                 <span class="badge {{ $optionBadge }} px-2 py-1 shadow-sm font-weight-bold" @if($optionBackground) style="background-color: {{ $optionBackground }};" @endif>
                     @if($optionAvatar)
-                        <img src="{{ $optionAvatar }}" alt="" class="notion-select-avatar mr-1">
+                        <img src="{{ $optionAvatar }}" alt="" width="20" height="20" class="notion-select-avatar mr-1" style="width: 20px; height: 20px; border-radius: 50%; object-fit: cover;">
                     @elseif($optionInitials)
                         <span class="notion-select-avatar notion-select-avatar-initials mr-1">{{ $optionInitials }}</span>
                     @elseif($optionIcon)
