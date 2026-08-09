@@ -23,6 +23,9 @@
 
     @stack('styles')
     
+    <!-- Quill rich text editor library styles -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    
     <!-- Custom styling for modern responsive sidebar -->
     <link href="{{ asset('asset/css/admin-custom.css') }}?v={{ filemtime(public_path('asset/css/admin-custom.css')) }}" rel="stylesheet">
 
@@ -216,6 +219,7 @@
 
     <!-- Core plugin JavaScript-->
     <script src="{{ asset('asset/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
     <!-- Custom scripts for all pages-->
     <script src="{{ asset('asset/js/sb-admin-2.min.js') }}"></script>
@@ -365,18 +369,27 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="issueAttachment" class="text-gray-800 font-weight-bold">Attachment (Optional)</label>
+                                    <label for="issueAttachment" class="text-gray-800 font-weight-bold">Attachment / Images (Optional)</label>
                                     <div class="custom-file">
-                                        <input type="file" class="custom-file-input" id="issueAttachment">
-                                        <label class="custom-file-label" for="issueAttachment">Choose file</label>
+                                        <input type="file" class="custom-file-input" id="issueAttachment" multiple accept="image/*,.pdf,.doc,.docx,.zip">
+                                        <label class="custom-file-label" for="issueAttachment">Choose file(s)</label>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
+                        <div class="form-group mt-1">
+                            <label for="issueImageUrl" class="text-gray-800 font-weight-bold text-xs">Image URL (Optional)</label>
+                            <input type="url" class="form-control form-control-sm" id="issueImageUrl" placeholder="https://example.com/screenshot.png">
+                        </div>
+
                         <div class="form-group mt-2">
-                            <label for="issueDescription" class="text-gray-800 font-weight-bold">Description <span class="text-danger">*</span></label>
-                            <textarea class="form-control" id="issueDescription" rows="5" placeholder="Please describe the steps to reproduce the issue..." required></textarea>
+                            <label for="issueQuillEditor" class="text-gray-800 font-weight-bold d-flex justify-content-between align-items-center">
+                                <span>Description <span class="text-danger">*</span></span>
+                                <small class="text-muted font-weight-normal"><i class="fas fa-paste text-primary mr-1"></i> Paste screenshots (<kbd>Ctrl+V</kbd>)</small>
+                            </label>
+                            <div id="issueQuillEditor" style="height: 180px; background: white;" class="rounded border"></div>
+                            <input type="hidden" id="issueDescription">
                         </div>
                     </div>
                     <div class="modal-footer bg-light p-3 border-top-0 d-flex justify-content-between align-items-center">
@@ -396,9 +409,80 @@
     </div>
 
     <script>
+        // Initialize Quill Editor for Issue Modal
+        var issueQuill;
+        document.addEventListener('DOMContentLoaded', function() {
+            if (document.getElementById('issueQuillEditor')) {
+                issueQuill = new Quill('#issueQuillEditor', {
+                    theme: 'snow',
+                    placeholder: 'Please describe the steps to reproduce the issue... (Paste screenshots directly from clipboard!)',
+                    modules: {
+                        toolbar: [
+                            [{ 'header': [1, 2, 3, false] }],
+                            ['bold', 'italic', 'underline', 'strike'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'list': 'check' }],
+                            ['link', 'blockquote', 'code-block', 'image'],
+                            ['clean']
+                        ]
+                    }
+                });
+
+                function insertImageFromClipboardFile(file) {
+                    if (!file || !issueQuill) return;
+                    var reader = new FileReader();
+                    reader.onload = function(evt) {
+                        var range = issueQuill.getSelection(true) || { index: issueQuill.getLength() };
+                        issueQuill.insertEmbed(range.index, 'image', evt.target.result);
+                        issueQuill.setSelection(range.index + 1);
+                    };
+                    reader.readAsDataURL(file);
+                }
+
+                // Clipboard Image Paste Handling for Quill & Modal
+                function handleClipboardPaste(e) {
+                    var clipboardData = e.clipboardData || window.clipboardData;
+                    if (!clipboardData || !clipboardData.items) return;
+
+                    for (var i = 0; i < clipboardData.items.length; i++) {
+                        var item = clipboardData.items[i];
+                        if (item.type.indexOf('image') !== -1) {
+                            var file = item.getAsFile();
+                            if (file) {
+                                e.preventDefault();
+                                insertImageFromClipboardFile(file);
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                issueQuill.root.addEventListener('paste', handleClipboardPaste);
+
+                var issueModal = document.getElementById('reportIssueModal');
+                if (issueModal) {
+                    issueModal.addEventListener('paste', handleClipboardPaste);
+                }
+
+                // Drag & Drop Image Handling
+                issueQuill.root.addEventListener('drop', function(e) {
+                    var files = e.dataTransfer && e.dataTransfer.files;
+                    if (files && files.length > 0) {
+                        for (var i = 0; i < files.length; i++) {
+                            if (files[i].type.indexOf('image') !== -1) {
+                                e.preventDefault();
+                                insertImageFromClipboardFile(files[i]);
+                                break;
+                            }
+                        }
+                    }
+                });
+            }
+        });
+
         // Update custom file input label with selected filename
         document.getElementById('issueAttachment').addEventListener('change', function(e) {
-            var fileName = e.target.files[0] ? e.target.files[0].name : 'Choose file';
+            var filesCount = e.target.files.length;
+            var fileName = filesCount > 1 ? filesCount + ' files selected' : (e.target.files[0] ? e.target.files[0].name : 'Choose file(s)');
             var nextSibling = e.target.nextElementSibling;
             nextSibling.innerText = fileName;
         });
@@ -408,15 +492,38 @@
             const submitBtn = document.getElementById('submitIssueBtn');
             const originalBtnHtml = submitBtn.innerHTML;
 
+            let descriptionHtml = '';
+            if (issueQuill) {
+                descriptionHtml = issueQuill.root.innerHTML;
+                if (descriptionHtml === '<p><br></p>' || descriptionHtml.trim() === '') {
+                    descriptionHtml = '';
+                }
+            } else {
+                descriptionHtml = document.getElementById('issueDescription').value;
+            }
+
+            if (!descriptionHtml) {
+                showToast('Please enter a description for the issue.', 'error');
+                return;
+            }
+
             const formData = new FormData();
             formData.append('title', document.getElementById('issueTitle').value);
             formData.append('priority', document.getElementById('issuePriority').value);
             formData.append('category', document.getElementById('issueCategory').value);
-            formData.append('description', document.getElementById('issueDescription').value);
+            formData.append('description', descriptionHtml);
             
             const attachment = document.getElementById('issueAttachment');
             if (attachment.files.length > 0) {
                 formData.append('attachment', attachment.files[0]);
+                for (let i = 0; i < attachment.files.length; i++) {
+                    formData.append('images[]', attachment.files[i]);
+                }
+            }
+
+            const imageUrlInput = document.getElementById('issueImageUrl');
+            if (imageUrlInput && imageUrlInput.value.trim() !== '') {
+                formData.append('image_url', imageUrlInput.value.trim());
             }
 
             // Disable button and show spinner
@@ -434,8 +541,11 @@
             .then(response => response.json().then(data => ({ status: response.status, body: data })))
             .then(result => {
                 if (result.status === 200 && result.body.success) {
-                    showToast('Issue successfully submitted to GitHub!', 'success');
+                    showToast('Issue successfully submitted!', 'success');
                     form.reset();
+                    if (issueQuill) {
+                        issueQuill.setContents([]);
+                    }
                     document.querySelector('.custom-file-label').innerText = 'Choose file';
                     $('#reportIssueModal').modal('hide');
                 } else {

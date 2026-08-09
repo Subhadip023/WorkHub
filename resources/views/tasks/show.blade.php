@@ -255,7 +255,7 @@
                 <!-- Read-only HTML View -->
                 <div id="description-read-view" class="task-description-content">
                     @if($task->description && trim(strip_tags($task->description, '<img>')) !== '')
-                        <div class="description-body text-gray-900">{!! $task->description !!}</div>
+                        <div class="description-body text-gray-900 ql-editor" style="padding:0; min-height:auto;">{!! $task->description !!}</div>
                     @else
                         <div class="text-center py-4 text-muted">
                             <i class="fas fa-align-left fa-2x mb-2 text-gray-300"></i>
@@ -542,6 +542,117 @@
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 <script>
     $(document).ready(function() {
+        // Render & Normalize Checkboxes in Description Read View
+        function renderDescriptionCheckboxes() {
+            // Remove Quill ql-ui spans in read view
+            $('#description-read-view .ql-ui').remove();
+
+            // 1. Process markdown style checkboxes ([ ], [x], - [ ], * [ ]) in p tags
+            $('#description-read-view p').each(function() {
+                var $p = $(this);
+                var text = $p.text().trim();
+                var html = $p.html();
+
+                if (/^(\s*(-|\*)?\s*\[\s*\]\s*)/.test(text)) {
+                    var newHtml = html.replace(/^(\s*(-|\*)?\s*\[\s*\]\s*)/, '');
+                    $p.replaceWith('<ul><li data-list="unchecked"><input type="checkbox" class="task-desc-checkbox"><span class="task-desc-text">' + newHtml + '</span></li></ul>');
+                } else if (/^(\s*(-|\*)?\s*\[[xX]\]\s*)/.test(text)) {
+                    var newHtml = html.replace(/^(\s*(-|\*)?\s*\[[xX]\]\s*)/, '');
+                    $p.replaceWith('<ul><li data-list="checked" class="task-item-completed"><input type="checkbox" class="task-desc-checkbox" checked="checked"><span class="task-desc-text">' + newHtml + '</span></li></ul>');
+                }
+            });
+
+            // 2. Process Quill li[data-list] elements
+            $('#description-read-view li[data-list]').each(function() {
+                var $li = $(this);
+                var isChecked = $li.attr('data-list') === 'checked';
+                $li.find('.ql-ui').remove();
+
+                var $chk = $li.children('input.task-desc-checkbox');
+                if ($chk.length === 0) {
+                    var textHtml = $li.html().replace(/<input[^>]*>/gi, '').trim();
+                    $chk = $('<input type="checkbox" class="task-desc-checkbox">');
+                    $li.html('').append($chk).append('<span class="task-desc-text">' + textHtml + '</span>');
+                }
+
+                if (isChecked) {
+                    $chk.prop('checked', true).attr('checked', 'checked');
+                    $li.addClass('task-item-completed');
+                } else {
+                    $chk.prop('checked', false).removeAttr('checked');
+                    $li.removeClass('task-item-completed');
+                }
+            });
+        }
+
+        renderDescriptionCheckboxes();
+
+        // Native Checkbox Change Handler with AJAX Save
+        $(document).on('change', '#description-read-view input.task-desc-checkbox', function(e) {
+            @if($canMutate)
+                var $chk = $(this);
+                var isChecked = $chk.is(':checked');
+                var $li = $chk.closest('li[data-list]');
+
+                if (isChecked) {
+                    $chk.attr('checked', 'checked');
+                    if ($li.length) {
+                        $li.attr('data-list', 'checked').addClass('task-item-completed');
+                    }
+                } else {
+                    $chk.removeAttr('checked');
+                    if ($li.length) {
+                        $li.attr('data-list', 'unchecked').removeClass('task-item-completed');
+                    }
+                }
+
+                // Clean clone of HTML for saving to database
+                var $clone = $('#description-read-view .description-body').clone();
+                $clone.find('input.task-desc-checkbox').remove();
+                $clone.find('span.task-desc-text').each(function() {
+                    $(this).replaceWith($(this).html());
+                });
+
+                var updatedHtml = $clone.html();
+
+                if (typeof quill !== 'undefined' && quill.root) {
+                    quill.root.innerHTML = updatedHtml;
+                }
+
+                $.ajax({
+                    url: "{{ route('tasks.update', $task) }}",
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        _method: "PATCH",
+                        title: "{{ e($task->title) }}",
+                        description: updatedHtml
+                    },
+                    success: function() {
+                        showToast(isChecked ? 'Item completed' : 'Item unchecked', 'success');
+                    },
+                    error: function() {
+                        showToast('Failed to update checklist item', 'error');
+                        $chk.prop('checked', !isChecked);
+                    }
+                });
+            @else
+                e.preventDefault();
+            @endif
+        });
+
+        // Click on Text Label Toggles Checkbox
+        $(document).on('click', '#description-read-view .task-desc-text', function(e) {
+            @if($canMutate)
+                e.preventDefault();
+                var $li = $(this).closest('li[data-list]');
+                var $chk = $li.find('input.task-desc-checkbox');
+                if ($chk.length) {
+                    $chk.prop('checked', !$chk.is(':checked')).trigger('change');
+                }
+            @endif
+        });
+
         @if($canMutate)
             var quill = new Quill('#editor-container', {
                 theme: 'snow',
@@ -550,7 +661,7 @@
                     toolbar: [
                         [{ 'header': [1, 2, 3, false] }],
                         ['bold', 'italic', 'underline', 'strike'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'list': 'check' }],
                         ['link', 'blockquote', 'code-block'],
                         ['clean']
                     ]

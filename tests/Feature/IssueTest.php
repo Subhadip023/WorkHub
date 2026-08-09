@@ -26,35 +26,18 @@ it('validates the required fields for issue submission', function () {
         ->assertJsonValidationErrors(['title', 'priority', 'category', 'description']);
 });
 
-it('returns 500 if GITHUB_PAT is not configured', function () {
-    config(['services.github.pat' => null]);
-    $user = User::factory()->create();
-    $this->actingAs($user);
-
-    $response = $this->postJson(route('issues.store'), [
-        'title' => 'Test Issue',
-        'priority' => 'high',
-        'category' => 'bug',
-        'description' => 'Test description',
-    ]);
-
-    $response->assertStatus(500)
-        ->assertJson([
-            'success' => false,
-            'message' => 'GitHub Personal Access Token (PAT) is not configured in the server environment (.env).',
-        ]);
-});
-
-it('successfully submits an issue to GitHub when GITHUB_PAT is configured', function () {
+it('successfully submits an issue to Task API', function () {
     config([
-        'services.github.pat' => 'mock-pat',
-        'services.github.owner' => 'mock-owner',
-        'services.github.repo' => 'mock-repo',
+        'services.task_api.url' => 'https://workhub.subhadip.online/api/tasks',
     ]);
 
     Http::fake([
-        'https://api.github.com/repos/mock-owner/mock-repo/issues' => Http::response([
-            'html_url' => 'https://github.com/mock-owner/mock-repo/issues/1',
+        'https://workhub.subhadip.online/api/tasks' => Http::response([
+            'success' => true,
+            'data' => [
+                'id' => 101,
+                'title' => 'Test Issue Title',
+            ],
         ], 201),
     ]);
 
@@ -71,18 +54,16 @@ it('successfully submits an issue to GitHub when GITHUB_PAT is configured', func
     $response->assertStatus(200)
         ->assertJson([
             'success' => true,
-            'message' => 'Issue successfully created on GitHub.',
-            'url' => 'https://github.com/mock-owner/mock-repo/issues/1',
+            'message' => 'Issue successfully created on Task API.',
         ]);
 
     Http::assertSent(function ($request) {
-        return $request->url() === 'https://api.github.com/repos/mock-owner/mock-repo/issues' &&
+        return $request->url() === 'https://workhub.subhadip.online/api/tasks' &&
             $request->method() === 'POST' &&
-            $request->header('Authorization')[0] === 'Bearer mock-pat' &&
             $request['title'] === 'Test Issue Title' &&
-            str_contains($request['body'], 'Detailed test description') &&
-            in_array('bug', $request['labels']) &&
-            in_array('high', $request['labels']);
+            str_contains($request['description'], 'Detailed test description') &&
+            $request['type'] === 2 &&
+            $request['priority'] === 3;
     });
 });
 
@@ -92,53 +73,26 @@ it('requires authentication to view issues', function () {
     $response->assertRedirect(route('login'));
 });
 
-it('shows a warning if GITHUB_PAT is not configured on the index page', function () {
-    config(['services.github.pat' => null]);
-    $user = User::factory()->create();
-    $this->actingAs($user);
-
-    $response = $this->get(route('issues.index'));
-
-    $response->assertStatus(200)
-        ->assertSee('GitHub Personal Access Token (PAT) is not configured');
-});
-
-it('successfully fetches and displays issues from GitHub', function () {
+it('successfully fetches and displays issues from Task API', function () {
     config([
-        'services.github.pat' => 'mock-pat',
-        'services.github.owner' => 'mock-owner',
-        'services.github.repo' => 'mock-repo',
+        'services.task_api.url' => 'https://workhub.subhadip.online/api/tasks',
     ]);
 
     Http::fake([
-        'https://api.github.com/repos/mock-owner/mock-repo/issues?state=all&per_page=100' => Http::response([
-            [
-                'number' => 1,
-                'title' => 'First Test Issue',
-                'state' => 'open',
-                'body' => 'This is a test issue description',
-                'html_url' => 'https://github.com/mock-owner/mock-repo/issues/1',
-                'created_at' => '2026-07-26T12:00:00Z',
-                'labels' => [
-                    ['name' => 'bug'],
-                    ['name' => 'high'],
+        'https://workhub.subhadip.online/api/tasks?per_page=100&only_external=1' => Http::response([
+            'success' => true,
+            'data' => [
+                [
+                    'id' => 101,
+                    'title' => 'First Task Issue',
+                    'status' => 1,
+                    'type' => 2,
+                    'priority' => 3,
+                    'description' => 'This is a test task issue description',
+                    'created_at' => '2026-07-26T12:00:00Z',
+                    'user' => ['name' => 'testuser'],
+                    'external_source' => ['id' => 1],
                 ],
-                'user' => [
-                    'login' => 'testuser',
-                ],
-            ],
-            [
-                'number' => 2,
-                'title' => 'Second Test Pull Request',
-                'state' => 'open',
-                'body' => 'This is a pull request description',
-                'html_url' => 'https://github.com/mock-owner/mock-repo/pull/2',
-                'created_at' => '2026-07-26T12:30:00Z',
-                'labels' => [],
-                'user' => [
-                    'login' => 'testuser2',
-                ],
-                'pull_request' => [], // should be filtered out
             ],
         ], 200),
     ]);
@@ -149,24 +103,25 @@ it('successfully fetches and displays issues from GitHub', function () {
     $response = $this->get(route('issues.index'));
 
     $response->assertStatus(200)
-        ->assertSee('First Test Issue')
-        ->assertDontSee('Second Test Pull Request');
+        ->assertSee('First Task Issue');
 });
 
-it('successfully stores attachment locally and links it in the GitHub issue', function () {
+it('successfully stores attachment locally and links it in the Task API submission', function () {
     Storage::fake('public');
 
     config([
-        'services.github.pat' => 'mock-pat',
-        'services.github.owner' => 'mock-owner',
-        'services.github.repo' => 'mock-repo',
+        'services.task_api.url' => 'https://workhub.subhadip.online/api/tasks',
     ]);
 
     $file = UploadedFile::fake()->image('test_screenshot.png');
 
     Http::fake([
-        'https://api.github.com/repos/mock-owner/mock-repo/issues' => Http::response([
-            'html_url' => 'https://github.com/mock-owner/mock-repo/issues/1',
+        'https://workhub.subhadip.online/api/tasks' => Http::response([
+            'success' => true,
+            'data' => [
+                'id' => 102,
+                'title' => 'Test Issue with Attachment',
+            ],
         ], 201),
     ]);
 
@@ -190,11 +145,85 @@ it('successfully stores attachment locally and links it in the GitHub issue', fu
     Storage::disk('public')->assertExists('issues/'.$file->hashName());
 
     Http::assertSent(function ($request) use ($file) {
-        if ($request->url() === 'https://api.github.com/repos/mock-owner/mock-repo/issues') {
+        if ($request->url() === 'https://workhub.subhadip.online/api/tasks') {
             return $request->method() === 'POST' &&
-                str_contains($request['body'], '![test_screenshot.png]('.asset('storage/issues/'.$file->hashName()).')');
+                str_contains($request['description'], '<img src="'.asset('storage/issues/'.$file->hashName()).'"');
         }
 
         return true;
+    });
+});
+
+it('extracts embedded base64 clipboard images from description into public storage', function () {
+    Storage::fake('public');
+
+    config([
+        'services.task_api.url' => 'https://workhub.subhadip.online/api/tasks',
+    ]);
+
+    Http::fake([
+        'https://workhub.subhadip.online/api/tasks' => Http::response([
+            'success' => true,
+            'data' => ['id' => 103],
+        ], 201),
+    ]);
+
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    // 1x1 transparent PNG base64
+    $base64Image = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+    $descriptionWithImage = '<p>Pasted screenshot:</p><p><img src="'.$base64Image.'"></p>';
+
+    $response = $this->postJson(route('issues.store'), [
+        'title' => 'Issue with Pasted Clipboard Screenshot',
+        'priority' => 'high',
+        'category' => 'bug',
+        'description' => $descriptionWithImage,
+    ]);
+
+    $response->assertStatus(200);
+
+    Http::assertSent(function ($request) {
+        if ($request->url() === 'https://workhub.subhadip.online/api/tasks') {
+            // Verify base64 is no longer in description, but a storage URL is present
+            return ! str_contains($request['description'], 'data:image/png;base64') &&
+                   str_contains($request['description'], '/storage/task_images/');
+        }
+
+        return true;
+    });
+});
+
+it('accepts multi-format image attachments like image_url and images_base64 when submitting issue', function () {
+    Storage::fake('public');
+
+    config([
+        'services.task_api.url' => 'https://workhub.subhadip.online/api/tasks',
+    ]);
+
+    Http::fake([
+        'https://workhub.subhadip.online/api/tasks' => Http::response([
+            'success' => true,
+            'data' => ['id' => 104],
+        ], 201),
+    ]);
+
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $response = $this->postJson(route('issues.store'), [
+        'title' => 'Issue with Multi Format Images',
+        'priority' => 'critical',
+        'category' => 'bug',
+        'description' => 'Testing multi-format image support',
+        'image_url' => 'https://example.com/screenshot.png',
+    ]);
+
+    $response->assertStatus(200);
+
+    Http::assertSent(function ($request) {
+        return $request->url() === 'https://workhub.subhadip.online/api/tasks' &&
+               $request['image_url'] === 'https://example.com/screenshot.png';
     });
 });

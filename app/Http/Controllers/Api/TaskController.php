@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\ExternalTaskApi;
 use App\Models\ExternalTaskSource;
 use App\Models\Project;
 use App\Models\Task;
@@ -28,28 +27,41 @@ class TaskController extends Controller
     {
         $externalApiConfig = $request->attributes->get('externalApiConfig');
 
-        $query = Task::with(['project', 'assignedUser', 'images']);
+        $query = Task::with(['project', 'assignedUser', 'images', 'externalSource.externalTaskApi']);
 
         if ($externalApiConfig) {
-            $query->where('project_id', $externalApiConfig->project_id);
-        } elseif (auth()->check()) {
-            $user = auth()->user();
-            $companyIds = $user->companies()->pluck('company_id')->toArray();
-            $projectIds = Project::whereIn('company_id', $companyIds)
-                ->orWhere(function ($q) use ($user) {
-                    $q->whereNull('company_id')->where('user_id', $user->id);
-                })->pluck('id')->toArray();
-
-            $query->where(function ($q) use ($projectIds, $user) {
-                $q->whereIn('project_id', $projectIds)
-                    ->orWhere(function ($sub) use ($user) {
-                        $sub->whereNull('project_id')
-                            ->where(function ($inner) use ($user) {
-                                $inner->where('user_id', $user->id)
-                                    ->orWhere('assigned_to', $user->id);
-                            });
-                    });
+            $query->whereHas('externalSource', function ($q) use ($externalApiConfig) {
+                $q->where('external_task_api_id', $externalApiConfig->id);
             });
+        } else {
+            if ($request->filled('external_task_api_id')) {
+                $apiId = (int) $request->input('external_task_api_id');
+                $query->whereHas('externalSource', function ($q) use ($apiId) {
+                    $q->where('external_task_api_id', $apiId);
+                });
+            } elseif ($request->boolean('only_external')) {
+                $query->has('externalSource');
+            }
+
+            if (auth()->check()) {
+                $user = auth()->user();
+                $companyIds = $user->companies()->pluck('company_id')->toArray();
+                $projectIds = Project::whereIn('company_id', $companyIds)
+                    ->orWhere(function ($q) use ($user) {
+                        $q->whereNull('company_id')->where('user_id', $user->id);
+                    })->pluck('id')->toArray();
+
+                $query->where(function ($q) use ($projectIds, $user) {
+                    $q->whereIn('project_id', $projectIds)
+                        ->orWhere(function ($sub) use ($user) {
+                            $sub->whereNull('project_id')
+                                ->where(function ($inner) use ($user) {
+                                    $inner->where('user_id', $user->id)
+                                        ->orWhere('assigned_to', $user->id);
+                                });
+                        });
+                });
+            }
         }
 
         if ($request->filled('status')) {
@@ -129,13 +141,6 @@ class TaskController extends Controller
         $user_id = $externalApiConfig ? $externalApiConfig->user_id : auth()->id();
         $validated['user_id'] = $user_id;
 
-        if (! $externalApiConfig && $project) {
-            $externalApiConfig = ExternalTaskApi::where('project_id', $project->id)
-                ->where('is_active', true)
-                ->latest()
-                ->first();
-        }
-
         if (empty($validated['assigned_to'])) {
             if ($externalApiConfig && $externalApiConfig->assigned_user_id) {
                 $validated['assigned_to'] = $externalApiConfig->assigned_user_id;
@@ -154,6 +159,10 @@ class TaskController extends Controller
 
         if (empty($validated['type']) && $externalApiConfig?->default_type) {
             $validated['type'] = $externalApiConfig->default_type;
+        }
+
+        if (array_key_exists('description', $validated)) {
+            $validated['description'] = $this->taskService->processDescriptionEmbeddedImages($validated['description']);
         }
 
         $task = Task::create($validated);
@@ -201,10 +210,16 @@ class TaskController extends Controller
         $externalApiConfig = $request->attributes->get('externalApiConfig');
 
         if ($externalApiConfig) {
-            if ($task->project_id !== $externalApiConfig->project_id) {
+            if ($externalApiConfig->project_id && $task->project_id !== $externalApiConfig->project_id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthorized: This API key cannot modify tasks outside its project.',
+                ], 403);
+            }
+            if (! $externalApiConfig->project_id && $task->externalSource?->external_task_api_id !== $externalApiConfig->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized: This API key cannot modify tasks belonging to another external source.',
                 ], 403);
             }
         } else {

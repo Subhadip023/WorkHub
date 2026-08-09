@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\ExternalTaskApi;
+use App\Models\ExternalTaskSource;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
@@ -632,7 +633,7 @@ it('allows uploading an image via multipart form upload during task creation on 
     Storage::disk('public')->assertExists($task->images->first()->image_path);
 });
 
-it('allows fetching task listing via GET /api/tasks with API key scoping to project', function () {
+it('allows fetching task listing via GET /api/tasks with API key scoping to external task source', function () {
     $owner = User::factory()->create();
     $project = Project::create([
         'name' => 'Listing Project',
@@ -646,6 +647,7 @@ it('allows fetching task listing via GET /api/tasks with API key scoping to proj
 
     $task1 = $project->tasks()->create(['title' => 'Project Task 1', 'user_id' => $owner->id, 'status' => 1]);
     $task2 = $project->tasks()->create(['title' => 'Project Task 2', 'user_id' => $owner->id, 'status' => 3]);
+    $internalTask = $project->tasks()->create(['title' => 'Internal Task Without Source', 'user_id' => $owner->id, 'status' => 1]);
 
     $credentials = ExternalTaskApi::generateCredentials();
     $externalApi = ExternalTaskApi::create([
@@ -655,6 +657,15 @@ it('allows fetching task listing via GET /api/tasks with API key scoping to proj
         'api_key' => $credentials['api_key'],
         'api_secret' => $credentials['api_secret'],
         'is_active' => true,
+    ]);
+
+    ExternalTaskSource::create([
+        'task_id' => $task1->id,
+        'external_task_api_id' => $externalApi->id,
+    ]);
+    ExternalTaskSource::create([
+        'task_id' => $task2->id,
+        'external_task_api_id' => $externalApi->id,
     ]);
 
     $sig = hash_hmac('sha256', '', $credentials['api_secret']);
@@ -696,4 +707,33 @@ it('allows authorized user to download Postman collection for a project', functi
 
     expect($json['info']['name'])->toContain('Postman Export Project')
         ->and($json['item'])->toHaveCount(4);
+});
+
+it('allows uploading images to a task via API image endpoint', function () {
+    Storage::fake('public');
+    $user = User::factory()->create();
+    $task = Task::create([
+        'title' => 'Task for Image Upload',
+        'description' => 'Image upload test',
+        'user_id' => $user->id,
+        'status' => 1,
+        'priority' => 1,
+    ]);
+
+    $this->actingAs($user);
+
+    $file = UploadedFile::fake()->image('test_image.png');
+
+    $response = $this->postJson(route('api.tasks.images.store', $task->id), [
+        'image' => $file,
+    ]);
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'success' => true,
+        ]);
+
+    $this->assertDatabaseHas('task_images', [
+        'task_id' => $task->id,
+    ]);
 });

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Task;
+use App\Services\TaskServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -18,60 +20,58 @@ class IssueController extends Controller
             $state = 'all';
         }
 
-        $pat = config('services.github.pat');
-        $owner = config('services.github.owner');
-        $repo = config('services.github.repo');
+        $apiUrl = config('services.task_api.url') ?: url('/api/tasks');
 
-        if (empty($pat)) {
-            return view('issues.index', [
-                'issues' => collect(),
-                'error' => 'GitHub Personal Access Token (PAT) is not configured in the server environment (.env).',
-                'state' => $state,
-                'owner' => $owner,
-                'repo' => $repo,
-            ]);
+        $headers = ['Accept' => 'application/json'];
+        if ($apiKey = config('services.task_api.key')) {
+            $headers['X-Api-Key'] = $apiKey;
+            if ($apiSecret = config('services.task_api.secret')) {
+                $headers['X-Api-Signature'] = hash_hmac('sha256', '', $apiSecret);
+            }
+        } elseif (request()->hasHeader('Cookie')) {
+            $headers['Cookie'] = request()->header('Cookie');
         }
 
-        // Send GET request to GitHub API
-        $response = Http::withHeaders([
-            'Accept' => 'application/vnd.github+json',
-            'Authorization' => "Bearer {$pat}",
-            'X-GitHub-Api-Version' => '2022-11-28',
-        ])
-            ->withUserAgent('WorkHub-App')
-            ->get("https://api.github.com/repos/{$owner}/{$repo}/issues", [
-                'state' => $state,
-                'per_page' => 100,
-            ]);
+        $queryParams = [
+            'per_page' => 100,
+            'only_external' => 1,
+        ];
+        if ($state === 'closed') {
+            $queryParams['status'] = 3;
+        }
 
-        $issues = collect();
-        $error = null;
+        $taskList = [];
+        try {
+            $response = Http::withHeaders($headers)->get($apiUrl, $queryParams);
 
-        if ($response->successful()) {
-            $issues = collect($response->json())->filter(function ($issue) {
-                return ! isset($issue['pull_request']);
-            });
-        } else {
-            $error = 'Failed to fetch issues from GitHub: '.($response->json('message') ?: 'Unknown error');
-            Log::error('GitHub Issue list fetch failed', [
-                'status' => $response->status(),
-                'response' => $response->body(),
-            ]);
+            if ($response->successful() && is_array($response->json('data'))) {
+                $taskList = $response->json('data');
+            }
+        } catch (\Throwable $e) {
+            Log::error('Failed to fetch tasks from API in IssueController: '.$e->getMessage());
+        }
+
+        $issues = collect($taskList)->map(function ($task) {
+            return $this->formatTaskAsIssue($task);
+        });
+
+        if ($state === 'open') {
+            $issues = $issues->filter(fn ($i) => $i['state'] === 'open')->values();
+        } elseif ($state === 'closed') {
+            $issues = $issues->filter(fn ($i) => $i['state'] === 'closed')->values();
         }
 
         return view('issues.index', [
             'issues' => $issues,
-            'error' => $error,
+            'error' => null,
             'state' => $state,
-            'owner' => $owner,
-            'repo' => $repo,
         ]);
     }
 
     /**
-     * Submit an issue report to GitHub.
+     * Submit an issue report to WorkHub Task API.
      */
-    public function store(Request $request)
+    public function store(Request $request, TaskServiceInterface $taskService)
     {
         $request->validate([
             'title' => 'required|string|max:255',
@@ -79,18 +79,15 @@ class IssueController extends Controller
             'category' => 'required|string|in:bug,feature,improvement,security,other',
             'description' => 'required|string',
             'attachment' => 'nullable|file|max:10240', // 10MB limit
+            'image' => 'nullable|file|image|max:10240',
+            'images.*' => 'nullable|file|image|max:10240',
+            'image_base64' => 'nullable|string',
+            'images_base64' => 'nullable|array',
+            'images_base64.*' => 'nullable|string',
+            'image_url' => 'nullable|url',
+            'images_url' => 'nullable|array',
+            'images_url.*' => 'nullable|url',
         ]);
-
-        $pat = config('services.github.pat');
-        $owner = config('services.github.owner');
-        $repo = config('services.github.repo');
-
-        if (empty($pat)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'GitHub Personal Access Token (PAT) is not configured in the server environment (.env).',
-            ], 500);
-        }
 
         $user = auth()->user();
 
@@ -104,63 +101,172 @@ class IssueController extends Controller
             $attachmentUrl = asset('storage/'.$path);
         }
 
-        // // Build Markdown Body for GitHub Issue
-        $body = '';
-        // $body = "### 📋 Issue Details\n\n";
-        // $body .= "* **Reporter:** {$user->name} ({$user->email})\n";
-        // $body .= '* **Category:** '.ucfirst($request->input('category'))."\n";
-        // $body .= '* **Priority:** '.ucfirst($request->input('priority'))."\n";
+        $categoryMap = [
+            'bug' => Task::TYPE_BUG,
+            'feature' => Task::TYPE_FEATURE,
+            'improvement' => Task::TYPE_IMPROVEMENT,
+            'security' => Task::TYPE_BUG,
+            'other' => Task::TYPE_TASK,
+        ];
+        $priorityMap = [
+            'low' => 1,
+            'medium' => 2,
+            'high' => 3,
+            'critical' => 4,
+        ];
+
+        $type = $categoryMap[$request->input('category')] ?? Task::TYPE_BUG;
+        $priority = $priorityMap[$request->input('priority')] ?? 2;
+
+        $rawDescription = $request->input('description');
+        $rawDescription = $taskService->processDescriptionEmbeddedImages($rawDescription);
+        $description = '<div>'.$rawDescription.'</div>';
 
         if ($attachmentUrl) {
             $extension = strtolower(pathinfo($attachmentName, PATHINFO_EXTENSION));
             $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
 
             if (in_array($extension, $imageExtensions)) {
-                $body .= "* **Attachment:**\n\n![{$attachmentName}]({$attachmentUrl})\n";
+                $description .= '<div class="mt-3"><strong>Attachment:</strong><br><img src="'.$attachmentUrl.'" alt="'.e($attachmentName).'" class="img-fluid rounded mt-1" style="max-height: 350px;"></div>';
             } else {
-                $body .= "* **Attachment:** [{$attachmentName}]({$attachmentUrl})\n";
+                $description .= '<div class="mt-3"><strong>Attachment:</strong> <a href="'.$attachmentUrl.'" target="_blank" class="font-weight-bold"><i class="fas fa-paperclip mr-1"></i>'.e($attachmentName).'</a></div>';
             }
         }
 
-        $body .= "\n### 📝 Description\n\n".$request->input('description')."\n\n";
-        $body .= "---\n*Reported via WorkHub Issue Form*";
-        // add issue user name and email in issue body
-        $body .= "\n### 👤 Reporter\n\n {$user->name} \n Email : {$user->email}";
+        if ($user) {
+            $description .= '<hr><div class="text-muted small"><strong>Reported by:</strong> '.e($user->name).' ('.e($user->email).')</div>';
+        }
 
-        // Map category and priority to labels
-        $labels = [$request->input('category'), $request->input('priority')];
+        $apiUrl = config('services.task_api.url') ?: url('/api/tasks');
 
-        // Send POST request to GitHub API
-        $response = Http::withHeaders([
-            'Accept' => 'application/vnd.github+json',
-            'Authorization' => "Bearer {$pat}",
-            'X-GitHub-Api-Version' => '2022-11-28',
-        ])
-            ->withUserAgent('WorkHub-App')
-            ->post("https://api.github.com/repos/{$owner}/{$repo}/issues", [
+        $payload = [
+            'title' => $request->input('title'),
+            'description' => $description,
+            'type' => $type,
+            'priority' => $priority,
+            'status' => 1,
+        ];
+
+        if ($attachmentUrl) {
+            $payload['image_url'] = $attachmentUrl;
+        }
+
+        if ($request->filled('image_url')) {
+            $payload['image_url'] = $request->input('image_url');
+        }
+        if ($request->filled('images_url')) {
+            $payload['images_url'] = $request->input('images_url');
+        }
+        if ($request->filled('image_base64')) {
+            $payload['image_base64'] = $request->input('image_base64');
+        }
+        if ($request->filled('images_base64')) {
+            $payload['images_base64'] = $request->input('images_base64');
+        }
+
+        $headers = [
+            'Accept' => 'application/json',
+        ];
+
+        if ($apiKey = config('services.task_api.key')) {
+            $headers['X-Api-Key'] = $apiKey;
+            if ($apiSecret = config('services.task_api.secret')) {
+                $headers['X-Api-Signature'] = hash_hmac('sha256', json_encode($payload), $apiSecret);
+            }
+        } elseif (request()->hasHeader('Cookie')) {
+            $headers['Cookie'] = request()->header('Cookie');
+        }
+
+        try {
+            $response = Http::withHeaders($headers)->post($apiUrl, $payload);
+
+            if ($response->successful()) {
+                $taskData = $response->json('data') ?? [];
+                $taskId = $taskData['id'] ?? null;
+                $taskUrl = $taskId ? route('tasks.show', $taskId) : route('tasks.index');
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Issue successfully created on Task API.',
+                    'url' => $taskUrl,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Issue submission to Task API failed, attempting fallback task creation: '.$e->getMessage());
+        }
+
+        // Fallback to internal task creation if HTTP POST fails
+        try {
+            $task = Task::create([
                 'title' => $request->input('title'),
-                'body' => $body,
-                'labels' => $labels,
+                'description' => $description,
+                'type' => $type,
+                'priority' => $priority,
+                'status' => 1,
+                'user_id' => $user?->id,
+                'assigned_to' => $user?->id,
             ]);
 
-        if ($response->successful()) {
-            $issueUrl = $response->json('html_url');
+            $taskService->processTaskImages($request, $task);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Issue successfully created on GitHub.',
-                'url' => $issueUrl,
+                'message' => 'Issue successfully created on Task API.',
+                'url' => route('tasks.show', $task->id),
             ]);
+        } catch (\Throwable $e) {
+            Log::error('Issue submission task creation failed', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to submit the issue to Task API. Please check server logs.',
+            ], 502);
+        }
+    }
+
+    /**
+     * Map Task model / API response array into issue view format.
+     */
+    private function formatTaskAsIssue($task): array
+    {
+        $isModel = $task instanceof Task;
+        $id = $isModel ? $task->id : ($task['id'] ?? 1);
+        $title = $isModel ? $task->title : ($task['title'] ?? '');
+        $status = $isModel ? $task->status : ($task['status'] ?? 1);
+        $priorityVal = $isModel ? $task->priority : ($task['priority'] ?? 2);
+        $typeVal = $isModel ? $task->type : ($task['type'] ?? 2);
+        $description = $isModel ? $task->description : ($task['description'] ?? '');
+        $createdAt = $isModel ? $task->created_at : ($task['created_at'] ?? now());
+
+        $userName = 'User';
+        if ($isModel) {
+            $userName = $task->assignedUser->name ?? $task->user->name ?? 'User';
+        } else {
+            $userName = $task['assigned_user']['name'] ?? $task['user']['name'] ?? 'User';
         }
 
-        Log::error('GitHub Issue submission failed', [
-            'status' => $response->status(),
-            'response' => $response->body(),
-        ]);
+        $priorityMap = [1 => 'low', 2 => 'medium', 3 => 'high', 4 => 'critical'];
+        $categoryMap = [1 => 'other', 2 => 'bug', 3 => 'feature', 4 => 'improvement'];
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to submit the issue to GitHub. Please check server logs.',
-        ], 502);
+        $priorityStr = $priorityMap[$priorityVal] ?? 'medium';
+        $categoryStr = $categoryMap[$typeVal] ?? 'bug';
+
+        return [
+            'number' => $id,
+            'title' => $title,
+            'state' => $status == 3 ? 'closed' : 'open',
+            'body' => $description,
+            'html_url' => route('tasks.show', $id),
+            'created_at' => is_string($createdAt) ? $createdAt : ($createdAt ? $createdAt->toIso8601String() : now()->toIso8601String()),
+            'labels' => [
+                ['name' => $categoryStr],
+                ['name' => $priorityStr],
+            ],
+            'user' => [
+                'login' => $userName,
+            ],
+        ];
     }
 }

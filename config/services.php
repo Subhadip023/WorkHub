@@ -41,4 +41,10 @@ return [
         'repo' => env('GITHUB_REPO', 'WorkHub'),
     ],
 
+    'task_api' => [
+        'url' => env('WORKHUB_TASK_API_URL'),
+        'key' => env('WORKHUB_TASK_API_KEY'),
+        'secret' => env('WORKHUB_TASK_API_SECRET'),
+    ],
+
 ];

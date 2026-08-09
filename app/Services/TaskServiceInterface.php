@@ -40,4 +40,6 @@ interface TaskServiceInterface
     public function getSubtasks(Task $parentTask): Collection;
 
     public function getSubtaskProgress(Task $parentTask): array;
+
+    public function processDescriptionEmbeddedImages(?string $description): ?string;
 }

@@ -123,8 +123,8 @@
                             <button class="btn btn-outline-secondary btn-sm font-weight-bold" type="button" data-toggle="collapse" data-target="#issue-desc-{{ $issue['number'] }}" aria-expanded="false">
                                 <i class="fas fa-eye mr-1"></i> View Details
                             </button>
-                            <a href="{{ $issue['html_url'] }}" target="_blank" class="btn btn-outline-primary btn-sm font-weight-bold">
-                                <i class="fab fa-github mr-1"></i> GitHub <i class="fas fa-external-link-alt fa-xs ml-1"></i>
+                            <a href="{{ $issue['html_url'] }}" class="btn btn-outline-primary btn-sm font-weight-bold">
+                                <i class="fas fa-tasks mr-1"></i> View Task <i class="fas fa-arrow-right fa-xs ml-1"></i>
                             </a>
                         </div>
                     </div>
@@ -133,7 +133,7 @@
                     <div class="collapse mt-3" id="issue-desc-{{ $issue['number'] }}">
                         <div class="issue-description-box p-3 text-gray-800 text-sm font-weight-normal">
                             @if(trim($issue['body']))
-                                {!! nl2br(e($issue['body'])) !!}
+                                {!! $issue['body'] !!}
                             @else
                                 <span class="text-muted italic">No description provided.</span>
                             @endif

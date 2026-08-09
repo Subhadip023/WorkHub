@@ -28,6 +28,10 @@ class TaskService implements TaskServiceInterface
         $user_id = $creator ? $creator->id : auth()->id();
         $validated['user_id'] = $user_id;
 
+        if (array_key_exists('description', $validated)) {
+            $validated['description'] = $this->processDescriptionEmbeddedImages($validated['description']);
+        }
+
         if ($project) {
             if (empty($validated['assigned_to'])) {
                 $validated['assigned_to'] = $user_id;
@@ -71,6 +75,10 @@ class TaskService implements TaskServiceInterface
     public function updateTask(Task $task, array $validated, ?User $authUser = null): Task
     {
         $authId = $authUser ? $authUser->id : auth()->id();
+
+        if (array_key_exists('description', $validated)) {
+            $validated['description'] = $this->processDescriptionEmbeddedImages($validated['description']);
+        }
 
         $oldDueDate = $task->due_date;
         $oldAssigneeId = $task->assigned_to;
@@ -404,5 +412,37 @@ class TaskService implements TaskServiceInterface
             'completed' => $completed,
             'percentage' => $percentage,
         ];
+    }
+
+    public function processDescriptionEmbeddedImages(?string $description): ?string
+    {
+        if (empty($description)) {
+            return $description;
+        }
+
+        return preg_replace_callback(
+            '/data:image\/(\w+);base64,([A-Za-z0-9+\/=\s]+)/',
+            function ($matches) {
+                $ext = strtolower($matches[1]);
+                if (in_array($ext, ['jpeg', 'jpg', 'png', 'gif', 'webp', 'svg'])) {
+                    $extension = $ext === 'jpeg' ? 'jpg' : $ext;
+                } else {
+                    $extension = 'png';
+                }
+
+                $b64Data = preg_replace('/\s+/', '', $matches[2]);
+                $decoded = base64_decode($b64Data, true);
+
+                if ($decoded !== false && strlen($decoded) > 0) {
+                    $fileName = 'task_images/'.Str::random(40).'.'.$extension;
+                    Storage::disk('public')->put($fileName, $decoded);
+
+                    return asset('storage/'.$fileName);
+                }
+
+                return $matches[0];
+            },
+            $description
+        );
     }
 }

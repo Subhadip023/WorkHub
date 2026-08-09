@@ -222,6 +222,25 @@ html, body {
     border-top-right-radius: 0.35rem;
     background-color: #f8f9fc;
 }
+.ql-toolbar button.ql-list[value="check"] {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+.ql-toolbar button.ql-list[value="check"]::before {
+    content: "\f14a";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    font-size: 0.95rem;
+    color: #444;
+}
+.ql-toolbar button.ql-list[value="check"]:hover::before,
+.ql-toolbar button.ql-list[value="check"].ql-active::before {
+    color: #4e73df;
+}
+.ql-toolbar button.ql-list[value="check"] svg {
+    display: none !important;
+}
 
 /* ==========================================================================
    TASK SHOW PAGE — Image Upload Zone & Attachment Gallery
@@ -429,7 +448,84 @@ html, body {
     border: 1px solid #eaecf4;
     border-radius: 6px;
     font-family: inherit;
-    white-space: pre-wrap;
+    overflow-x: auto;
+    max-width: 100%;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+.issue-description-box img,
+.task-description img,
+.task-description-content img,
+.description-body img,
+.issue-card img,
+.ql-editor img {
+    max-width: 100% !important;
+    height: auto !important;
+    object-fit: contain;
+    border-radius: 6px;
+    display: inline-block;
+    margin-top: 0.5rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* ==========================================================================
+   TASK & ISSUE CHECKLIST STYLING
+   ========================================================================== */
+#description-read-view .ql-ui,
+.description-body .ql-ui,
+.task-description-content .ql-ui {
+    display: none !important;
+}
+
+#description-read-view ul,
+#description-read-view ol {
+    list-style-type: none !important;
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+}
+
+#description-read-view li[data-list] {
+    list-style-type: none !important;
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    padding: 0.3rem 0.5rem !important;
+    margin-bottom: 0.35rem !important;
+    border-radius: 4px !important;
+    user-select: none !important;
+    transition: background-color 0.15s ease !important;
+}
+
+#description-read-view li[data-list]:hover {
+    background-color: #f8fafc !important;
+}
+
+#description-read-view input.task-desc-checkbox {
+    width: 1.15rem !important;
+    height: 1.15rem !important;
+    min-width: 1.15rem !important;
+    cursor: pointer !important;
+    accent-color: #4e73df !important;
+    margin-right: 0.6rem !important;
+    vertical-align: middle !important;
+    flex-shrink: 0 !important;
+}
+
+#description-read-view .task-desc-text {
+    flex: 1;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: #2e384d;
+    line-height: 1.45;
+}
+
+#description-read-view li[data-list="checked"] .task-desc-text,
+#description-read-view li.task-item-completed .task-desc-text,
+#description-read-view li[data-list="checked"],
+#description-read-view li.task-item-completed {
+    text-decoration: line-through !important;
+    color: #858796 !important;
+    opacity: 0.75 !important;
 }
 
 /* ==========================================================================
