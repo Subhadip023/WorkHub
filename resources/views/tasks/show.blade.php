@@ -41,55 +41,71 @@
             <li class="breadcrumb-item active" aria-current="page">{{ Str::limit($task->title, 30) }}</li>
         </ol>
     </nav>
-    <div class="d-flex align-items-center flex-wrap">
+    <div class="d-flex align-items-center flex-wrap" style="gap: 6px;">
         @if($canMutate)
-            <button type="button" class="btn btn-primary btn-sm shadow-sm mr-2 mb-0" data-toggle="modal" data-target="#addSubtaskModal">
+            {{-- Primary Action: Add Subtask --}}
+            <button type="button" class="btn btn-primary btn-sm shadow-sm font-weight-bold" data-toggle="modal" data-target="#addSubtaskModal">
                 <i class="fas fa-plus fa-sm mr-1"></i> Add Subtask
             </button>
 
-            <form action="{{ route('tasks.toggle', $task) }}" method="POST" class="mr-2 mb-0">
+            <div class="border-left mx-1" style="height: 20px; border-color: #d1d3e2 !important;"></div>
+
+            {{-- Icon Action Group --}}
+            <form action="{{ route('tasks.toggle', $task) }}" method="POST" class="d-inline mb-0">
                 @csrf
                 @method('PATCH')
-                <button type="submit" class="btn {{ $task->status == 3 ? 'btn-outline-warning' : 'btn-success' }} btn-sm shadow-sm">
-                    <i class="fas {{ $task->status == 3 ? 'fa-undo' : 'fa-check' }} mr-1"></i>
-                    Mark as {{ $task->status == 3 ? 'Pending' : 'Completed' }}
+                <button type="submit" class="btn {{ $task->status == 3 ? 'btn-warning' : 'btn-success' }} btn-sm shadow-sm" title="Mark as {{ $task->status == 3 ? 'Pending' : 'Completed' }}" data-toggle="tooltip">
+                    <i class="fas {{ $task->status == 3 ? 'fa-undo' : 'fa-check' }}"></i>
                 </button>
             </form>
 
-            <form action="{{ route('tasks.copy', $task) }}" method="POST" class="mr-2 mb-0">
+            <form action="{{ route('tasks.copy', $task) }}" method="POST" class="d-inline mb-0">
                 @csrf
-                <button type="submit" class="btn btn-outline-info btn-sm shadow-sm" title="Copy Task">
-                    <i class="fas fa-copy fa-sm mr-1"></i> Copy Task
+                <button type="submit" class="btn btn-outline-secondary btn-sm shadow-sm" title="Copy Task" data-toggle="tooltip">
+                    <i class="fas fa-copy"></i>
                 </button>
             </form>
 
-            <button type="button" class="btn btn-outline-primary btn-sm shadow-sm mr-2 mb-0 move-task-btn"
+            <button type="button" class="btn btn-outline-secondary btn-sm shadow-sm move-task-btn"
+                    title="Move Task"
+                    data-toggle="tooltip"
                     data-id="{{ $task->id }}"
                     data-title="{{ $task->title }}"
                     data-project_id="{{ $task->project_id }}"
                     data-action="{{ route('tasks.update', $task) }}">
-                <i class="fas fa-exchange-alt fa-sm mr-1"></i> Move Task
+                <i class="fas fa-exchange-alt"></i>
             </button>
             
-            <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="mr-2 mb-0"
+            <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="d-inline mb-0"
                   onsubmit="return confirm('Are you sure you want to delete this task? This cannot be undone.');">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn btn-danger btn-sm shadow-sm">
-                    <i class="fas fa-trash fa-sm mr-1"></i> Delete Task
+                <button type="submit" class="btn btn-outline-danger btn-sm shadow-sm" title="Delete Task" data-toggle="tooltip">
+                    <i class="fas fa-trash-alt"></i>
                 </button>
             </form>
+
+            <div class="border-left mx-1" style="height: 20px; border-color: #d1d3e2 !important;"></div>
         @endif
 
-        @if($task->project)
-            <a href="{{ route('projects.show', $task->project) }}" class="btn btn-secondary btn-sm shadow-sm">
-                <i class="fas fa-arrow-left fa-sm mr-1"></i> Back to Project
-            </a>
-        @else
-            <a href="{{ route('tasks.index') }}" class="btn btn-secondary btn-sm shadow-sm">
-                <i class="fas fa-arrow-left fa-sm mr-1"></i> Back to Tasks
-            </a>
-        @endif
+        @php
+            $referer = request('redirect_back') ?? url()->previous();
+            $currentUrl = request()->url();
+            $isSamePage = $referer && (str_contains($referer, '/tasks/' . $task->id) || $referer === $currentUrl);
+
+            if ($referer && !$isSamePage) {
+                $backUrl = $referer;
+            } else {
+                $backUrl = $task->project ? route('projects.show', $task->project) : route('tasks.index');
+            }
+
+            $backLabel = $task->project ? 'Back to Project' : 'Back to Tasks';
+        @endphp
+
+        {{-- Navigation Action: Back --}}
+        <a href="{{ $backUrl }}" class="btn btn-outline-secondary btn-sm shadow-sm">
+            <i class="fas fa-arrow-left fa-sm mr-1"></i> Back
+        </a>
     </div>
 </div>
 

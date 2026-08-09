@@ -212,7 +212,7 @@
                     </td>
                     <td class="align-middle">
                         <div class="font-weight-bold {{ $task->status == 3 ? 'text-muted text-line-through' : '' }}">
-                            <a href="{{ route('tasks.show', $task) }}" class="text-gray-900 text-decoration-none hover-primary task-title-link">
+                            <a href="{{ route('tasks.show', [$task, 'redirect_back' => request()->fullUrl()]) }}" class="text-gray-900 text-decoration-none hover-primary task-title-link">
                                 {{ $task->title }}
                             </a>
                             @if($task->points !== null)
