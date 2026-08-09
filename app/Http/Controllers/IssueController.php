@@ -91,6 +91,17 @@ class IssueController extends Controller
 
         $user = auth()->user();
 
+        Log::info('IssueController@store initiated', [
+            'user_id' => $user?->id,
+            'title' => $request->input('title'),
+            'priority' => $request->input('priority'),
+            'category' => $request->input('category'),
+            'has_attachment' => $request->hasFile('attachment'),
+            'has_image' => $request->hasFile('image'),
+            'has_image_base64' => $request->filled('image_base64'),
+            'has_image_url' => $request->filled('image_url'),
+        ]);
+
         // Handle attachment if uploaded
         $attachmentUrl = null;
         $attachmentName = null;
@@ -99,6 +110,7 @@ class IssueController extends Controller
             $attachmentName = $file->getClientOriginalName();
             $path = $file->store('issues', 'public');
             $attachmentUrl = asset('storage/'.$path);
+            Log::info('Issue attachment stored', ['path' => $path, 'url' => $attachmentUrl]);
         }
 
         $categoryMap = [
@@ -177,6 +189,12 @@ class IssueController extends Controller
             $headers['Cookie'] = request()->header('Cookie');
         }
 
+        Log::info('Sending Issue creation HTTP request to Task API', [
+            'api_url' => $apiUrl,
+            'has_api_key' => ! empty($apiKey),
+            'payload_keys' => array_keys($payload),
+        ]);
+
         try {
             $response = Http::withHeaders($headers)->post($apiUrl, $payload);
 
@@ -185,17 +203,32 @@ class IssueController extends Controller
                 $taskId = $taskData['id'] ?? null;
                 $taskUrl = $taskId ? route('tasks.show', $taskId) : route('tasks.index');
 
+                Log::info('Issue successfully created via Task API', [
+                    'status' => $response->status(),
+                    'task_id' => $taskId,
+                ]);
+
                 return response()->json([
                     'success' => true,
                     'message' => 'Issue successfully created on Task API.',
                     'url' => $taskUrl,
                 ]);
+            } else {
+                Log::warning('Task API HTTP POST returned non-successful response', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
             }
         } catch (\Throwable $e) {
-            Log::warning('Issue submission to Task API failed, attempting fallback task creation: '.$e->getMessage());
+            Log::error('Issue submission HTTP request exception', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
         }
 
         // Fallback to internal task creation if HTTP POST fails
+        Log::info('Attempting fallback internal task creation for issue');
         try {
             $task = Task::create([
                 'title' => $request->input('title'),
@@ -207,7 +240,10 @@ class IssueController extends Controller
                 'assigned_to' => $user?->id,
             ]);
 
-            $taskService->processTaskImages($request, $task);
+            Log::info('Fallback internal task created', ['task_id' => $task->id]);
+
+            $createdImages = $taskService->processTaskImages($request, $task);
+            Log::info('Fallback task images processed', ['task_id' => $task->id, 'images_count' => count($createdImages)]);
 
             return response()->json([
                 'success' => true,
@@ -215,14 +251,17 @@ class IssueController extends Controller
                 'url' => route('tasks.show', $task->id),
             ]);
         } catch (\Throwable $e) {
-            Log::error('Issue submission task creation failed', [
+            Log::error('Issue submission task creation failed completely', [
                 'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to submit the issue to Task API. Please check server logs.',
-            ], 502);
+                'message' => 'Failed to submit the issue: '.$e->getMessage(),
+            ], 500);
         }
     }
 
