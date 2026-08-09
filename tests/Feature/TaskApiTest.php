@@ -737,3 +737,51 @@ it('allows uploading images to a task via API image endpoint', function () {
         'task_id' => $task->id,
     ]);
 });
+
+it('enforces API rate limiting of 24 requests per minute (1 req per 2.5s)', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    for ($i = 0; $i < 24; $i++) {
+        $this->getJson(route('api.tasks.index'))->assertStatus(200);
+    }
+
+    $this->getJson(route('api.tasks.index'))->assertStatus(429);
+});
+
+it('enforces API rate limiting of 24 requests per minute (1 req per 2.5s) on API Key requests', function () {
+    $user = User::factory()->create();
+    $project = Project::create([
+        'name' => 'Rate Limit Project',
+        'slug' => 'rate-limit-project',
+        'theme' => '#0055ff',
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $user->id,
+        'company_id' => null,
+    ]);
+
+    $credentials = ExternalTaskApi::generateCredentials();
+    $externalApi = ExternalTaskApi::create([
+        'project_id' => $project->id,
+        'user_id' => $user->id,
+        'name' => 'Rate Limit Key',
+        'api_key' => $credentials['api_key'],
+        'api_secret' => $credentials['api_secret'],
+        'is_active' => true,
+    ]);
+
+    $sig = hash_hmac('sha256', '', $credentials['api_secret']);
+
+    for ($i = 0; $i < 24; $i++) {
+        $this->withHeaders([
+            'X-Api-Key' => $externalApi->api_key,
+            'X-Api-Signature' => $sig,
+        ])->getJson(route('api.tasks.index'))->assertStatus(200);
+    }
+
+    $this->withHeaders([
+        'X-Api-Key' => $externalApi->api_key,
+        'X-Api-Signature' => $sig,
+    ])->getJson(route('api.tasks.index'))->assertStatus(429);
+});

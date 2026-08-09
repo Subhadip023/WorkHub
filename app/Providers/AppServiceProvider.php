@@ -12,11 +12,13 @@ use App\Repositories\TaskRepositoryInterface;
 use App\Services\TaskService;
 use App\Services\TaskServiceInterface;
 use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Http\Request;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -76,6 +78,13 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::before(function ($user, $ability) {
             return $user->isSuperAdmin() ? true : null;
+        });
+
+        // Custom API Rate Limiter: 24 requests per minute (1 request per 2.5 seconds)
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(24)->by(
+                $request->header('X-Api-Key') ?: ($request->user()?->id ?: $request->ip())
+            );
         });
     }
 }

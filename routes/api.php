@@ -13,11 +13,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Get tasks: GET /api/tasks
-Route::get('/tasks', [TaskController::class, 'index'])->middleware('api.key')->name('api.tasks.index');
+Route::middleware(['api.key', 'throttle:api'])->group(function () {
+    // Get tasks: GET /api/tasks
+    Route::get('/tasks', [TaskController::class, 'index'])->name('api.tasks.index');
 
-// Add task: POST /api/tasks
-Route::post('/tasks', [TaskController::class, 'store'])->middleware('api.key')->name('api.tasks.store');
+    // Add task: POST /api/tasks
+    Route::post('/tasks', [TaskController::class, 'store'])->name('api.tasks.store');
 
-// Upload images to an existing task: POST /api/tasks/{task}/images
-Route::post('/tasks/{task}/images', [TaskController::class, 'uploadImage'])->middleware('api.key')->name('api.tasks.images.store');
+    // Upload images to an existing task: POST /api/tasks/{task}/images
+    Route::post('/tasks/{task}/images', [TaskController::class, 'uploadImage'])->name('api.tasks.images.store');
+});
