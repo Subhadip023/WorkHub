@@ -218,40 +218,147 @@ class TaskService implements TaskServiceInterface
     public function importTasks(array $data, Project $project, User $creator): array
     {
         $count = 0;
+        $subtasksCount = 0;
         $skipped = 0;
 
         foreach ($data as $item) {
-            if (! empty($item['title'])) {
-                $status = isset($item['status']) && in_array((int) $item['status'], [1, 2, 3, 4]) ? (int) $item['status'] : (($item['is_completed'] ?? false) ? 3 : 1);
-                $priority = isset($item['priority']) && in_array((int) $item['priority'], [1, 2, 3, 4]) ? (int) $item['priority'] : 2;
-                $type = isset($item['type']) && in_array((int) $item['type'], [1, 2, 3, 4]) ? (int) $item['type'] : 1;
+            if (! is_array($item) || empty($item['title'])) {
+                $skipped++;
 
-                $assignedTo = $creator->id;
-                if (! empty($item['assigned_to'])) {
-                    $assignedExists = User::where('id', (int) $item['assigned_to'])->exists();
-                    if ($assignedExists) {
-                        $assignedTo = (int) $item['assigned_to'];
+                continue;
+            }
+
+            $taskData = $this->normalizeTaskImportData($item, $project, $creator);
+            $task = $this->taskRepository->createProjectTask($project, $taskData);
+            $count++;
+
+            // Support nested subtasks if present
+            if (! empty($item['subtasks']) && is_array($item['subtasks'])) {
+                foreach ($item['subtasks'] as $subItem) {
+                    if (is_string($subItem) && ! empty(trim($subItem))) {
+                        $this->createSubtask($task, [
+                            'title' => trim($subItem),
+                            'status' => 1,
+                            'priority' => 2,
+                            'type' => 1,
+                        ], $creator);
+                        $subtasksCount++;
+                    } elseif (is_array($subItem) && ! empty($subItem['title'])) {
+                        $subtaskData = $this->normalizeTaskImportData($subItem, $project, $creator);
+                        $this->createSubtask($task, $subtaskData, $creator);
+                        $subtasksCount++;
                     }
                 }
-
-                $this->taskRepository->createProjectTask($project, [
-                    'title' => $item['title'],
-                    'description' => $item['description'] ?? null,
-                    'due_date' => isset($item['due_date']) ? date('Y-m-d', strtotime($item['due_date'])) : null,
-                    'assigned_to' => $assignedTo,
-                    'user_id' => $creator->id,
-                    'status' => $status,
-                    'priority' => $priority,
-                    'type' => $type,
-                    'points' => isset($item['points']) ? (int) $item['points'] : null,
-                ]);
-                $count++;
-            } else {
-                $skipped++;
             }
         }
 
-        return ['imported' => $count, 'skipped' => $skipped];
+        return ['imported' => $count, 'subtasks' => $subtasksCount, 'skipped' => $skipped];
+    }
+
+    /**
+     * Normalize flexible task import input fields into standard database values.
+     */
+    private function normalizeTaskImportData(array $item, Project $project, User $creator): array
+    {
+        // Status resolution
+        $status = 1;
+        if (isset($item['status'])) {
+            $statusVal = strtolower(trim((string) $item['status']));
+            if (in_array($statusVal, ['1', 'todo', 'to do', 'pending'])) {
+                $status = 1;
+            } elseif (in_array($statusVal, ['2', 'in progress', 'inprogress', 'doing'])) {
+                $status = 2;
+            } elseif (in_array($statusVal, ['3', 'completed', 'complete', 'done', 'finished'])) {
+                $status = 3;
+            } elseif (in_array($statusVal, ['4', 'on hold', 'onhold', 'hold', 'paused'])) {
+                $status = 4;
+            } elseif (is_numeric($item['status']) && in_array((int) $item['status'], [1, 2, 3, 4])) {
+                $status = (int) $item['status'];
+            }
+        } elseif (! empty($item['is_completed'])) {
+            $status = filter_var($item['is_completed'], FILTER_VALIDATE_BOOLEAN) ? 3 : 1;
+        }
+
+        // Priority resolution
+        $priority = 2;
+        if (isset($item['priority'])) {
+            $priorityVal = strtolower(trim((string) $item['priority']));
+            if (in_array($priorityVal, ['1', 'low'])) {
+                $priority = 1;
+            } elseif (in_array($priorityVal, ['2', 'medium', 'normal'])) {
+                $priority = 2;
+            } elseif (in_array($priorityVal, ['3', 'high'])) {
+                $priority = 3;
+            } elseif (in_array($priorityVal, ['4', 'urgent', 'critical'])) {
+                $priority = 4;
+            } elseif (is_numeric($item['priority']) && in_array((int) $item['priority'], [1, 2, 3, 4])) {
+                $priority = (int) $item['priority'];
+            }
+        }
+
+        // Type resolution
+        $type = 1;
+        if (isset($item['type'])) {
+            $typeVal = strtolower(trim((string) $item['type']));
+            if (in_array($typeVal, ['1', 'task'])) {
+                $type = 1;
+            } elseif (in_array($typeVal, ['2', 'bug', 'issue', 'defect'])) {
+                $type = 2;
+            } elseif (in_array($typeVal, ['3', 'feature', 'story'])) {
+                $type = 3;
+            } elseif (in_array($typeVal, ['4', 'improvement', 'enhancement'])) {
+                $type = 4;
+            } elseif (is_numeric($item['type']) && in_array((int) $item['type'], [1, 2, 3, 4])) {
+                $type = (int) $item['type'];
+            }
+        }
+
+        // Assignee resolution (ID, Email, or Name)
+        $assignedTo = $creator->id;
+        $assigneeInput = $item['assigned_to'] ?? $item['assignee'] ?? $item['assignee_email'] ?? $item['assigned_user'] ?? null;
+        if (! empty($assigneeInput)) {
+            if (is_numeric($assigneeInput)) {
+                $u = User::find((int) $assigneeInput);
+                if ($u) {
+                    $assignedTo = $u->id;
+                }
+            } else {
+                $assigneeStr = trim((string) $assigneeInput);
+                $userByEmail = User::where('email', $assigneeStr)->first();
+                if ($userByEmail) {
+                    $assignedTo = $userByEmail->id;
+                } else {
+                    $userByName = User::where('name', 'LIKE', '%'.$assigneeStr.'%')->first();
+                    if ($userByName) {
+                        $assignedTo = $userByName->id;
+                    }
+                }
+            }
+        }
+
+        // Due date resolution
+        $dueDate = null;
+        if (! empty($item['due_date'])) {
+            $timestamp = strtotime((string) $item['due_date']);
+            if ($timestamp !== false) {
+                $dueDate = date('Y-m-d', $timestamp);
+            }
+        }
+
+        // Points
+        $points = isset($item['points']) && is_numeric($item['points']) ? (int) $item['points'] : null;
+
+        return [
+            'title' => trim($item['title']),
+            'description' => $item['description'] ?? null,
+            'due_date' => $dueDate,
+            'assigned_to' => $assignedTo,
+            'user_id' => $creator->id,
+            'status' => $status,
+            'priority' => $priority,
+            'type' => $type,
+            'points' => $points,
+        ];
     }
 
     public function processTaskImages(Request $request, Task $task): array

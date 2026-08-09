@@ -214,40 +214,103 @@
 
 @include('partials.edit_task_modal')
 
-{{-- Import JSON Modal --}}
+{{-- Bulk Import Tasks Modal --}}
 <div class="modal fade" id="importJsonModal" tabindex="-1" role="dialog" aria-labelledby="importJsonModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title text-info font-weight-bold" id="importJsonModalLabel">Import Tasks from JSON</h5>
-                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; overflow: hidden;">
+            <div class="modal-header bg-primary text-white py-3">
+                <h5 class="modal-title font-weight-bold text-white mb-0" id="importJsonModalLabel">
+                    <i class="fas fa-file-import mr-2"></i> Bulk Import Tasks (JSON / CSV)
+                </h5>
+                <button class="close text-white opacity-75" type="button" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">×</span>
                 </button>
             </div>
-            <form action="{{ route('projects.tasks.import', $project) }}" method="POST">
+            <form action="{{ route('projects.tasks.import', $project) }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label for="json_data" class="font-weight-bold text-gray-700">Paste JSON Content <span class="text-danger">*</span></label>
-                        <textarea class="form-control font-monospace" id="json_data" name="json_data" rows="8" placeholder='[
+                <div class="modal-body p-4">
+                    <!-- Nav Tabs for Upload Type -->
+                    <ul class="nav nav-pills nav-justified mb-3" id="importMethodTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active font-weight-bold" id="paste-tab" data-toggle="pill" href="#paste-pane" role="tab">
+                                <i class="fas fa-code mr-1"></i> Paste JSON / CSV
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link font-weight-bold" id="file-tab" data-toggle="pill" href="#file-pane" role="tab">
+                                <i class="fas fa-upload mr-1"></i> Upload File (.json / .csv)
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="importMethodTabsContent">
+                        <!-- Paste Pane -->
+                        <div class="tab-pane fade show active" id="paste-pane" role="tabpanel">
+                            <div class="form-group mb-0">
+                                <label for="json_data" class="font-weight-bold text-gray-800 text-xs text-uppercase mb-2">Paste JSON Array or CSV Content</label>
+                                <textarea class="form-control font-monospace border" id="json_data" name="json_data" rows="7" placeholder='[
   {
-    "title": "Design new database schema",
-    "description": "Define tables for users, tasks, and companies",
-    "due_date": "2026-06-01"
-  },
-  {
-    "title": "Setup development server",
-    "description": "Configure Docker, Nginx, and PHP settings"
+    "title": "Design Database Schema",
+    "description": "Define tables for users and projects",
+    "status": "In Progress",
+    "priority": "High",
+    "type": "Task",
+    "points": 5,
+    "due_date": "2026-09-01",
+    "subtasks": ["Create ERD diagram", "Define migration files"]
   }
-]' required></textarea>
-                        <small class="form-text text-muted mt-2">
-                            Please provide a valid JSON array of tasks or a single task object. Supported fields: <code>title</code> (required), <code>description</code>, and <code>due_date</code> (YYYY-MM-DD).
-                        </small>
+]' style="font-size: 0.85rem; border-radius: 6px;"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- File Upload Pane -->
+                        <div class="tab-pane fade" id="file-pane" role="tabpanel">
+                            <div class="form-group mb-0">
+                                <label for="import_file" class="font-weight-bold text-gray-800 text-xs text-uppercase mb-2">Select JSON or CSV File</label>
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="import_file" name="import_file" accept=".json,.csv,.txt">
+                                    <label class="custom-file-label" for="import_file">Choose file (.json, .csv)...</label>
+                                </div>
+                                <small class="form-text text-muted mt-2">Maximum file size: 5MB.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Supported Structure Accordion / Help -->
+                    <div class="card mt-4 border-0 bg-light rounded">
+                        <div class="card-body p-3">
+                            <h6 class="font-weight-bold text-gray-800 text-xs text-uppercase mb-2">
+                                <i class="fas fa-info-circle text-info mr-1"></i> Supported Fields & Format Details
+                            </h6>
+                            <div class="row text-xs text-gray-700">
+                                <div class="col-md-6 mb-2">
+                                    <strong>Core Fields:</strong>
+                                    <ul class="pl-3 mb-0">
+                                        <li><code>title</code> <span class="text-danger font-weight-bold">*Required</span></li>
+                                        <li><code>description</code> (HTML or Plain text)</li>
+                                        <li><code>due_date</code> (e.g. <code>2026-09-01</code>)</li>
+                                        <li><code>points</code> (Story points integer)</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <strong>Flexible Mappings:</strong>
+                                    <ul class="pl-3 mb-0">
+                                        <li><code>status</code>: <code>To Do</code>, <code>In Progress</code>, <code>Completed</code>, <code>On Hold</code> (or 1-4)</li>
+                                        <li><code>priority</code>: <code>Low</code>, <code>Medium</code>, <code>High</code>, <code>Urgent</code> (or 1-4)</li>
+                                        <li><code>type</code>: <code>Task</code>, <code>Bug</code>, <code>Feature</code>, <code>Improvement</code> (or 1-4)</li>
+                                        <li><code>assignee</code>: User ID, Email, or Name</li>
+                                        <li><code>subtasks</code>: Array of titles or objects (JSON)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-info">Import Tasks</button>
+                <div class="modal-footer bg-light px-4 py-3">
+                    <button class="btn btn-secondary btn-sm shadow-sm" type="button" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm shadow-sm font-weight-bold">
+                        <i class="fas fa-file-import mr-1"></i> Import Tasks Now
+                    </button>
                 </div>
             </form>
         </div>
@@ -285,7 +348,11 @@
                 }
                 window.location.href = currentUrl.toString();
             });
-        }
+        // Custom file input label update
+        $('.custom-file-input').on('change', function() {
+            let fileName = $(this).val().split('\\').pop();
+            $(this).next('.custom-file-label').addClass("selected").html(fileName);
+        });
     });
 </script>
 @endpush

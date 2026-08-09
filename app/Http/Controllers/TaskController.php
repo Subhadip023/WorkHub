@@ -211,38 +211,106 @@ class TaskController extends Controller
     }
 
     /**
-     * Import multiple tasks via a JSON array.
+     * Import multiple tasks via a JSON array, JSON file, or CSV file.
      */
     public function import(Request $request, Project $project)
     {
         Gate::authorize('update', $project);
 
         $request->validate([
-            'json_data' => 'required|string',
+            'json_data' => 'nullable|string',
+            'import_file' => 'nullable|file|mimes:json,csv,txt|max:5120',
         ]);
 
-        $data = json_decode($request->input('json_data'), true);
+        $data = [];
 
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            return redirect()->back()->with('error', 'Invalid JSON format: '.json_last_error_msg());
+        if ($request->hasFile('import_file')) {
+            $file = $request->file('import_file');
+            $extension = strtolower($file->getClientOriginalExtension());
+            $content = file_get_contents($file->getRealPath());
+
+            if ($extension === 'json') {
+                $data = json_decode($content, true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    return redirect()->back()->with('error', 'Invalid JSON file: '.json_last_error_msg());
+                }
+            } elseif (in_array($extension, ['csv', 'txt'])) {
+                $data = $this->parseCsvContent($content);
+            }
+        } elseif ($request->filled('json_data')) {
+            $rawContent = trim($request->input('json_data'));
+            if (str_starts_with($rawContent, '[') || str_starts_with($rawContent, '{')) {
+                $data = json_decode($rawContent, true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    return redirect()->back()->with('error', 'Invalid JSON format: '.json_last_error_msg());
+                }
+            } else {
+                $data = $this->parseCsvContent($rawContent);
+            }
+        } else {
+            return redirect()->back()->with('error', 'Please paste JSON/CSV data or upload a file.');
         }
 
         if (is_array($data) && isset($data['title'])) {
             $data = [$data];
         }
 
-        if (! is_array($data)) {
-            return redirect()->back()->with('error', 'JSON must be an array of tasks or a single task object.');
+        if (! is_array($data) || empty($data)) {
+            return redirect()->back()->with('error', 'No valid tasks found to import.');
         }
 
         $res = $this->taskService->importTasks($data, $project, auth()->user());
 
         $message = "{$res['imported']} task(s) imported successfully.";
+        if (isset($res['subtasks']) && $res['subtasks'] > 0) {
+            $message .= " (Includes {$res['subtasks']} subtasks).";
+        }
         if ($res['skipped'] > 0) {
             $message .= " {$res['skipped']} item(s) skipped (missing title).";
         }
 
         return redirect()->route('projects.show', $project)->with('success', $message);
+    }
+
+    /**
+     * Parse raw CSV content into array of associative rows based on headers.
+     */
+    private function parseCsvContent(string $content): array
+    {
+        $trimmed = trim($content);
+        if ($trimmed === '') {
+            return [];
+        }
+
+        $lines = explode("\n", str_replace("\r\n", "\n", $trimmed));
+        $headerLine = array_shift($lines);
+        if ($headerLine === '') {
+            return [];
+        }
+
+        $headers = str_getcsv($headerLine);
+        $headers = array_map(function ($h) {
+            return strtolower(trim((string) preg_replace('/[^a-zA-Z0-9_]/', '', str_replace(' ', '_', (string) $h))));
+        }, $headers);
+
+        $rows = [];
+        foreach ($lines as $line) {
+            if (empty(trim($line))) {
+                continue;
+            }
+            $rowValues = str_getcsv($line);
+            if (count($rowValues) === count($headers)) {
+                $rows[] = array_combine($headers, $rowValues);
+            } else {
+                $row = [];
+                foreach ($headers as $index => $header) {
+                    $row[$header] = $rowValues[$index] ?? null;
+                }
+                $rows[] = $row;
+            }
+        }
+
+        return $rows;
     }
 
     /**
