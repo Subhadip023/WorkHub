@@ -255,6 +255,12 @@ class TaskController extends Controller
 
         Gate::authorize('view', $task);
 
+        log_activity(
+            description: "Viewed task '{$task->title}'",
+            event: 'viewed',
+            subject: $task
+        );
+
         if ($project === null) {
             $companyUsers = $this->taskRepository->getAccessibleCompanyUsers(auth()->user());
             $user_role = 1;

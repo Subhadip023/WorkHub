@@ -89,6 +89,7 @@
                                 <th>Joined</th>
                                 <th>Last Login</th>
                                 @if($isAdmin)
+                                    <th class="text-center">Activity</th>
                                     <th>Actions</th>
                                 @endif
                             </tr>
@@ -102,7 +103,7 @@
                                                  style="width: 32px; height: 32px; font-size: 0.85rem;">
                                                 {{ strtoupper(substr($member->user->name ?? 'M', 0, 1)) }}
                                             </div>
-                                            {{ $member->user->name ?? 'Unknown Member' }}
+                                            {{ $member->user->name ?? 'Unknown Member' }} 
                                         </div>
                                     </td>
                                     <td class="align-middle">{{ $member->user->email ?? 'N/A' }}</td>
@@ -151,6 +152,19 @@
                                             </span>
                                         @else
                                             <span class="text-gray-400">Never</span>
+                                        @endif
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        @if($member->user)
+                                            <button type="button" class="btn btn-sm btn-outline-info view-member-activity-btn shadow-sm" 
+                                                    data-user-id="{{ $member->user->id }}" 
+                                                    data-user-name="{{ e($member->user->name ?? 'Member') }}" 
+                                                    data-url="{{ route('companies.members.activity', [$company, $member->user]) }}" 
+                                                    title="View Member Activity">
+                                                <i class="fas fa-history mr-1"></i> Activity
+                                            </button>
+                                        @else
+                                            <span class="text-muted small">N/A</span>
                                         @endif
                                     </td>
                                     @if($isAdmin)
@@ -281,6 +295,50 @@
     </div>
 </div>
 @endif
+<!-- Member Activity Modal -->
+<div class="modal fade" id="memberActivityModal" tabindex="-1" role="dialog" aria-labelledby="memberActivityModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content shadow-lg border-0">
+            <div class="modal-header bg-gradient-primary text-white">
+                <h5 class="modal-title font-weight-bold" id="memberActivityModalLabel">
+                    <i class="fas fa-history mr-2"></i><span id="activityModalUserName">Member Activity</span>
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4" style="max-height: 500px; overflow-y: auto;">
+                <div id="activityModalLoading" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Loading activity logs...</span>
+                    </div>
+                    <p class="text-muted small mt-2">Loading member activity...</p>
+                </div>
+                <div id="activityModalContent" class="d-none">
+                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded mb-3 border">
+                        <div>
+                            <span class="text-xs text-uppercase font-weight-bold text-gray-600 d-block">Member Email</span>
+                            <span id="activityModalUserEmail" class="font-weight-bold text-dark"></span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-uppercase font-weight-bold text-gray-600 d-block">Last Login</span>
+                            <span id="activityModalLastLogin" class="badge badge-info px-2 py-1"></span>
+                        </div>
+                    </div>
+                    
+                    <h6 class="font-weight-bold text-gray-800 mb-3"><i class="fas fa-list-alt mr-1"></i> Recent Activity Log</h6>
+                    <div id="activityTimeline" class="timeline-history"></div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <a id="activityModalFullLogLink" href="#" class="btn btn-primary btn-sm shadow-sm">
+                    <i class="fas fa-external-link-alt mr-1"></i> View Full Activity Log
+                </a>
+                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -302,6 +360,79 @@
                 $btn.html(originalText).addClass('btn-outline-secondary').removeClass('btn-success');
             }, 2000);
         });
+
+        // View Member Activity Modal Handler
+        $('.view-member-activity-btn').on('click', function() {
+            var userId = $(this).data('user-id');
+            var userName = $(this).data('user-name');
+            var fetchUrl = $(this).data('url');
+
+            $('#activityModalUserName').text(userName + "'s Activity");
+            $('#activityModalLoading').removeClass('d-none');
+            $('#activityModalContent').addClass('d-none');
+            $('#memberActivityModal').modal('show');
+
+            var fullLogUrl = "{{ route('activity-logs.index') }}?user_id=" + userId + "&scope=all";
+            $('#activityModalFullLogLink').attr('href', fullLogUrl);
+
+            $.ajax({
+                url: fetchUrl,
+                type: 'GET',
+                success: function(response) {
+                    if (response.success) {
+                        $('#activityModalUserEmail').text(response.user.email);
+                        $('#activityModalLastLogin').text(response.user.last_login_at);
+                        if (response.user.last_login_at_formatted !== 'Never') {
+                            $('#activityModalLastLogin').attr('title', response.user.last_login_at_formatted);
+                        }
+
+                        var timelineHtml = '';
+                        if (response.activities && response.activities.length > 0) {
+                            $.each(response.activities, function(index, act) {
+                                var icon = 'fa-info-circle text-info';
+                                if (act.event === 'login') icon = 'fa-sign-in-alt text-success';
+                                else if (act.event === 'created' || act.event === 'created_via_api') icon = 'fa-plus-circle text-primary';
+                                else if (act.event === 'updated') icon = 'fa-pen text-warning';
+                                else if (act.event === 'deleted') icon = 'fa-trash text-danger';
+                                else if (act.event === 'viewed' || act.event === 'viewed_dashboard') icon = 'fa-eye text-info';
+
+                                timelineHtml += '<div class="mb-3 pl-3 py-2 bg-white shadow-xs rounded border-left-primary" style="border-left: 3px solid #4e73df !important;">';
+                                timelineHtml += '<div class="d-flex align-items-center justify-content-between">';
+                                timelineHtml += '<span class="font-weight-bold text-gray-800 text-sm"><i class="fas ' + icon + ' mr-1"></i> ' + escapeHtml(act.description) + '</span>';
+                                timelineHtml += '<span class="text-xs text-gray-500 font-weight-bold ml-2">' + act.created_at_human + '</span>';
+                                timelineHtml += '</div>';
+                                if (act.subject_title) {
+                                    timelineHtml += '<div class="text-xs text-muted mt-1">' + escapeHtml(act.subject_type) + ': ' + escapeHtml(act.subject_title) + '</div>';
+                                }
+                                if (act.properties && (act.properties.ip || act.properties.workspace)) {
+                                    var obs = [];
+                                    if (act.properties.workspace) obs.push('<i class="fas fa-building mr-1"></i>' + escapeHtml(act.properties.workspace));
+                                    if (act.properties.ip) obs.push('<i class="fas fa-network-wired mr-1"></i>IP: ' + escapeHtml(act.properties.ip));
+                                    timelineHtml += '<div class="text-xs text-muted mt-1">' + obs.join(' &bull; ') + '</div>';
+                                }
+                                timelineHtml += '</div>';
+                            });
+                        } else {
+                            timelineHtml = '<div class="text-center py-4 text-muted"><i class="fas fa-history fa-2x mb-2 text-gray-300 d-block"></i><p class="mb-0">No recent activity logged for this member.</p></div>';
+                        }
+
+                        $('#activityTimeline').html(timelineHtml);
+                        $('#activityModalLoading').addClass('d-none');
+                        $('#activityModalContent').removeClass('d-none');
+                    }
+                },
+                error: function() {
+                    $('#activityTimeline').html('<div class="alert alert-danger">Failed to load member activity.</div>');
+                    $('#activityModalLoading').addClass('d-none');
+                    $('#activityModalContent').removeClass('d-none');
+                }
+            });
+        });
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
     });
 </script>
 @endpush

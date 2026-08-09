@@ -2,6 +2,7 @@
 
 use App\Models\Comment;
 use App\Models\Company;
+use App\Models\CompanyUsers;
 use App\Models\Note;
 use App\Models\Project;
 use App\Models\ProjectCredentials;
@@ -114,4 +115,90 @@ it('logs comment, note, company, project credentials, and external task api acti
         'password_or_secret' => 'secret123',
     ]);
     expect(Activity::where('subject_type', 'project_credentials')->where('subject_id', $cred->id)->exists())->toBeTrue();
+});
+
+it('allows company members to fetch team member activity via memberActivity endpoint', function () {
+    $owner = User::factory()->create();
+    $memberUser = User::factory()->create();
+    $nonMemberUser = User::factory()->create();
+
+    $company = Company::create(['name' => 'Member Activity Co', 'code' => 'MACO1']);
+
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $owner->id,
+        'role' => 1,
+        'is_approved' => true,
+    ]);
+
+    CompanyUsers::create([
+        'company_id' => $company->id,
+        'user_id' => $memberUser->id,
+        'role' => 0,
+        'is_approved' => true,
+    ]);
+
+    $this->actingAs($memberUser);
+    Task::create([
+        'title' => 'Member Created Task',
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $memberUser->id,
+    ]);
+
+    // Authorized call
+    $this->actingAs($owner);
+    $response = $this->getJson(route('companies.members.activity', [$company, $memberUser]));
+    $response->assertStatus(200);
+    $response->assertJsonPath('success', true);
+    $response->assertJsonPath('user.email', $memberUser->email);
+    expect(count($response->json('activities')))->toBeGreaterThan(0);
+
+    // Unauthorized call (non-member)
+    $this->actingAs($nonMemberUser);
+    $unauthResponse = $this->getJson(route('companies.members.activity', [$company, $memberUser]));
+    $unauthResponse->assertStatus(403);
+});
+
+it('logs activity when user views task page or dashboard', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $task = Task::create([
+        'title' => 'Page View Task',
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $user->id,
+    ]);
+
+    // View task page
+    $this->get(route('tasks.show', $task))->assertStatus(200);
+
+    expect(Activity::where('subject_type', 'task')
+        ->where('subject_id', $task->id)
+        ->where('event', 'viewed')
+        ->where('causer_id', $user->id)
+        ->exists())->toBeTrue();
+
+    // View dashboard
+    $this->get(route('dashboard'))->assertStatus(200);
+
+    expect(Activity::where('event', 'viewed_dashboard')
+        ->where('causer_id', $user->id)
+        ->exists())->toBeTrue();
+
+    // View project page
+    $project = Project::create([
+        'name' => 'Viewed Project',
+        'slug' => 'viewed-project',
+        'user_id' => $user->id,
+    ]);
+
+    $this->get(route('projects.show', $project))->assertStatus(200);
+
+    expect(Activity::where('subject_type', 'project')
+        ->where('subject_id', $project->id)
+        ->where('event', 'viewed')
+        ->where('causer_id', $user->id)
+        ->exists())->toBeTrue();
 });

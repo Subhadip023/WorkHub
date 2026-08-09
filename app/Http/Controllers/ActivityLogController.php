@@ -14,7 +14,18 @@ class ActivityLogController extends Controller
 
         $query = Activity::with(['causer', 'subject']);
 
-        if ($scope === 'all' && ($user->isAdmin() || $user->isSuperAdmin())) {
+        if ($request->filled('user_id')) {
+            $targetUserId = (int) $request->input('user_id');
+            $query->where(function ($q) use ($targetUserId) {
+                $q->where(function ($sub) use ($targetUserId) {
+                    $sub->where('causer_type', 'user')
+                        ->where('causer_id', $targetUserId);
+                })->orWhere(function ($sub) use ($targetUserId) {
+                    $sub->where('subject_type', 'user')
+                        ->where('subject_id', $targetUserId);
+                });
+            });
+        } elseif ($scope === 'all' && ($user->isAdmin() || $user->isSuperAdmin())) {
             // Admin viewing all system activity logs
         } else {
             // User viewing their own activity logs

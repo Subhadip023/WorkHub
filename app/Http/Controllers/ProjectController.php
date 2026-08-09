@@ -138,6 +138,12 @@ class ProjectController extends Controller
 
         Gate::authorize('view', $project);
 
+        log_activity(
+            description: "Viewed project '{$project->name}'",
+            event: 'viewed',
+            subject: $project
+        );
+
         if ($project->company_id === null) {
             $companyUsers = collect([auth()->user()]);
             $user_role = 1; // Admin of their personal space

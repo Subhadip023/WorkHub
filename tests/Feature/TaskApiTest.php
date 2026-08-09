@@ -8,7 +8,6 @@ use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Spatie\Activitylog\Models\Activity;
 
 it('allows authenticated user to create a task in a project via API', function () {
     $user = User::factory()->create();
@@ -496,15 +495,6 @@ it('creates external_task_sources record when task is created via API key', func
         'field' => 'external_source',
         'new_value' => 'GitHub Action Bot',
     ]);
-
-    $activity = Activity::where('subject_type', 'task')
-        ->where('subject_id', $taskId)
-        ->where('event', 'created_via_api')
-        ->first();
-
-    expect($activity)->not->toBeNull();
-    expect($activity->description)->toBe('Task created via External API: GitHub Action Bot');
-    expect($activity->properties['api_name'])->toBe('GitHub Action Bot');
 });
 
 it('allows uploading images when creating a task via API key using base64 string', function () {

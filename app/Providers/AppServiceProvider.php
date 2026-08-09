@@ -66,11 +66,12 @@ class AppServiceProvider extends ServiceProvider
             if ($event->user instanceof Model) {
                 $event->user->forceFill(['last_login_at' => now()])->save();
 
-                activity()
-                    ->causedBy($event->user)
-                    ->performedOn($event->user)
-                    ->event('login')
-                    ->log('User logged in');
+                log_activity(
+                    description: 'User logged in',
+                    event: 'login',
+                    subject: $event->user,
+                    causer: $event->user
+                );
             }
         });
 

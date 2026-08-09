@@ -11,9 +11,11 @@ use App\Models\CompanyUsers;
 use App\Models\Task;
 use App\Models\User;
 use App\Services\NotificationService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
+use Spatie\Activitylog\Models\Activity;
 
 class CompanyController extends Controller
 {
@@ -112,6 +114,81 @@ class CompanyController extends Controller
         }
 
         return view('companies.show', compact('company', 'members', 'comments', 'isAdmin', 'pendingRequests'));
+    }
+
+    /**
+     * Get member activity log for company details view.
+     */
+    public function memberActivity(Company $company, User $user): JsonResponse
+    {
+        $currentUser = auth()->user();
+
+        // Verify current user belongs to this company
+        $isMember = CompanyUsers::where('company_id', $company->id)
+            ->where('user_id', $currentUser->id)
+            ->where('is_approved', true)
+            ->exists();
+
+        if (! $isMember) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+        }
+
+        // Verify target user is also in this company
+        $targetIsMember = CompanyUsers::where('company_id', $company->id)
+            ->where('user_id', $user->id)
+            ->where('is_approved', true)
+            ->exists();
+
+        if (! $targetIsMember) {
+            return response()->json(['success' => false, 'message' => 'User is not a member of this organization.'], 404);
+        }
+
+        $activities = Activity::where(function ($q) use ($user) {
+            $q->where(function ($sub) use ($user) {
+                $sub->where('causer_type', 'user')
+                    ->where('causer_id', $user->id);
+            })->orWhere(function ($sub) use ($user) {
+                $sub->where('subject_type', 'user')
+                    ->where('subject_id', $user->id);
+            });
+        })
+            ->with(['causer', 'subject'])
+            ->latest('id')
+            ->take(30)
+            ->get()
+            ->map(function (Activity $activity) {
+                $subject = $activity->subject;
+                $title = null;
+                if ($subject) {
+                    $title = $subject->getAttribute('title') ?? $subject->getAttribute('name');
+                }
+
+                return [
+                    'id' => $activity->id,
+                    'description' => $activity->description,
+                    'event' => $activity->event,
+                    'subject_type' => class_basename($activity->subject_type ?? ''),
+                    'subject_title' => is_string($title) ? $title : null,
+                    'properties' => $activity->properties,
+                    'created_at_human' => $activity->created_at ? $activity->created_at->diffForHumans() : '',
+                    'created_at_formatted' => $activity->created_at ? $activity->created_at->format('M d, Y h:i A') : '',
+                ];
+            });
+
+        $lastLoginHuman = $user->last_login_at?->diffForHumans() ?? 'Never';
+        $lastLoginFormatted = $user->last_login_at?->format('M d, Y h:i A') ?? 'Never';
+
+        return response()->json([
+            'success' => true,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'last_login_at' => $lastLoginHuman,
+                'last_login_at_formatted' => $lastLoginFormatted,
+            ],
+            'activities' => $activities,
+        ]);
     }
 
     /**

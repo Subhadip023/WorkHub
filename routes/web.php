@@ -36,6 +36,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/companies/{company}/switch', [CompanyController::class, 'switch'])->name('companies.switch');
     Route::post('/companies/{company}/leave', [CompanyController::class, 'leave'])->name('companies.leave');
     Route::delete('/companies/{company}/members/{user}', [CompanyController::class, 'removeMember'])->name('companies.members.destroy');
+    Route::get('/companies/{company}/members/{user}/activity', [CompanyController::class, 'memberActivity'])->name('companies.members.activity');
     Route::post('/companies/{company}/approve/{user}', [CompanyController::class, 'approveMember'])->name('companies.approve-member');
     Route::post('/companies/{company}/reject-request/{user}', [CompanyController::class, 'rejectMemberRequest'])->name('companies.reject-member-request');
     Route::post('/companies/{company}/invite', [CompanyController::class, 'invite'])->name('companies.invite');

@@ -95,6 +95,15 @@ class DashboardController extends Controller
 
         $todayTasks = $this->taskService->getTodayTasks($auth_user, $company, $activeTaskFilter, $perPage);
 
+        log_activity(
+            description: "Viewed dashboard ({$currentWorkspaceName})",
+            event: 'viewed_dashboard',
+            properties: [
+                'workspace' => $currentWorkspaceName,
+                'company_id' => $company?->id,
+            ]
+        );
+
         return view('welcome', compact(
             'projects',
             'projectsCount',

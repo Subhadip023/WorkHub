@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
@@ -15,6 +16,7 @@ use Spatie\Permission\Traits\HasRoles;
 /**
  * @property bool|null $beta_access
  * @property bool|null $issues_access
+ * @property Carbon|null $last_login_at
  */
 class User extends Authenticatable implements MustVerifyEmail
 {
