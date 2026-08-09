@@ -192,7 +192,7 @@ class ProjectController extends Controller
         }
 
         $perPage = (int) $request->input('per_page', 5);
-        $tasksQuery->orderByRaw('due_date IS NULL, due_date ASC')->orderBy('priority', 'desc');
+        $tasksQuery->orderByRaw('due_date IS NULL, due_date ASC')->orderBy('id', 'desc')->orderBy('priority', 'desc');
         $tasks = $tasksQuery->paginate($perPage)->withQueryString();
 
         if ($request->ajax()) {
