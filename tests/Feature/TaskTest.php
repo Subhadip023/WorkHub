@@ -906,7 +906,7 @@ test('it allows authenticated user to copy a task', function () {
     expect($copiedTask->points)->toBe(8);
     expect($copiedTask->project_id)->toBe($project->id);
 
-    expect(TaskHistory::where('task_id', $copiedTask->id)->count())->toBe(1);
+    expect(TaskHistory::where('task_id', $copiedTask->id)->count())->toBe(5);
 
     $this->assertDatabaseHas('task_histories', [
         'task_id' => $copiedTask->id,

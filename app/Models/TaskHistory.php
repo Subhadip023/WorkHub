@@ -227,7 +227,7 @@ class TaskHistory extends Model
         }
 
         if ($field === 'project_id') {
-            if ($old === null || $old === '' || $old === '0') {
+            if ($old === '0') {
                 return 'From: Personal Space';
             }
             $project = Project::find($old);
