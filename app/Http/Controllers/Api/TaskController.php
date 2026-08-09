@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ExternalTaskSource;
 use App\Models\Project;
 use App\Models\Task;
+use App\Models\TaskHistory;
 use App\Models\User;
 use App\Services\NotificationService;
 use App\Services\TaskServiceInterface;
@@ -177,6 +178,30 @@ class TaskController extends Controller
                 'payload' => $request->except(['image', 'images', 'image_base64', 'images_base64']),
                 'ip_address' => $request->ip(),
             ]);
+
+            TaskHistory::create([
+                'task_id' => $task->id,
+                'user_id' => $user_id,
+                'field' => 'external_source',
+                'old_value' => null,
+                'new_value' => $externalApiConfig->name,
+            ]);
+
+            $causer = $externalApiConfig->user ?? ($externalApiConfig->user_id ? User::find($externalApiConfig->user_id) : null);
+
+            $activityLogger = activity()
+                ->performedOn($task)
+                ->event('created_via_api')
+                ->withProperties([
+                    'api_name' => $externalApiConfig->name,
+                    'api_id' => $externalApiConfig->id,
+                ]);
+
+            if ($causer) {
+                $activityLogger->causedBy($causer);
+            }
+
+            $activityLogger->log("Task created via External API: {$externalApiConfig->name}");
         }
 
         $assignee = $task->assignedUser ?? ($task->assigned_to ? User::find($task->assigned_to) : null);

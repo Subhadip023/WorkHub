@@ -173,6 +173,10 @@ class TaskHistory extends Model
             return 'Moved to project "'.$projectName.'"';
         }
 
+        if ($field === 'external_source' || $field === 'source') {
+            return 'Task created via External API: "'.e($new).'"';
+        }
+
         return 'Updated '.$field;
     }
 
