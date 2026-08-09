@@ -8,6 +8,8 @@ use App\Models\Notification;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
+use App\Repositories\TaskRepositoryInterface;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 
 it('allows authenticated user to list their companies', function () {
@@ -653,4 +655,32 @@ it('prevents an admin from leaving the company', function () {
         'company_id' => $company->id,
         'user_id' => $admin->id,
     ]);
+});
+
+it('caches team members scoped by company and user', function () {
+    $user = User::factory()->create();
+    $company1 = Company::create(['name' => 'Company One', 'code' => 'COM1']);
+    $company2 = Company::create(['name' => 'Company Two', 'code' => 'COM2']);
+
+    CompanyUsers::create([
+        'company_id' => $company1->id,
+        'user_id' => $user->id,
+        'role' => 1,
+        'is_approved' => true,
+    ]);
+
+    CompanyUsers::create([
+        'company_id' => $company2->id,
+        'user_id' => $user->id,
+        'role' => 1,
+        'is_approved' => true,
+    ]);
+
+    $repo = app(TaskRepositoryInterface::class);
+
+    $usersCo1 = $repo->getAccessibleCompanyUsers($user, $company1->id);
+    expect(Cache::has("accessible_company_users_{$user->id}_company_{$company1->id}"))->toBeTrue();
+
+    $usersCo2 = $repo->getAccessibleCompanyUsers($user, $company2->id);
+    expect(Cache::has("accessible_company_users_{$user->id}_company_{$company2->id}"))->toBeTrue();
 });

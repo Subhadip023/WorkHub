@@ -10,6 +10,7 @@ use App\Models\TaskImage;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class TaskRepository implements TaskRepositoryInterface
 {
@@ -122,25 +123,35 @@ class TaskRepository implements TaskRepositoryInterface
         ];
     }
 
-    public function getAccessibleCompanyUsers(User $user): Collection
+    public function getAccessibleCompanyUsers(User $user, ?int $companyId = null): Collection
     {
-        $companyIds = $user->companies()->pluck('company_id')->toArray();
+        $targetCompanyId = $companyId ?? session('active_company_id');
+        $cacheKeySuffix = $targetCompanyId ? "company_{$targetCompanyId}" : 'all_companies';
+        $cacheKey = "accessible_company_users_{$user->id}_{$cacheKeySuffix}";
 
-        $companyUsers = CompanyUsers::whereIn('company_id', $companyIds)
-            ->with('user')
-            ->get()
-            ->map(function ($cu) {
-                return $cu->user;
-            })
-            ->filter()
-            ->unique('id')
-            ->values();
+        return Cache::remember($cacheKey, 600, function () use ($user, $targetCompanyId) {
+            if ($targetCompanyId) {
+                $companyIds = [$targetCompanyId];
+            } else {
+                $companyIds = $user->companies()->pluck('company_id')->toArray();
+            }
 
-        if (! $companyUsers->contains('id', $user->id)) {
-            $companyUsers->push($user);
-        }
+            $companyUsers = CompanyUsers::whereIn('company_id', $companyIds)
+                ->with('user')
+                ->get()
+                ->map(function ($cu) {
+                    return $cu->user;
+                })
+                ->filter()
+                ->unique('id')
+                ->values();
 
-        return $companyUsers;
+            if (! $companyUsers->contains('id', $user->id)) {
+                $companyUsers->push($user);
+            }
+
+            return $companyUsers;
+        });
     }
 
     public function getTodayTasks(User $user, ?Company $company = null, string $filter = 'today_past', int $perPage = 5): LengthAwarePaginator

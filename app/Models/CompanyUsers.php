@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Cache;
 
 class CompanyUsers extends Model
 {
@@ -15,6 +16,19 @@ class CompanyUsers extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = ['role', 'company_id', 'user_id', 'is_approved'];
+
+    protected static function booted(): void
+    {
+        static::saved(function (CompanyUsers $companyUser) {
+            Cache::forget("accessible_company_users_{$companyUser->user_id}_company_{$companyUser->company_id}");
+            Cache::forget("accessible_company_users_{$companyUser->user_id}_all_companies");
+        });
+
+        static::deleted(function (CompanyUsers $companyUser) {
+            Cache::forget("accessible_company_users_{$companyUser->user_id}_company_{$companyUser->company_id}");
+            Cache::forget("accessible_company_users_{$companyUser->user_id}_all_companies");
+        });
+    }
 
     /**
      * @return BelongsTo<Company, $this>

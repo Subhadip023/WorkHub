@@ -16,7 +16,7 @@ interface TaskRepositoryInterface
 
     public function getTaskStatsForUser(User $user): array;
 
-    public function getAccessibleCompanyUsers(User $user): Collection;
+    public function getAccessibleCompanyUsers(User $user, ?int $companyId = null): Collection;
 
     public function getTodayTasks(User $user, ?Company $company = null, string $filter = 'today_past', int $perPage = 5): LengthAwarePaginator;
 
