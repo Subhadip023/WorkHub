@@ -64,6 +64,8 @@ class AppServiceProvider extends ServiceProvider
 
         Event::listen(Login::class, function (Login $event) {
             if ($event->user instanceof Model) {
+                $event->user->forceFill(['last_login_at' => now()])->save();
+
                 activity()
                     ->causedBy($event->user)
                     ->performedOn($event->user)

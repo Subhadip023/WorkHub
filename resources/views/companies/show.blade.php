@@ -87,6 +87,7 @@
                                 <th>Role</th>
                                 <th>Tasks</th>
                                 <th>Joined</th>
+                                <th>Last Login</th>
                                 @if($isAdmin)
                                     <th>Actions</th>
                                 @endif
@@ -121,11 +122,11 @@
                                                     $barClass = 'bg-danger';
                                                     if ($percentage >= 80) {
                                                         $barClass = 'bg-success';
-                                                    } elseif ($percentage >= 50) {
+                                                     } elseif ($percentage >= 50) {
                                                         $barClass = 'bg-primary';
-                                                    } elseif ($percentage >= 20) {
+                                                     } elseif ($percentage >= 20) {
                                                         $barClass = 'bg-info';
-                                                    }
+                                                     }
                                                 @endphp
                                                 <div class="progress progress-sm flex-grow-1 mr-2" style="height: 6px;">
                                                     <div class="progress-bar {{ $barClass }}" role="progressbar" 
@@ -143,6 +144,15 @@
                                     </td>
     
                                     <td class="align-middle text-muted small">{{ $member->created_at->diffForHumans() }}</td>
+                                    <td class="align-middle text-muted small">
+                                        @if($member->user?->last_login_at)
+                                            <span title="{{ $member->user->last_login_at->format('M d, Y h:i A') }}">
+                                                <i class="far fa-clock mr-1 text-primary"></i>{{ $member->user->last_login_at->diffForHumans() }}
+                                            </span>
+                                        @else
+                                            <span class="text-gray-400">Never</span>
+                                        @endif
+                                    </td>
                                     @if($isAdmin)
                                         <td class="align-middle text-center">
                                             @if($member->user_id !== auth()->id())

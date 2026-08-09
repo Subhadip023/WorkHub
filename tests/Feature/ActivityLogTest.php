@@ -67,12 +67,13 @@ it('allows authenticated user to view activity logs index page', function () {
     $response->assertSee('My Activity Logs');
 });
 
-it('logs user login events in activitylog', function () {
-    $user = User::factory()->create();
+it('logs user login events in activitylog and updates last_login_at', function () {
+    $user = User::factory()->create(['last_login_at' => null]);
 
     event(new Login('web', $user, false));
 
     expect(Activity::where('event', 'login')->where('causer_id', $user->id)->exists())->toBeTrue();
+    expect($user->fresh()->last_login_at)->not()->toBeNull();
 });
 
 it('logs comment, note, company, project credentials, and external task api activity', function () {
