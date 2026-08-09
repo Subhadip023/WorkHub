@@ -12,7 +12,6 @@ use App\Services\TaskServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Log;
 
 class TaskController extends Controller
 {
@@ -107,13 +106,6 @@ class TaskController extends Controller
     public function store(Request $request): JsonResponse
     {
         $externalApiConfig = $request->attributes->get('externalApiConfig');
-
-        Log::info('Api\TaskController@store initiated', [
-            'ip' => $request->ip(),
-            'has_external_config' => ! empty($externalApiConfig),
-            'user_id' => auth()->id(),
-            'title' => $request->input('title'),
-        ]);
 
         $validated = $request->validate([
             'project_id' => 'nullable|exists:projects,id',

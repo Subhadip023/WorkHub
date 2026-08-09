@@ -2,21 +2,27 @@
 
 namespace App\Providers;
 
+use App\Models\Comment;
 use App\Models\Company;
 use App\Models\CompanyInvitation;
+use App\Models\ExternalTaskApi;
 use App\Models\Note;
 use App\Models\Project;
+use App\Models\ProjectCredentials;
 use App\Models\Task;
+use App\Models\User;
 use App\Repositories\TaskRepository;
 use App\Repositories\TaskRepositoryInterface;
 use App\Services\TaskService;
 use App\Services\TaskServiceInterface;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
@@ -49,7 +55,19 @@ class AppServiceProvider extends ServiceProvider
             'project' => Project::class,
             'company' => Company::class,
             'note' => Note::class,
+            'user' => User::class,
+            'comment' => Comment::class,
+            'project_credentials' => ProjectCredentials::class,
+            'external_task_api' => ExternalTaskApi::class,
         ]);
+
+        Event::listen(Login::class, function (Login $event) {
+            activity()
+                ->causedBy($event->user)
+                ->performedOn($event->user)
+                ->event('login')
+                ->log('User logged in');
+        });
 
         VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
             return (new MailMessage)

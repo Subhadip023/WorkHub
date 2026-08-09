@@ -75,6 +75,12 @@
             <span>Trash</span>
         </a>
     </li>
+    <li class="nav-item {{Route::currentRouteName() == 'activity-logs.index' ? 'active' : ''}}">
+        <a class="nav-link" href="{{ route('activity-logs.index') }}">
+            <i class="fas fa-history"></i>
+            <span>Activity Logs</span>
+        </a>
+    </li>
 
     @can('manage-features')
         <hr class="sidebar-divider my-2">
