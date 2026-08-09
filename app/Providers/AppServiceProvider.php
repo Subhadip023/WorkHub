@@ -18,6 +18,7 @@ use App\Services\TaskServiceInterface;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -62,11 +63,13 @@ class AppServiceProvider extends ServiceProvider
         ]);
 
         Event::listen(Login::class, function (Login $event) {
-            activity()
-                ->causedBy($event->user)
-                ->performedOn($event->user)
-                ->event('login')
-                ->log('User logged in');
+            if ($event->user instanceof Model) {
+                activity()
+                    ->causedBy($event->user)
+                    ->performedOn($event->user)
+                    ->event('login')
+                    ->log('User logged in');
+            }
         });
 
         VerifyEmail::toMailUsing(function (object $notifiable, string $url) {
