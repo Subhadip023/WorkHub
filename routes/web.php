@@ -12,6 +12,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectCredentialsController;
+use App\Http\Controllers\ProjectGithubRepoController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TrashController;
@@ -57,6 +58,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/external-api/{externalTaskApi}', [ExternalTaskApiController::class, 'update'])->name('external-api.update');
     Route::post('/external-api/{externalTaskApi}/regenerate-secret', [ExternalTaskApiController::class, 'regenerateSecret'])->name('external-api.regenerate-secret');
     Route::delete('/external-api/{externalTaskApi}', [ExternalTaskApiController::class, 'destroy'])->name('external-api.destroy');
+
+    Route::get('/projects/{project}/github', [ProjectGithubRepoController::class, 'index'])->name('projects.github');
+    Route::post('/projects/{project}/github-repos', [ProjectGithubRepoController::class, 'store'])->name('projects.github-repos.store');
+    Route::patch('/projects/{project}/github-repos/{githubRepo}', [ProjectGithubRepoController::class, 'update'])->name('projects.github-repos.update');
+    Route::delete('/projects/{project}/github-repos/{githubRepo}', [ProjectGithubRepoController::class, 'destroy'])->name('projects.github-repos.destroy');
     Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
     Route::post('/tasks', [TaskController::class, 'storeGeneral'])->name('tasks.store');
     Route::post('/projects/{project}/tasks', [TaskController::class, 'store'])->name('projects.tasks.store');

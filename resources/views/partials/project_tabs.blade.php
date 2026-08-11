@@ -20,6 +20,11 @@
                 <i class="fas fa-plug mr-2"></i>External API
             </a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link {{ request()->routeIs('projects.github') ? 'active' : '' }} font-weight-bold" href="{{ route('projects.github', $project) }}">
+                <i class="fab fa-github mr-2"></i>GitHub Repos
+            </a>
+        </li>
     </ul>
 
     <div class="pb-2">

@@ -225,4 +225,12 @@ class Task extends Model
     {
         return $this->hasOne(ExternalTaskSource::class);
     }
+
+    /**
+     * @return HasOne<GithubIssue, $this>
+     */
+    public function githubIssue(): HasOne
+    {
+        return $this->hasOne(GithubIssue::class);
+    }
 }

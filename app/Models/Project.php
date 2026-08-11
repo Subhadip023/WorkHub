@@ -112,4 +112,12 @@ class Project extends Model
     {
         return $this->hasMany(ExternalTaskApi::class, 'project_id');
     }
+
+    /**
+     * @return HasMany<ProjectGithubRepo, $this>
+     */
+    public function githubRepos(): HasMany
+    {
+        return $this->hasMany(ProjectGithubRepo::class, 'project_id');
+    }
 }
