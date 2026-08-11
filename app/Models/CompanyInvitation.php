@@ -44,6 +44,7 @@ class CompanyInvitation extends Model
                 'user_id' => $user->id,
             ], [
                 'role' => 0, // Member
+                'is_approved' => true,
             ]);
 
             // Set the active company session

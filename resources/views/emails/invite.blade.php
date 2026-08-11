@@ -126,13 +126,11 @@
                 </div>
             @endif
 
-            <p>Click the button below to join the workspace. The invitation code will be automatically pre-filled for you.</p>
+            <p>Click the button below to join the workspace. If you don't have an account, you will be prompted to create one with your email pre-filled.</p>
 
             <div class="button-container">
                 <a href="{{ $joinLink }}" class="btn-primary">Join Workspace</a>
             </div>
-
-            <p>If you don't have a WorkHub account, you will be prompted to register first, then you can join using the code.</p>
         </div>
         <div class="footer">
             This is an automated email from WorkHub. Please do not reply directly to this email.

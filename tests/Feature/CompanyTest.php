@@ -363,6 +363,11 @@ it('allows company admin to invite a team member via email', function () {
     Mail::assertSent(function (InviteMember $mail) {
         return $mail->hasTo('invitee@example.com') && $mail->companyName === 'Invite Org';
     });
+
+    $this->assertDatabaseHas('company_invitations', [
+        'company_id' => $company->id,
+        'email' => 'invitee@example.com',
+    ]);
 });
 
 it('stores invitation in the database when company admin invites a team member', function () {
@@ -390,6 +395,37 @@ it('stores invitation in the database when company admin invites a team member',
     $this->assertDatabaseHas('company_invitations', [
         'company_id' => $company->id,
         'email' => 'invitee@example.com',
+    ]);
+});
+
+it('automatically joins invited user to company upon registration', function () {
+    $company = Company::create(['name' => 'Join Org', 'code' => 'JORG']);
+
+    CompanyInvitation::create([
+        'company_id' => $company->id,
+        'email' => 'newuser@example.com',
+    ]);
+
+    $response = $this->post(route('register'), [
+        'name' => 'New User',
+        'email' => 'newuser@example.com',
+        'password' => 'password123',
+        'password_confirmation' => 'password123',
+    ]);
+
+    $response->assertRedirect(route('dashboard'));
+
+    $user = User::where('email', 'newuser@example.com')->first();
+    expect($user)->not->toBeNull();
+
+    $this->assertDatabaseHas('company_users', [
+        'company_id' => $company->id,
+        'user_id' => $user->id,
+        'is_approved' => true,
+    ]);
+
+    $this->assertDatabaseMissing('company_invitations', [
+        'email' => 'newuser@example.com',
     ]);
 });
 

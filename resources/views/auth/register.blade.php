@@ -38,7 +38,7 @@
 
                                     <div class="form-group">
                                         <input type="email" name="email" class="form-control form-control-user"
-                                               id="exampleInputEmail" placeholder="Email Address" value="{{ old('email') }}" required autocomplete="username">
+                                               id="exampleInputEmail" placeholder="Email Address" value="{{ old('email', request('email')) }}" required autocomplete="username">
                                     </div>
                                     @error('email')
                                         <span class="text-danger small">{{$message}}</span>

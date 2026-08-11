@@ -389,7 +389,7 @@ class CompanyController extends Controller
 
         $email = $request->input('email');
 
-        // Check if the user is already a member of the company
+        // Check if the user is already registered and a member of this organization
         $existingUser = User::where('email', $email)->first();
         if ($existingUser) {
             $isMember = CompanyUsers::where('company_id', $company->id)
@@ -405,23 +405,27 @@ class CompanyController extends Controller
         $expiry = now()->addDays(7)->format('F d, Y h:i A'); // 7 days from now
 
         try {
-            // Store the invitation in the database
+            // Store the invitation in the database (no user account created prior to acceptance/registration)
             CompanyInvitation::updateOrCreate([
                 'company_id' => $company->id,
                 'email' => $email,
             ]);
 
             // Clear cache for the invited user if they exist
-            $invitedUser = User::where('email', $email)->first();
-            if ($invitedUser) {
-                cache()->forget('pending_invitations_'.$invitedUser->id);
+            if ($existingUser) {
+                cache()->forget('pending_invitations_'.$existingUser->id);
             }
+
+            // Generate join link (redirects to login if user exists, or register with pre-filled email)
+            $joinLink = $existingUser
+                ? route('login', ['email' => $email])
+                : route('register', ['email' => $email]);
 
             Mail::to($email)->send(new InviteMember(
                 $company->name,
                 $auth_user->name,
                 $expiry,
-                route('companies.index', ['code' => $company->code]),
+                $joinLink,
                 $customMessage
             ));
 
