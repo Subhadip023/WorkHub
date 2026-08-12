@@ -417,6 +417,7 @@ it('automatically joins invited user to company upon registration', function () 
 
     $user = User::where('email', 'newuser@example.com')->first();
     expect($user)->not->toBeNull();
+    expect($user->hasVerifiedEmail())->toBeTrue();
 
     $this->assertDatabaseHas('company_users', [
         'company_id' => $company->id,
@@ -481,8 +482,8 @@ it('renders the invitations modal on dashboard if user has pending invitations',
     $response->assertSee('Invite Org');
 });
 
-it('allows user to accept a company invitation', function () {
-    $invitedUser = User::factory()->create(['email' => 'invitee@example.com']);
+it('allows user to accept a company invitation and marks email as verified', function () {
+    $invitedUser = User::factory()->create(['email' => 'invitee@example.com', 'email_verified_at' => null]);
     $company = Company::create(['name' => 'Invite Org', 'code' => 'INVT']);
 
     $invitation = CompanyInvitation::create([
@@ -494,6 +495,8 @@ it('allows user to accept a company invitation', function () {
 
     $response = $this->post(route('invitations.accept', $invitation));
     $response->assertRedirect(route('dashboard'));
+
+    expect($invitedUser->refresh()->hasVerifiedEmail())->toBeTrue();
 
     $this->assertDatabaseHas('company_users', [
         'company_id' => $company->id,

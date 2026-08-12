@@ -37,6 +37,10 @@ class CompanyInvitation extends Model
             return;
         }
 
+        if (! $user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+        }
+
         foreach ($invitations as $invitation) {
             // Join the company
             CompanyUsers::firstOrCreate([

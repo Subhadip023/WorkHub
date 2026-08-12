@@ -443,12 +443,16 @@ class CompanyController extends Controller
         Gate::authorize('handle', $invitation);
 
         $company_id = $invitation->company_id;
-        $user_id = auth()->user()->id;
+        $user = auth()->user();
+
+        if (! $user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+        }
 
         // Add user as an approved member to the company
         CompanyUsers::updateOrCreate([
             'company_id' => $company_id,
-            'user_id' => $user_id,
+            'user_id' => $user->id,
         ], [
             'role' => 0, // Member
             'is_approved' => true,

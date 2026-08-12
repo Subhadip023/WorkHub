@@ -409,8 +409,11 @@
 @endif
 
 <!-- Hidden form for inline task addition -->
-<form action="{{ route('tasks.store') }}" method="POST" id="inlineAddTaskForm" style="display:none;">
+<form action="{{ isset($project) ? route('projects.tasks.store', $project) : route('tasks.store') }}" method="POST" id="inlineAddTaskForm" style="display:none;">
     @csrf
+    @if(isset($project))
+        <input type="hidden" name="project_id" value="{{ $project->id }}">
+    @endif
 </form>
 
 @include('partials.edit_task_modal')

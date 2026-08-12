@@ -28,6 +28,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/invitations/{invitation}/accept', [CompanyController::class, 'acceptInvitation'])->name('invitations.accept');
+    Route::post('/invitations/{invitation}/reject', [CompanyController::class, 'rejectInvitation'])->name('invitations.reject');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -41,8 +43,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/companies/{company}/reject-request/{user}', [CompanyController::class, 'rejectMemberRequest'])->name('companies.reject-member-request');
     Route::post('/companies/{company}/invite', [CompanyController::class, 'invite'])->name('companies.invite');
     Route::get('/personal/switch', [CompanyController::class, 'switchToPersonal'])->name('personal.switch');
-    Route::post('/invitations/{invitation}/accept', [CompanyController::class, 'acceptInvitation'])->name('invitations.accept');
-    Route::post('/invitations/{invitation}/reject', [CompanyController::class, 'rejectInvitation'])->name('invitations.reject');
 
     Route::resource('projects', ProjectController::class);
     Route::get('/projects/{project}/notes', [ProjectController::class, 'notes'])->name('projects.notes');
