@@ -3,6 +3,7 @@
 @section('title', 'Login')
 
 @section('content')
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <div class="container" style="min-height: 100vh;">
     <div class="row justify-content-center align-items-center" style="min-height: 100vh;">
 
@@ -31,7 +32,7 @@
                                     <div class="form-group">
                                         <input type="email" name="email" class="form-control form-control-user"
                                             id="exampleInputEmail" aria-describedby="emailHelp"
-                                            placeholder="Enter Email Address...">
+                                            placeholder="Enter Email Address..." value="{{ old('email') }}">
                                     </div>
                                     @error('email')
                                         <span class="text-danger small">{{$message}}</span>
@@ -45,11 +46,21 @@
                                     @enderror 
                                     <div class="form-group">
                                         <div class="custom-control custom-checkbox small">
-                                            <input type="checkbox" class="custom-control-input" id="customCheck">
+                                            <input type="checkbox" name="remember" class="custom-control-input" id="customCheck">
                                             <label class="custom-control-label" for="customCheck">Remember
                                                 Me</label>
                                         </div>
                                     </div>
+
+                                    @if(config('services.recaptcha.site_key') && !env('RECAPTCHA_SKIP', false))
+                                        <div class="form-group d-flex flex-column align-items-center mb-3">
+                                            <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
+                                            @error('g-recaptcha-response')
+                                                <span class="text-danger small mt-1">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                    @endif
+
                                     <button type="submit" class="btn btn-primary btn-user btn-block">
                                         Login
                                     </button>
