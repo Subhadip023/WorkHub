@@ -52,7 +52,7 @@
                                         </div>
                                     </div>
 
-                                    @if(config('services.recaptcha.site_key') && !env('RECAPTCHA_SKIP', false))
+                                    @if(config('services.recaptcha.site_key') && !config('services.recaptcha.skip'))
                                         <div class="form-group d-flex flex-column align-items-center mb-3">
                                             <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
                                             @error('g-recaptcha-response')

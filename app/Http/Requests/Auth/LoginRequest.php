@@ -33,7 +33,7 @@ class LoginRequest extends FormRequest
             'password' => ['required', 'string'],
         ];
 
-        if (config('services.recaptcha.site_key') && ! env('RECAPTCHA_SKIP', false)) {
+        if (config('services.recaptcha.site_key') && ! config('services.recaptcha.skip')) {
             $rules['g-recaptcha-response'] = [
                 app()->runningUnitTests() ? 'nullable' : 'required',
                 new ReCaptcha,

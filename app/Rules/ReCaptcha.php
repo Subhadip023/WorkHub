@@ -22,7 +22,7 @@ class ReCaptcha implements ValidationRule
         }
 
         // Bypass when RECAPTCHA_SKIP=true (e.g. local development)
-        if (env('RECAPTCHA_SKIP', false)) {
+        if (config('services.recaptcha.skip')) {
             return;
         }
 
