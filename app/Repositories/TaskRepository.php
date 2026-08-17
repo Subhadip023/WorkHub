@@ -42,9 +42,11 @@ class TaskRepository implements TaskRepositoryInterface
         if ($company) {
             return Task::select('id', 'title', 'status', 'priority', 'type', 'points', 'due_date', 'project_id', 'assigned_to', 'user_id', 'created_at', 'updated_at')
                 ->where('assigned_to', $user->id)
+                ->where('status', '!=', 4)
                 ->where(function ($query) use ($company) {
                     $query->whereHas('project', function ($pQuery) use ($company) {
-                        $pQuery->where('company_id', $company->id);
+                        $pQuery->where('company_id', $company->id)
+                            ->where('status', '!=', 4);
                     })->orWhereNull('project_id');
                 });
         }
@@ -53,12 +55,15 @@ class TaskRepository implements TaskRepositoryInterface
 
         return Task::select('id', 'title', 'status', 'priority', 'type', 'points', 'due_date', 'project_id', 'assigned_to', 'user_id', 'created_at', 'updated_at')
             ->where('assigned_to', $user->id)
+            ->where('status', '!=', 4)
             ->where(function ($query) use ($companyIds, $user) {
                 $query->whereHas('project', function ($pQuery) use ($companyIds, $user) {
-                    $pQuery->whereIn('company_id', $companyIds)
-                        ->orWhere(function ($sub) use ($user) {
-                            $sub->whereNull('company_id')->where('user_id', $user->id);
-                        });
+                    $pQuery->where(function ($q) use ($companyIds, $user) {
+                        $q->whereIn('company_id', $companyIds)
+                            ->orWhere(function ($sub) use ($user) {
+                                $sub->whereNull('company_id')->where('user_id', $user->id);
+                            });
+                    })->where('status', '!=', 4);
                 })->orWhereNull('project_id');
             });
     }

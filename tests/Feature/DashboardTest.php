@@ -243,3 +243,65 @@ it('paginates dashboard tasks with 5 per page', function () {
     expect($customTasks->perPage())->toBe(10);
     expect($customTasks->count())->toBe(8);
 });
+
+it('does not display status 4 tasks or tasks of status 4 projects on dashboard', function () {
+    $user = User::factory()->create(['email_verified_at' => now()]);
+
+    $activeProject = Project::create([
+        'name' => 'Active Project',
+        'slug' => 'active-project',
+        'theme' => '#336699',
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $user->id,
+    ]);
+
+    $onHoldProject = Project::create([
+        'name' => 'On Hold Project',
+        'slug' => 'on-hold-project',
+        'theme' => '#336699',
+        'status' => 4, // Status 4 project
+        'priority' => 1,
+        'user_id' => $user->id,
+    ]);
+
+    $normalTask = Task::create([
+        'title' => 'Normal Active Task',
+        'project_id' => $activeProject->id,
+        'user_id' => $user->id,
+        'assigned_to' => $user->id,
+        'status' => 1,
+        'priority' => 2,
+        'due_date' => now()->toDateString(),
+    ]);
+
+    $onHoldTask = Task::create([
+        'title' => 'Status 4 Task',
+        'project_id' => $activeProject->id,
+        'user_id' => $user->id,
+        'assigned_to' => $user->id,
+        'status' => 4, // Status 4 task
+        'priority' => 2,
+        'due_date' => now()->toDateString(),
+    ]);
+
+    $taskInOnHoldProject = Task::create([
+        'title' => 'Task In Status 4 Project',
+        'project_id' => $onHoldProject->id,
+        'user_id' => $user->id,
+        'assigned_to' => $user->id,
+        'status' => 1,
+        'priority' => 2,
+        'due_date' => now()->toDateString(),
+    ]);
+
+    $this->actingAs($user);
+
+    $response = $this->get(route('dashboard'));
+    $response->assertStatus(200);
+    $dashboardTasks = $response->viewData('todayTasks');
+
+    expect($dashboardTasks->pluck('id'))->toContain($normalTask->id);
+    expect($dashboardTasks->pluck('id'))->not->toContain($onHoldTask->id);
+    expect($dashboardTasks->pluck('id'))->not->toContain($taskInOnHoldProject->id);
+});
