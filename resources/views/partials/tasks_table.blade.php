@@ -195,16 +195,13 @@
                     style="display: table-row; {{ $task->priority == 4 && $task->status != 3 ? 'background-color: rgba(231, 74, 59, 0.03);' : '' }}">
                     <td class="text-center align-middle">
                         @can('update', $task)
-                            <form action="{{ route('tasks.toggle', $task) }}" method="POST" class="toggle-task-form d-inline">
+                            <form action="{{ route('tasks.toggle', $task) }}" method="POST" class="d-inline mb-0">
                                 @csrf
                                 @method('PATCH')
-                                <button type="submit" class="btn btn-link p-0 text-decoration-none" title="Mark as {{ $task->status == 3 ? 'Pending' : 'Completed' }}">
-                                    @if($task->status == 3)
-                                        <i class="far fa-check-square fa-lg text-success"></i>
-                                    @else
-                                        <i class="far fa-square fa-lg text-gray-400 hover-text-success"></i>
-                                    @endif
+                                <button type="submit" class="btn {{ $task->status == 3 ? 'btn-warning' : 'btn-success' }} btn-sm shadow-sm" title="Mark as {{ $task->status == 3 ? 'Pending' : 'Completed' }}" data-toggle="tooltip">
+                                    <i class="fas {{ $task->status == 3 ? 'fa-undo' : 'fa-check' }}"></i>
                                 </button>
+                                </form>
                             </form>
                         @else
                             <i class="far {{ $task->status == 3 ? 'fa-check-square text-success' : 'fa-square text-gray-300' }} fa-lg" style="opacity: 0.6;"></i>

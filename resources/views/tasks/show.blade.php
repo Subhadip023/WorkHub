@@ -76,8 +76,7 @@
                 <i class="fas fa-exchange-alt"></i>
             </button>
             
-            <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="d-inline mb-0"
-                  onsubmit="return confirm('Are you sure you want to delete this task? This cannot be undone.');">
+            <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="d-inline mb-0">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-outline-danger btn-sm shadow-sm" title="Delete Task" data-toggle="tooltip">
