@@ -370,3 +370,21 @@ it('loads coming soon placeholder page for unbuilt sidebar items', function () {
         ->has('activeItem')
     );
 });
+
+it('loads new inertia task view page successfully', function () {
+    $user = User::factory()->create(['email_verified_at' => now()]);
+    $this->actingAs($user);
+
+    $response = $this->get(route('new.task.view'));
+    $response->assertStatus(200);
+    $response->assertInertia(fn ($page) => $page
+        ->component('New/TaskView')
+    );
+
+    $responseWithId = $this->get(route('new.task.show', ['id' => '042']));
+    $responseWithId->assertStatus(200);
+    $responseWithId->assertInertia(fn ($page) => $page
+        ->component('New/TaskView')
+        ->has('task')
+    );
+});

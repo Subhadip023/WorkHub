@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "@inertiajs/react";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import {
   CheckCircle2,
@@ -13,7 +14,14 @@ import {
   Calendar,
   ChevronRight,
   Activity,
-  BarChart3
+  BarChart3,
+  AlertOctagon,
+  GitPullRequest,
+  Terminal,
+  Copy,
+  Edit2,
+  GitBranch,
+  Crown
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/Components/ui/card";
@@ -33,468 +41,556 @@ import {
 
 export default function NewDashboard({ user, stats, recent_activity, chart_data, projects }) {
   const [taskFilter, setTaskFilter] = useState("all");
-  
-  // Interactive demo state for quick task management
-  const [demoTasks, setDemoTasks] = useState([
-    { id: 1, title: "Review pull request #142 (Inertia setup)", priority: "High", completed: false, category: "Dev" },
-    { id: 2, title: "Update API endpoint response schema for WorkHub", priority: "Medium", completed: true, category: "API" },
-    { id: 3, title: "Design responsive dashboard navigation layout", priority: "High", completed: false, category: "UI/UX" },
-    { id: 4, title: "Conduct sprint retro with engineering team", priority: "Low", completed: false, category: "Meeting" },
-    { id: 5, title: "Optimize Laravel database queries for task filtering", priority: "Medium", completed: true, category: "Backend" },
+  const [copiedId, setCopiedId] = useState(null);
+
+  // High-density issue list matching Linear/GitHub issue table format
+  const [issuesList, setIssuesList] = useState([
+    {
+      id: "WH-042",
+      title: "Inertia.js React layout hydration error on cold start",
+      completed: false,
+      tags: ["Bug", "Frontend"],
+      project: "WorkHub",
+      branch: "fix/inertia-hydration",
+      priority: "Urgent",
+      assignee: { name: "Alex Morgan", avatar: "AM" },
+      updatedAt: "12m ago",
+    },
+    {
+      id: "WH-039",
+      title: "Rate-limiting middleware for webhook ingestion endpoints",
+      completed: false,
+      tags: ["API", "Backend"],
+      project: "WorkHub Core",
+      branch: "feat/rate-limit",
+      priority: "High",
+      assignee: { name: "Sarah Chen", avatar: "SC" },
+      updatedAt: "45m ago",
+    },
+    {
+      id: "WH-035",
+      title: "Refactor task status filter query in TaskRepository.php",
+      completed: true,
+      tags: ["Database", "Backend"],
+      project: "WorkHub Core",
+      branch: "fix/query-filter",
+      priority: "Medium",
+      assignee: { name: "Michael Scott", avatar: "MS" },
+      updatedAt: "2h ago",
+    },
+    {
+      id: "WH-031",
+      title: "Monochrome dark mode design tokens with zinc palette",
+      completed: false,
+      tags: ["UI/UX", "Design"],
+      project: "shadcn/ui",
+      branch: "feat/zinc-theme",
+      priority: "Urgent",
+      assignee: { name: "Sarah Chen", avatar: "SC" },
+      updatedAt: "3h ago",
+    },
+    {
+      id: "WH-028",
+      title: "Pest feature test suite for /new/analytics Inertia props",
+      completed: false,
+      tags: ["QA", "Testing"],
+      project: "WorkHub",
+      branch: "test/inertia-props",
+      priority: "Medium",
+      assignee: { name: "Emma Watson", avatar: "EW" },
+      updatedAt: "5h ago",
+    },
+    {
+      id: "WH-022",
+      title: "Setup Telegram webhook dispatch listener for critical alerts",
+      completed: true,
+      tags: ["DevOps", "Integration"],
+      project: "WorkHub Core",
+      branch: "main",
+      priority: "Low",
+      assignee: { name: "David Kim", avatar: "DK" },
+      updatedAt: "1d ago",
+    },
   ]);
 
-  const [newTaskInput, setNewTaskInput] = useState("");
+  // Live inbound activity stream
+  const [activityStream, setActivityStream] = useState([
+    {
+      id: 1,
+      time: "10:42:15",
+      source: "Telegram",
+      event: "Alert #WH-042 triggered by @alexm",
+      relTime: "2m ago",
+    },
+    {
+      id: 2,
+      time: "10:35:00",
+      source: "Webhook",
+      event: "POST /api/v1/ingest - 200 OK (14ms)",
+      relTime: "9m ago",
+    },
+    {
+      id: 3,
+      time: "10:12:44",
+      source: "GitHub",
+      event: "PR #148 merged into main by @sarahc",
+      relTime: "31m ago",
+    },
+    {
+      id: 4,
+      time: "09:50:12",
+      source: "Webhook",
+      event: "POST /api/v1/ingest - 200 OK (18ms)",
+      relTime: "54m ago",
+    },
+    {
+      id: 5,
+      time: "09:15:30",
+      source: "GitHub",
+      event: "Branch fix/inertia-hydration created",
+      relTime: "1h ago",
+    },
+  ]);
 
-  const toggleTask = (id) => {
-    setDemoTasks((prev) =>
-      prev.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
+  const toggleIssueCompleted = (id) => {
+    setIssuesList((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, completed: !item.completed } : item
       )
     );
   };
 
-  const handleAddTask = (e) => {
-    e.preventDefault();
-    if (!newTaskInput.trim()) return;
-    setDemoTasks((prev) => [
-      {
-        id: Date.now(),
-        title: newTaskInput,
-        priority: "Medium",
-        completed: false,
-        category: "Task",
-      },
-      ...prev,
-    ]);
-    setNewTaskInput("");
-  };
-
-  // Fallback demo data if not passed from controller
-  const displayStats = stats || {
-    total_projects: 12,
-    active_tasks: 48,
-    completed_tasks: 156,
-    team_members: 18,
-    productivity_rate: 94.2,
-    revenue: 42850,
+  const copyIssueId = (id) => {
+    navigator.clipboard.writeText(id);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 1500);
   };
 
   const displayChartData = chart_data || [
-    { name: "Mon", tasks: 14, completed: 12, revenue: 2400 },
-    { name: "Tue", tasks: 22, completed: 18, revenue: 3800 },
-    { name: "Wed", tasks: 28, completed: 25, revenue: 5100 },
-    { name: "Thu", tasks: 24, completed: 22, revenue: 4600 },
-    { name: "Fri", tasks: 35, completed: 31, revenue: 6800 },
-    { name: "Sat", tasks: 18, completed: 16, revenue: 3200 },
-    { name: "Sun", tasks: 12, completed: 11, revenue: 2100 },
+    { name: "Mon", throughput: 14, completed: 12 },
+    { name: "Tue", throughput: 22, completed: 18 },
+    { name: "Wed", throughput: 28, completed: 25 },
+    { name: "Thu", throughput: 24, completed: 22 },
+    { name: "Fri", throughput: 35, completed: 31 },
+    { name: "Sat", throughput: 18, completed: 16 },
+    { name: "Sun", throughput: 12, completed: 11 },
   ];
 
   const displayProjects = projects || [
-    { id: 1, name: "WorkHub Mobile App", progress: 78, status: "In Progress", dueDate: "Aug 28", team: 6, tag: "React Native" },
-    { id: 2, name: "Inertia.js Migration", progress: 92, status: "Near Completion", dueDate: "Aug 22", team: 4, tag: "Laravel + React" },
-    { id: 3, name: "shadcn/ui Design System", progress: 100, status: "Completed", dueDate: "Aug 18", team: 5, tag: "Tailwind CSS" },
-    { id: 4, name: "Customer Portal v2", progress: 45, status: "In Progress", dueDate: "Sep 15", team: 8, tag: "Next.js" },
+    { id: 1, name: "WorkHub Mobile App", progress: 78, status: "In Progress", tag: "React Native" },
+    { id: 2, name: "Inertia.js Migration", progress: 92, status: "Near Completion", tag: "Laravel + React" },
+    { id: 3, name: "shadcn/ui Design System", progress: 100, status: "Completed", tag: "Tailwind CSS" },
+    { id: 4, name: "Customer Portal v2", progress: 45, status: "In Progress", tag: "Next.js" },
   ];
-
-  const displayActivities = recent_activity || [
-    { id: 1, user: "Alex Morgan", action: "completed task", target: "API Authentication Refactor", time: "10 mins ago", avatar: "AM", badge: "Completed" },
-    { id: 2, user: "Sarah Chen", action: "created issue", target: "Hydration mismatch on dashboard", time: "32 mins ago", avatar: "SC", badge: "Issue" },
-    { id: 3, user: "Michael Scott", action: "updated project", target: "Q3 WorkHub Redesign", time: "1 hour ago", avatar: "MS", badge: "Project" },
-    { id: 4, user: "Emma Watson", action: "pushed commit", target: "feat: Add Inertia React dashboard", time: "2 hours ago", avatar: "EW", badge: "Code" },
-    { id: 5, user: "David Kim", action: "joined company", target: "Product Team", time: "4 hours ago", avatar: "DK", badge: "Team" },
-  ];
-
-  const filteredTasks = demoTasks.filter((t) => {
-    if (taskFilter === "pending") return !t.completed;
-    if (taskFilter === "completed") return t.completed;
-    return true;
-  });
 
   const headerActions = (
-    <Button variant="gradient" size="sm" className="hidden sm:flex items-center gap-1.5 shadow-indigo-500/25">
-      <Plus className="h-4 w-4" /> New Task
+    <Button size="sm" className="bg-white text-black hover:bg-neutral-200 font-semibold text-sm gap-2 transition-all rounded-xl h-9 px-3.5">
+      <Plus className="h-4 w-4 text-black" /> Create Task
     </Button>
   );
 
   return (
     <DashboardLayout title="Overview" activeItem="dashboard" actions={headerActions}>
-      <div className="space-y-8">
-        {/* Header Banner */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-indigo-950/60 via-slate-900/80 to-slate-900/60 p-6 rounded-2xl border border-indigo-500/20 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-full bg-gradient-to-l from-indigo-500/10 to-transparent pointer-events-none"></div>
-          <div className="space-y-1 z-10">
-            <div className="flex items-center gap-2">
-              <Badge variant="default" className="gap-1">
-                <Sparkles className="h-3 w-3 text-indigo-300" /> Inertia + React Engine
-              </Badge>
-              <span className="text-xs text-slate-400">Reusable Dashboard Layout</span>
+      <div className="space-y-6">
+        {/* Header Hero Banner */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-neutral-900/90 via-neutral-950/80 to-black p-6 rounded-2xl border border-neutral-800 shadow-2xl relative overflow-hidden">
+          <div className="space-y-1.5 z-10">
+            <div className="flex items-center gap-2.5">
+              <span className="px-3 py-1 rounded-full text-xs font-mono font-semibold bg-neutral-800 text-neutral-300 border border-neutral-700">
+                CLASSIC PREMIUM EDITION
+              </span>
+              <span className="text-xs sm:text-sm text-neutral-400 font-mono">WorkHub v2.4</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-              Welcome back, {user?.name || "Demo User"}!
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-2">
+              Welcome back, {user?.name || "Administrator"} <Crown className="h-6 w-6 text-neutral-300" />
             </h1>
-            <p className="text-sm text-slate-400 max-w-xl">
-              Here is what's happening across your WorkHub projects today. You have{" "}
-              <span className="text-indigo-400 font-semibold">{displayStats.active_tasks} tasks</span> requiring attention.
+            <p className="text-sm sm:text-base text-neutral-400 max-w-xl font-sans leading-relaxed">
+              High-density task tracking, developer infrastructure monitoring, and sprint throughput metrics.
             </p>
           </div>
 
           <div className="flex items-center gap-3 z-10">
-            <Button variant="outline" className="gap-2">
-              <Calendar className="h-4 w-4" /> Filter Date
-            </Button>
-            <Button variant="gradient" className="gap-2 shadow-indigo-500/25">
-              <Plus className="h-4 w-4" /> New Task
-            </Button>
+            <div className="px-4 py-2 rounded-xl bg-neutral-900 border border-neutral-800 text-sm font-mono text-neutral-300">
+              Uptime: <span className="text-emerald-400 font-bold">99.98%</span>
+            </div>
           </div>
         </div>
 
-        {/* Metric KPI Cards Grid */}
+        {/* Developer Health Metric Cards Strip */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Card 1: Total Projects */}
-          <Card className="relative overflow-hidden group border-slate-800/80 hover:border-indigo-500/50">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <FolderKanban className="h-16 w-16 text-indigo-400" />
-            </div>
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center justify-between text-xs text-slate-400 font-medium">
-                <span>Total Projects</span>
-                <span className="inline-flex items-center text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
-                  <ArrowUpRight className="h-3 w-3 mr-0.5" /> +14%
-                </span>
-              </CardDescription>
-              <CardTitle className="text-3xl font-extrabold text-white pt-1">
-                {displayStats.total_projects}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="flex items-center gap-2 text-xs text-slate-400">
-                <span className="text-indigo-400 font-medium">8 Active</span> • 4 Archived
+          {/* Card 1: Critical Blockers */}
+          <div className="border border-neutral-800 bg-neutral-900/80 p-5 rounded-xl flex items-center justify-between shadow-lg">
+            <div className="space-y-1.5">
+              <span className="text-xs font-mono text-neutral-400 font-bold block uppercase tracking-wider">
+                Critical Blockers
+              </span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl sm:text-3xl font-bold font-mono text-white">3</span>
+                <span className="text-xs sm:text-sm text-neutral-500 font-mono">Active</span>
               </div>
-              <Progress value={75} className="h-1.5 mt-3" />
-            </CardContent>
-          </Card>
+              <span className="text-xs text-neutral-400 font-mono block">#WH-042, #WH-031</span>
+            </div>
+            <div className="px-3 py-1 rounded-full bg-red-950/40 text-red-400 border border-red-800/40 text-xs font-mono font-semibold flex items-center gap-1.5">
+              <AlertOctagon className="h-4 w-4" /> Urgent
+            </div>
+          </div>
 
-          {/* Card 2: Active Tasks */}
-          <Card className="relative overflow-hidden group border-slate-800/80 hover:border-purple-500/50">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <Clock className="h-16 w-16 text-purple-400" />
-            </div>
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center justify-between text-xs text-slate-400 font-medium">
-                <span>Active Tasks</span>
-                <span className="inline-flex items-center text-xs font-semibold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">
-                  <Clock className="h-3 w-3 mr-0.5" /> 5 Urgent
-                </span>
-              </CardDescription>
-              <CardTitle className="text-3xl font-extrabold text-white pt-1">
-                {displayStats.active_tasks}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="flex items-center gap-2 text-xs text-slate-400">
-                <span className="text-purple-400 font-medium">18 in Review</span> • 30 In Progress
+          {/* Card 2: In-Progress Issues */}
+          <div className="border border-neutral-800 bg-neutral-900/80 p-5 rounded-xl flex items-center justify-between shadow-lg">
+            <div className="space-y-1.5">
+              <span className="text-xs font-mono text-neutral-400 font-bold block uppercase tracking-wider">
+                In-Progress Tasks
+              </span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl sm:text-3xl font-bold font-mono text-white">12</span>
+                <span className="text-xs sm:text-sm text-neutral-500 font-mono">Active</span>
               </div>
-              <Progress value={60} className="h-1.5 mt-3" />
-            </CardContent>
-          </Card>
+              <span className="text-xs text-neutral-400 font-mono block">7 high priority</span>
+            </div>
+            <div className="px-3 py-1 rounded-full bg-amber-950/40 text-amber-300 border border-amber-800/40 text-xs font-mono font-semibold flex items-center gap-1.5">
+              <Clock className="h-4 w-4" /> Active
+            </div>
+          </div>
 
-          {/* Card 3: Completed Tasks */}
-          <Card className="relative overflow-hidden group border-slate-800/80 hover:border-emerald-500/50">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <CheckCircle2 className="h-16 w-16 text-emerald-400" />
-            </div>
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center justify-between text-xs text-slate-400 font-medium">
-                <span>Completed Tasks</span>
-                <span className="inline-flex items-center text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
-                  <ArrowUpRight className="h-3 w-3 mr-0.5" /> +28%
-                </span>
-              </CardDescription>
-              <CardTitle className="text-3xl font-extrabold text-white pt-1">
-                {displayStats.completed_tasks}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="flex items-center gap-2 text-xs text-slate-400">
-                <span className="text-emerald-400 font-medium">+34 this week</span>
+          {/* Card 3: PRs / Review Pending */}
+          <div className="border border-neutral-800 bg-neutral-900/80 p-5 rounded-xl flex items-center justify-between shadow-lg">
+            <div className="space-y-1.5">
+              <span className="text-xs font-mono text-neutral-400 font-bold block uppercase tracking-wider">
+                PRs / Code Reviews
+              </span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl sm:text-3xl font-bold font-mono text-white">4</span>
+                <span className="text-xs sm:text-sm text-neutral-500 font-mono">Pending</span>
               </div>
-              <Progress value={92} className="h-1.5 mt-3" />
-            </CardContent>
-          </Card>
+              <span className="text-xs text-neutral-400 font-mono block">2 core repos</span>
+            </div>
+            <div className="px-3 py-1 rounded-full bg-neutral-800 text-neutral-300 border border-neutral-700 text-xs font-mono font-semibold flex items-center gap-1.5">
+              <GitPullRequest className="h-4 w-4" /> Review
+            </div>
+          </div>
 
-          {/* Card 4: Productivity Index */}
-          <Card className="relative overflow-hidden group border-slate-800/80 hover:border-cyan-500/50">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <TrendingUp className="h-16 w-16 text-cyan-400" />
-            </div>
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center justify-between text-xs text-slate-400 font-medium">
-                <span>Efficiency Rate</span>
-                <span className="inline-flex items-center text-xs font-semibold text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">
-                  <Sparkles className="h-3 w-3 mr-0.5" /> Optimal
-                </span>
-              </CardDescription>
-              <CardTitle className="text-3xl font-extrabold text-white pt-1">
-                {displayStats.productivity_rate}%
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="flex items-center gap-2 text-xs text-slate-400">
-                <span className="text-cyan-400 font-medium">Top 5% speed</span>
+          {/* Card 4: API & Webhook Ingest */}
+          <div className="border border-neutral-800 bg-neutral-900/80 p-5 rounded-xl flex items-center justify-between shadow-lg">
+            <div className="space-y-1.5">
+              <span className="text-xs font-mono text-neutral-400 font-bold block uppercase tracking-wider">
+                API Ingest Status
+              </span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-xl sm:text-2xl font-bold font-mono text-white">200 OK</span>
               </div>
-              <Progress value={displayStats.productivity_rate} className="h-1.5 mt-3" />
-            </CardContent>
-          </Card>
+              <span className="text-xs text-neutral-400 font-mono block">Zero dropped payloads</span>
+            </div>
+            <div className="px-3 py-1 rounded-full bg-emerald-950/40 text-emerald-400 border border-emerald-800/40 text-xs font-mono font-semibold flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span> Healthy
+            </div>
+          </div>
         </div>
 
-        {/* Middle Section: Chart & Interactive Tasks Demo */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Chart Visualization */}
-          <Card className="lg:col-span-2 border-slate-800/80">
-            <CardHeader className="flex flex-row items-center justify-between pb-4">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 text-indigo-400" /> Workload & Task Activity
-                </CardTitle>
-                <CardDescription>
-                  Weekly task creation vs completion rate across all teams
-                </CardDescription>
+        {/* Main Grid Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left Column (8 cols): Dense Issue Table & Velocity Chart */}
+          <div className="lg:col-span-8 space-y-6">
+            {/* Issue List Table Container */}
+            <div className="border border-neutral-800 bg-neutral-900/90 rounded-xl overflow-hidden shadow-2xl">
+              <div className="p-4 bg-neutral-950/80 border-b border-neutral-800 flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-3">
+                  <h3 className="text-sm font-mono font-bold uppercase tracking-wider text-white">
+                    Tasks & Deliverables
+                  </h3>
+                  <div className="flex items-center gap-1 bg-black p-1 rounded-lg border border-neutral-800 text-xs font-mono">
+                    <button
+                      onClick={() => setTaskFilter("all")}
+                      className={`px-3 py-1 rounded-md transition-all ${
+                        taskFilter === "all" ? "bg-neutral-800 text-white font-semibold" : "text-neutral-400 hover:text-neutral-200"
+                      }`}
+                    >
+                      All ({issuesList.length})
+                    </button>
+                    <button
+                      onClick={() => setTaskFilter("pending")}
+                      className={`px-3 py-1 rounded-md transition-all ${
+                        taskFilter === "pending" ? "bg-neutral-800 text-white font-semibold" : "text-neutral-400 hover:text-neutral-200"
+                      }`}
+                    >
+                      Open ({issuesList.filter((i) => !i.completed).length})
+                    </button>
+                    <button
+                      onClick={() => setTaskFilter("completed")}
+                      className={`px-3 py-1 rounded-md transition-all ${
+                        taskFilter === "completed" ? "bg-neutral-800 text-white font-semibold" : "text-neutral-400 hover:text-neutral-200"
+                      }`}
+                    >
+                      Closed ({issuesList.filter((i) => i.completed).length})
+                    </button>
+                  </div>
+                </div>
+
+                <span className="text-xs font-mono text-neutral-400">
+                  Linear-dense view
+                </span>
               </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="cursor-pointer">
-                  Weekly
-                </Badge>
-                <Badge variant="outline" className="cursor-pointer opacity-70">
-                  Monthly
-                </Badge>
+
+              {/* Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs sm:text-sm">
+                  <thead>
+                    <tr className="border-b border-neutral-800 bg-black/60 text-neutral-400 font-mono text-xs uppercase tracking-wider">
+                      <th className="py-3.5 px-4 w-8"></th>
+                      <th className="py-3.5 px-4">Task ID & Title</th>
+                      <th className="py-3.5 px-4">Tags</th>
+                      <th className="py-3.5 px-4">Project</th>
+                      <th className="py-3.5 px-4">Branch</th>
+                      <th className="py-3.5 px-4">Priority</th>
+                      <th className="py-3.5 px-4">Assignee</th>
+                      <th className="py-3.5 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-800/60 font-sans">
+                    {issuesList
+                      .filter((item) => {
+                        if (taskFilter === "pending") return !item.completed;
+                        if (taskFilter === "completed") return item.completed;
+                        return true;
+                      })
+                      .map((item) => (
+                        <tr
+                          key={item.id}
+                          className="hover:bg-neutral-800/50 transition-colors duration-150 group"
+                        >
+                          {/* Col 1: Checkbox */}
+                          <td className="py-3.5 px-4">
+                            <button
+                              onClick={() => toggleIssueCompleted(item.id)}
+                              className="text-neutral-500 hover:text-emerald-400 transition-colors block"
+                            >
+                              {item.completed ? (
+                                <CheckSquare className="h-5 w-5 text-emerald-400" />
+                              ) : (
+                                <Square className="h-5 w-5 text-neutral-600" />
+                              )}
+                            </button>
+                          </td>
+
+                          {/* Col 2: ID & Title */}
+                          <td className="py-3.5 px-4">
+                            <Link href={`/new/task/${item.id}`} className="flex items-center gap-2.5 group/link">
+                              <span className="font-mono text-xs sm:text-sm text-neutral-400 shrink-0 group-hover/link:text-white transition-colors">
+                                {item.id}
+                              </span>
+                              <span
+                                className={`font-medium text-xs sm:text-sm leading-snug hover:underline ${
+                                  item.completed
+                                    ? "line-through text-neutral-500"
+                                    : "text-neutral-100 group-hover/link:text-white"
+                                }`}
+                              >
+                                {item.title}
+                              </span>
+                            </Link>
+                          </td>
+
+                          {/* Col 3: Context Pills */}
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center gap-1.5">
+                              {item.tags.map((tag, idx) => (
+                                <span
+                                  key={idx}
+                                  className="px-2 py-0.5 rounded bg-neutral-800 text-neutral-300 border border-neutral-700 text-xs font-mono"
+                                >
+                                  [{tag}]
+                                </span>
+                              ))}
+                            </div>
+                          </td>
+
+                          {/* Col 4: Project */}
+                          <td className="py-3.5 px-4">
+                            <span className="text-xs sm:text-sm text-neutral-200 font-medium">
+                              {item.project}
+                            </span>
+                          </td>
+
+                          {/* Col 5: Branch tag */}
+                          <td className="py-3.5 px-4">
+                            <span className="font-mono text-xs bg-neutral-800/80 text-neutral-300 px-2.5 py-0.5 rounded border border-neutral-700/60 inline-flex items-center gap-1">
+                              <GitBranch className="h-3.5 w-3.5 text-neutral-400" />
+                              {item.branch}
+                            </span>
+                          </td>
+
+                          {/* Col 6: Priority */}
+                          <td className="py-3.5 px-4">
+                            <span
+                              className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold inline-block ${
+                                item.priority === "Urgent"
+                                  ? "bg-red-950/40 text-red-400 border border-red-800/40"
+                                  : item.priority === "High"
+                                  ? "bg-amber-950/40 text-amber-300 border border-amber-800/40"
+                                  : "bg-neutral-800 text-neutral-300 border border-neutral-700"
+                              }`}
+                            >
+                              {item.priority}
+                            </span>
+                          </td>
+
+                          {/* Col 7: Assignee */}
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center gap-2">
+                              <Avatar className="h-6 w-6 border border-neutral-700">
+                                <AvatarFallback className="bg-neutral-800 text-neutral-300 text-[9px] font-mono font-bold">
+                                  {item.assignee.avatar}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-xs font-mono text-neutral-400">
+                                {item.updatedAt}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* Action Column */}
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                onClick={() => copyIssueId(item.id)}
+                                className="p-1 rounded text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
+                                title="Copy Task ID"
+                              >
+                                <Copy className="h-4 w-4" />
+                              </button>
+                              <button
+                                className="p-1 rounded text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
+                                title="Edit Task"
+                              >
+                                <Edit2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="h-72 w-full pt-4">
+            </div>
+
+            {/* Velocity Chart */}
+            <div className="border border-neutral-800 bg-neutral-900/90 p-5 sm:p-6 rounded-xl space-y-4 shadow-xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-mono font-bold uppercase tracking-wider text-white">
+                    Sprint Throughput & Velocity
+                  </h3>
+                  <p className="text-xs sm:text-sm text-neutral-400 font-mono mt-0.5">
+                    Weekly issue resolution rate
+                  </p>
+                </div>
+                <span className="text-xs sm:text-sm font-mono text-emerald-400 bg-emerald-950/40 px-3 py-1 rounded-full border border-emerald-800/40 font-semibold">
+                  +14.2% velocity
+                </span>
+              </div>
+
+              <div className="h-48 w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={displayChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <AreaChart data={displayChartData}>
                     <defs>
-                      <linearGradient id="colorTasks" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0.0} />
-                      </linearGradient>
-                      <linearGradient id="colorCompleted" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
+                      <linearGradient id="blackPremiumGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#f5f5f5" stopOpacity={0.25} />
+                        <stop offset="95%" stopColor="#f5f5f5" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                    <XAxis dataKey="name" stroke="#64748b" fontSize={12} tickLine={false} />
-                    <YAxis stroke="#64748b" fontSize={12} tickLine={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#262626" />
+                    <XAxis dataKey="name" stroke="#737373" fontSize={11} fontFamily="monospace" />
+                    <YAxis stroke="#737373" fontSize={11} fontFamily="monospace" />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: "#0f172a",
-                        borderColor: "#334155",
-                        borderRadius: "0.5rem",
-                        color: "#f8fafc",
+                        backgroundColor: "#0a0a0a",
+                        borderColor: "#262626",
+                        color: "#ffffff",
+                        fontSize: "12px",
+                        fontFamily: "monospace",
+                        borderRadius: "8px"
                       }}
                     />
-                    <Area type="monotone" dataKey="tasks" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorTasks)" name="Tasks Opened" />
-                    <Area type="monotone" dataKey="completed" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorCompleted)" name="Tasks Completed" />
+                    <Area
+                      type="monotone"
+                      dataKey="throughput"
+                      stroke="#d4d4d4"
+                      strokeWidth={2}
+                      fillOpacity={1}
+                      fill="url(#blackPremiumGrad)"
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          {/* Interactive Demo Tasks Panel */}
-          <Card className="border-slate-800/80 flex flex-col justify-between">
-            <div>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <CheckSquare className="h-5 w-5 text-indigo-400" /> Interactive Demo Checklist
-                  </CardTitle>
-                  <Badge variant="info">{filteredTasks.length} items</Badge>
+          {/* Right Column (4 cols): Webhook Activity Stream & Workspaces */}
+          <div className="lg:col-span-4 space-y-6">
+            {/* Live Inbound Event Stream */}
+            <div className="border border-neutral-800 bg-neutral-900/90 p-5 sm:p-6 rounded-xl space-y-4 shadow-xl">
+              <div className="flex items-center justify-between pb-2.5 border-b border-neutral-800">
+                <div className="flex items-center gap-2">
+                  <Terminal className="h-4 w-4 text-neutral-400" />
+                  <h3 className="text-sm font-mono font-bold uppercase tracking-wider text-white">
+                    Live Event Stream
+                  </h3>
                 </div>
-                <CardDescription>
-                  Test real-time React state interactivity in this Inertia page
-                </CardDescription>
+                <span className="flex items-center gap-1.5 text-xs font-mono text-emerald-400 font-semibold">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Listening
+                </span>
+              </div>
 
-                {/* Task Filter Tabs */}
-                <div className="flex items-center gap-1 mt-3 bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
-                  <button
-                    onClick={() => setTaskFilter("all")}
-                    className={`flex-1 py-1 text-center rounded-md font-medium transition-all ${
-                      taskFilter === "all" ? "bg-slate-800 text-white" : "text-slate-400 hover:text-slate-200"
-                    }`}
-                  >
-                    All
-                  </button>
-                  <button
-                    onClick={() => setTaskFilter("pending")}
-                    className={`flex-1 py-1 text-center rounded-md font-medium transition-all ${
-                      taskFilter === "pending" ? "bg-slate-800 text-white" : "text-slate-400 hover:text-slate-200"
-                    }`}
-                  >
-                    Pending
-                  </button>
-                  <button
-                    onClick={() => setTaskFilter("completed")}
-                    className={`flex-1 py-1 text-center rounded-md font-medium transition-all ${
-                      taskFilter === "completed" ? "bg-slate-800 text-white" : "text-slate-400 hover:text-slate-200"
-                    }`}
-                  >
-                    Done
-                  </button>
-                </div>
-              </CardHeader>
-
-              <CardContent className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
-                {filteredTasks.map((task) => (
+              <div className="space-y-3 pt-1">
+                {activityStream.map((evt) => (
                   <div
-                    key={task.id}
-                    onClick={() => toggleTask(task.id)}
-                    className={`flex items-start gap-3 p-2.5 rounded-lg border transition-all cursor-pointer ${
-                      task.completed
-                        ? "bg-slate-900/40 border-slate-800/60 opacity-60 line-through"
-                        : "bg-slate-900 border-slate-800 hover:border-slate-700"
-                    }`}
+                    key={evt.id}
+                    className="p-3.5 rounded-lg bg-black/80 border border-neutral-800 space-y-1.5 font-mono text-xs sm:text-sm"
                   >
-                    <button className="mt-0.5 text-indigo-400 hover:text-indigo-300">
-                      {task.completed ? (
-                        <CheckSquare className="h-4 w-4 text-emerald-400" />
-                      ) : (
-                        <Square className="h-4 w-4 text-slate-500" />
-                      )}
-                    </button>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-slate-200 truncate">
-                        {task.title}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[10px] text-slate-500 font-mono">
-                          {task.category}
-                        </span>
-                        <span
-                          className={`text-[9px] px-1.5 py-0.2 rounded font-semibold ${
-                            task.priority === "High"
-                              ? "bg-rose-500/20 text-rose-300"
-                              : task.priority === "Medium"
-                              ? "bg-amber-500/20 text-amber-300"
-                              : "bg-slate-800 text-slate-400"
-                          }`}
-                        >
-                          {task.priority}
-                        </span>
-                      </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-neutral-500">{evt.time}</span>
+                      <span className="px-2 py-0.5 rounded bg-neutral-800 text-neutral-300 border border-neutral-700">
+                        [{evt.source}]
+                      </span>
+                    </div>
+                    <p className="text-neutral-200 text-xs sm:text-sm truncate">{evt.event}</p>
+                    <span className="text-xs text-neutral-500 block text-right">
+                      {evt.relTime}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Active Workspace Status */}
+            <div className="border border-neutral-800 bg-neutral-900/90 p-5 sm:p-6 rounded-xl space-y-4 shadow-xl">
+              <div className="flex items-center justify-between pb-2.5 border-b border-neutral-800">
+                <h3 className="text-sm font-mono font-bold uppercase tracking-wider text-white">
+                  Active Projects
+                </h3>
+                <span className="text-xs font-mono text-neutral-400">
+                  {displayProjects.length} tracked
+                </span>
+              </div>
+
+              <div className="space-y-3.5">
+                {displayProjects.map((p) => (
+                  <div key={p.id} className="space-y-2">
+                    <div className="flex items-center justify-between text-xs sm:text-sm font-sans">
+                      <span className="font-semibold text-neutral-100">{p.name}</span>
+                      <span className="font-mono text-xs text-neutral-400">{p.progress}%</span>
+                    </div>
+                    <div className="h-2 w-full bg-black rounded-full overflow-hidden border border-neutral-800">
+                      <div
+                        className="h-full bg-gradient-to-r from-neutral-200 to-neutral-400 rounded-full transition-all duration-500"
+                        style={{ width: `${p.progress}%` }}
+                      ></div>
                     </div>
                   </div>
                 ))}
-              </CardContent>
-            </div>
-
-            {/* Add Task Form Footer */}
-            <div className="p-4 border-t border-slate-800/80 bg-slate-950/40 rounded-b-xl">
-              <form onSubmit={handleAddTask} className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Add a new task..."
-                  value={newTaskInput}
-                  onChange={(e) => setNewTaskInput(e.target.value)}
-                  className="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-                />
-                <Button type="submit" size="sm" variant="default" className="px-3">
-                  <Plus className="h-3.5 w-3.5" />
-                </Button>
-              </form>
-            </div>
-          </Card>
-        </div>
-
-        {/* Bottom Grid: Active Projects & Activity Feed */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Active Projects Overview */}
-          <Card className="lg:col-span-2 border-slate-800/80">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <FolderKanban className="h-5 w-5 text-purple-400" /> Active Projects
-                </CardTitle>
-                <CardDescription>
-                  Key projects, milestone progress, and team assignments
-                </CardDescription>
               </div>
-              <Button variant="ghost" size="sm" className="text-xs text-indigo-400 hover:text-indigo-300">
-                View All <ChevronRight className="h-3.5 w-3.5 ml-1" />
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {displayProjects.map((prj) => (
-                <div
-                  key={prj.id}
-                  className="p-4 rounded-xl bg-slate-900/70 border border-slate-800 hover:border-slate-700 transition-all space-y-3"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div className="flex items-center gap-2.5">
-                      <div className="h-8 w-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center font-bold text-indigo-400 text-xs">
-                        P{prj.id}
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-semibold text-slate-100">
-                          {prj.name}
-                        </h4>
-                        <span className="text-[11px] text-slate-400">
-                          Due {prj.dueDate} • {prj.tag}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <Badge
-                        variant={
-                          prj.progress === 100
-                            ? "success"
-                            : prj.progress > 70
-                            ? "default"
-                            : "warning"
-                        }
-                      >
-                        {prj.status}
-                      </Badge>
-                      <div className="text-xs font-mono font-semibold text-slate-300">
-                        {prj.progress}%
-                      </div>
-                    </div>
-                  </div>
-
-                  <Progress value={prj.progress} className="h-2" />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Recent Activity Timeline */}
-          <Card className="border-slate-800/80">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Activity className="h-5 w-5 text-emerald-400" /> Audit Log & Activity
-              </CardTitle>
-              <CardDescription>Real-time events from team members</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {displayActivities.map((act) => (
-                <div key={act.id} className="flex items-start gap-3 text-xs">
-                  <Avatar className="h-8 w-8 mt-0.5">
-                    <AvatarFallback>{act.avatar}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-slate-300">
-                      <span className="font-semibold text-slate-100">{act.user}</span>{" "}
-                      {act.action}{" "}
-                      <span className="font-medium text-indigo-400">{act.target}</span>
-                    </p>
-                    <p className="text-[10px] text-slate-500 mt-0.5">{act.time}</p>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </DashboardLayout>

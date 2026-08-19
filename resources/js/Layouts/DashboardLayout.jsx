@@ -4,19 +4,19 @@ import {
   LayoutDashboard,
   FolderKanban,
   CheckSquare,
+  BarChart3,
   Users,
   Search,
   Bell,
-  Zap,
-  Activity,
-  BarChart3,
+  Crown,
+  ChevronRight,
+  ChevronDown,
+  LogOut,
+  Briefcase,
+  AlertCircle,
   FileText,
   ShieldCheck,
   Settings,
-  LogOut,
-  ChevronRight,
-  Briefcase,
-  AlertCircle,
   ArrowLeft
 } from "lucide-react";
 
@@ -46,54 +46,55 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
 
   return (
     <SidebarProvider defaultOpen={true}>
-      {title && <Head title={`${title} - WorkHub`} />}
+      {title && <Head title={`${title} - WorkHub Classic Premium`} />}
 
-      <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500 selection:text-white flex w-full">
-        {/* Background ambient glowing shapes */}
+      <div className="min-h-screen bg-black text-neutral-100 font-sans selection:bg-neutral-800 selection:text-white flex w-full">
+        {/* Subtle Background Radial Atmosphere */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-          <div className="absolute -top-40 -left-40 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl"></div>
-          <div className="absolute top-1/3 -right-40 w-96 h-96 bg-purple-600/15 rounded-full blur-3xl"></div>
-          <div className="absolute -bottom-40 left-1/3 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl"></div>
+          <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-neutral-900/30 via-black to-transparent blur-3xl"></div>
         </div>
 
-        {/* Official shadcn Sidebar */}
-        <Sidebar className="border-r border-slate-800/80 bg-slate-950/95 backdrop-blur-xl z-30">
-          {/* Sidebar Header */}
-          <SidebarHeader className="p-4 border-b border-slate-800/80">
-            <div className="flex items-center justify-between">
-              <Link href="/new/dashboard" className="flex items-center gap-3 group">
-                <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition-transform">
-                  <Zap className="h-5 w-5 text-white" />
+        {/* Pure Solid Black Sidebar */}
+        <Sidebar className="border-r border-neutral-800/80 bg-black !bg-black text-neutral-100 z-30">
+          {/* Header Workspace Switcher */}
+          <SidebarHeader className="h-16 px-3.5 flex items-center justify-between border-b border-neutral-800 bg-black shrink-0">
+            <div className="flex items-center justify-between w-full">
+              <button className="flex items-center justify-between w-full p-2 rounded-xl bg-black border border-neutral-800 hover:border-neutral-700 transition-all group">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-neutral-100 via-neutral-300 to-neutral-500 text-black flex items-center justify-center font-extrabold text-xs shadow-md shadow-white/10 group-hover:scale-105 transition-transform">
+                    <Crown className="h-4 w-4" />
+                  </div>
+                  <div className="text-left truncate">
+                    <span className="font-bold text-xs text-white block truncate leading-tight">
+                      WorkHub Enterprise
+                    </span>
+                    <span className="text-[10px] text-neutral-400 font-mono block leading-tight">
+                      Pure Black Edition
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <span className="font-extrabold text-base tracking-tight text-white block">
-                    WorkHub
-                  </span>
-                  <span className="text-[10px] text-indigo-400 font-medium block">
-                    Inertia + shadcn UI
-                  </span>
-                </div>
-              </Link>
+                <ChevronDown className="h-3.5 w-3.5 text-neutral-400 group-hover:text-white transition-colors" />
+              </button>
             </div>
           </SidebarHeader>
 
-          {/* Sidebar Content */}
-          <SidebarContent className="px-2 py-4 space-y-6">
-            {/* Group 1: Main Navigation */}
+          {/* Navigation Links */}
+          <SidebarContent className="px-2.5 py-4 space-y-6 bg-black">
+            {/* Group 1: Core Application */}
             <SidebarGroup>
-              <SidebarGroupLabel className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider px-3 mb-2">
-                Main Menu
+              <SidebarGroupLabel className="text-[10px] font-semibold text-neutral-500 uppercase tracking-widest px-3 mb-2 font-mono">
+                Main Suite
               </SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu>
+                <SidebarMenu className="space-y-1">
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       asChild
                       isActive={activeItem === "dashboard"}
-                      className="gap-3 hover:bg-slate-900 data-[active=true]:bg-indigo-600/20 data-[active=true]:text-indigo-400 font-medium"
+                      className="gap-3 hover:bg-neutral-900 data-[active=true]:bg-neutral-900 data-[active=true]:text-white data-[active=true]:font-semibold text-neutral-400 transition-all rounded-lg"
                     >
                       <Link href="/new/dashboard">
-                        <LayoutDashboard className="h-4 w-4" />
+                        <LayoutDashboard className="h-4 w-4 text-neutral-300" />
                         <span>Dashboard</span>
                       </Link>
                     </SidebarMenuButton>
@@ -103,10 +104,10 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                     <SidebarMenuButton
                       asChild
                       isActive={activeItem === "analytics"}
-                      className="gap-3 hover:bg-slate-900 data-[active=true]:bg-indigo-600/20 data-[active=true]:text-indigo-400 font-medium text-slate-300"
+                      className="gap-3 hover:bg-neutral-900 data-[active=true]:bg-neutral-900 data-[active=true]:text-white data-[active=true]:font-semibold text-neutral-400 transition-all rounded-lg"
                     >
                       <Link href="/new/analytics">
-                        <BarChart3 className="h-4 w-4" />
+                        <BarChart3 className="h-4 w-4 text-neutral-300" />
                         <span>Analytics</span>
                       </Link>
                     </SidebarMenuButton>
@@ -116,14 +117,14 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                     <SidebarMenuButton
                       asChild
                       isActive={activeItem === "projects"}
-                      className="gap-3 hover:bg-slate-900 data-[active=true]:bg-indigo-600/20 data-[active=true]:text-indigo-400 font-medium text-slate-300"
+                      className="gap-3 hover:bg-neutral-900 data-[active=true]:bg-neutral-900 data-[active=true]:text-white data-[active=true]:font-semibold text-neutral-400 transition-all rounded-lg"
                     >
                       <Link href="/new/projects">
-                        <FolderKanban className="h-4 w-4" />
+                        <FolderKanban className="h-4 w-4 text-neutral-300" />
                         <span>Projects</span>
                       </Link>
                     </SidebarMenuButton>
-                    <SidebarMenuBadge className="bg-indigo-500/20 text-indigo-300">
+                    <SidebarMenuBadge className="bg-black text-neutral-300 border border-neutral-800 font-mono text-[10px]">
                       12
                     </SidebarMenuBadge>
                   </SidebarMenuItem>
@@ -132,14 +133,14 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                     <SidebarMenuButton
                       asChild
                       isActive={activeItem === "tasks"}
-                      className="gap-3 hover:bg-slate-900 data-[active=true]:bg-indigo-600/20 data-[active=true]:text-indigo-400 font-medium text-slate-300"
+                      className="gap-3 hover:bg-neutral-900 data-[active=true]:bg-neutral-900 data-[active=true]:text-white data-[active=true]:font-semibold text-neutral-400 transition-all rounded-lg"
                     >
                       <Link href="/new/tasks">
-                        <CheckSquare className="h-4 w-4" />
+                        <CheckSquare className="h-4 w-4 text-neutral-300" />
                         <span>My Tasks</span>
                       </Link>
                     </SidebarMenuButton>
-                    <SidebarMenuBadge className="bg-rose-500/20 text-rose-300">
+                    <SidebarMenuBadge className="bg-emerald-950/60 text-emerald-400 border border-emerald-800/60 font-mono text-[10px]">
                       5
                     </SidebarMenuBadge>
                   </SidebarMenuItem>
@@ -149,19 +150,19 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
 
             {/* Group 2: Management */}
             <SidebarGroup>
-              <SidebarGroupLabel className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider px-3 mb-2">
+              <SidebarGroupLabel className="text-[10px] font-semibold text-neutral-500 uppercase tracking-widest px-3 mb-2 font-mono">
                 Management
               </SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu>
+                <SidebarMenu className="space-y-1">
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       asChild
                       isActive={activeItem === "companies"}
-                      className="gap-3 hover:bg-slate-900 data-[active=true]:bg-indigo-600/20 data-[active=true]:text-indigo-400 font-medium text-slate-300"
+                      className="gap-3 hover:bg-neutral-900 data-[active=true]:bg-neutral-900 data-[active=true]:text-white text-neutral-400 transition-all rounded-lg"
                     >
                       <Link href="/new/companies">
-                        <Briefcase className="h-4 w-4" />
+                        <Briefcase className="h-4 w-4 text-neutral-300" />
                         <span>Companies</span>
                       </Link>
                     </SidebarMenuButton>
@@ -171,7 +172,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                     <SidebarMenuButton
                       asChild
                       isActive={activeItem === "issues"}
-                      className="gap-3 hover:bg-slate-900 data-[active=true]:bg-indigo-600/20 data-[active=true]:text-indigo-400 font-medium text-slate-300"
+                      className="gap-3 hover:bg-neutral-900 data-[active=true]:bg-neutral-900 data-[active=true]:text-white text-neutral-400 transition-all rounded-lg"
                     >
                       <Link href="/new/issues">
                         <AlertCircle className="h-4 w-4 text-amber-400" />
@@ -184,10 +185,10 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                     <SidebarMenuButton
                       asChild
                       isActive={activeItem === "notes"}
-                      className="gap-3 hover:bg-slate-900 data-[active=true]:bg-indigo-600/20 data-[active=true]:text-indigo-400 font-medium text-slate-300"
+                      className="gap-3 hover:bg-neutral-900 data-[active=true]:bg-neutral-900 data-[active=true]:text-white text-neutral-400 transition-all rounded-lg"
                     >
                       <Link href="/new/notes">
-                        <FileText className="h-4 w-4" />
+                        <FileText className="h-4 w-4 text-neutral-300" />
                         <span>Notes & Docs</span>
                       </Link>
                     </SidebarMenuButton>
@@ -197,14 +198,14 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                     <SidebarMenuButton
                       asChild
                       isActive={activeItem === "team"}
-                      className="gap-3 hover:bg-slate-900 data-[active=true]:bg-indigo-600/20 data-[active=true]:text-indigo-400 font-medium text-slate-300"
+                      className="gap-3 hover:bg-neutral-900 data-[active=true]:bg-neutral-900 data-[active=true]:text-white text-neutral-400 transition-all rounded-lg"
                     >
                       <Link href="/new/team">
-                        <Users className="h-4 w-4" />
-                        <span>Team Members</span>
+                        <Users className="h-4 w-4 text-neutral-300" />
+                        <span>Team Directory</span>
                       </Link>
                     </SidebarMenuButton>
-                    <SidebarMenuBadge className="bg-slate-800 text-slate-400">
+                    <SidebarMenuBadge className="bg-black text-neutral-400 border border-neutral-800 font-mono text-[10px]">
                       18
                     </SidebarMenuBadge>
                   </SidebarMenuItem>
@@ -214,19 +215,19 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
 
             {/* Group 3: System */}
             <SidebarGroup>
-              <SidebarGroupLabel className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider px-3 mb-2">
-                System
+              <SidebarGroupLabel className="text-[10px] font-semibold text-neutral-500 uppercase tracking-widest px-3 mb-2 font-mono">
+                System Config
               </SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu>
+                <SidebarMenu className="space-y-1">
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       asChild
                       isActive={activeItem === "permissions"}
-                      className="gap-3 hover:bg-slate-900 data-[active=true]:bg-indigo-600/20 data-[active=true]:text-indigo-400 font-medium text-slate-300"
+                      className="gap-3 hover:bg-neutral-900 data-[active=true]:bg-neutral-900 data-[active=true]:text-white text-neutral-400 transition-all rounded-lg"
                     >
                       <Link href="/new/permissions">
-                        <ShieldCheck className="h-4 w-4" />
+                        <ShieldCheck className="h-4 w-4 text-neutral-300" />
                         <span>Permissions</span>
                       </Link>
                     </SidebarMenuButton>
@@ -236,10 +237,10 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                     <SidebarMenuButton
                       asChild
                       isActive={activeItem === "settings"}
-                      className="gap-3 hover:bg-slate-900 data-[active=true]:bg-indigo-600/20 data-[active=true]:text-indigo-400 font-medium text-slate-300"
+                      className="gap-3 hover:bg-neutral-900 data-[active=true]:bg-neutral-900 data-[active=true]:text-white text-neutral-400 transition-all rounded-lg"
                     >
                       <Link href="/new/settings">
-                        <Settings className="h-4 w-4" />
+                        <Settings className="h-4 w-4 text-neutral-300" />
                         <span>Settings</span>
                       </Link>
                     </SidebarMenuButton>
@@ -249,39 +250,38 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
             </SidebarGroup>
           </SidebarContent>
 
-          {/* Sidebar Footer User Info */}
-          <SidebarFooter className="p-3 border-t border-slate-800/80 bg-slate-950/60">
-            {/* Quick Switch back to Classic Blade Dashboard */}
+          {/* Footer User & Legacy Bridge */}
+          <SidebarFooter className="p-3 border-t border-neutral-800 bg-black space-y-2">
             <a
               href="/dashboard"
-              className="flex items-center justify-between w-full px-3 py-2 mb-2 text-xs font-semibold text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-xl transition-all group"
+              className="flex items-center justify-between w-full px-3 py-2 text-xs font-medium text-neutral-300 hover:text-white bg-black border border-neutral-800 hover:border-neutral-700 rounded-xl transition-all group"
             >
               <span className="flex items-center gap-2">
-                <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-0.5 transition-transform text-rose-400" />
-                Go Back to Old Dashboard
+                <ArrowLeft className="h-3.5 w-3.5 text-neutral-400 group-hover:-translate-x-0.5 transition-transform" />
+                Go Back to Old View
               </span>
-              <span className="text-[10px] bg-rose-500/20 text-rose-300 font-mono px-1.5 py-0.5 rounded">
+              <span className="text-[10px] font-mono bg-neutral-900 px-1.5 py-0.5 rounded text-neutral-400 border border-neutral-800">
                 Blade
               </span>
             </a>
 
-            <div className="flex items-center justify-between p-2 rounded-xl bg-slate-900/80 border border-slate-800">
+            <div className="flex items-center justify-between p-2 rounded-xl bg-black border border-neutral-800">
               <div className="flex items-center gap-2.5 min-w-0">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-gradient-to-br from-indigo-600 to-violet-700 text-white font-bold">
-                    {user?.name ? user.name.slice(0, 2).toUpperCase() : "U"}
+                <Avatar className="h-8 w-8 border border-neutral-700">
+                  <AvatarFallback className="bg-gradient-to-br from-neutral-200 to-neutral-400 text-black font-bold text-xs">
+                    {user?.name ? user.name.slice(0, 2).toUpperCase() : "US"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="truncate">
-                  <div className="text-xs font-semibold text-slate-200 truncate">
+                  <div className="text-xs font-semibold text-white truncate">
                     {user?.name || "Demo Administrator"}
                   </div>
-                  <div className="text-[10px] text-slate-400 truncate">
+                  <div className="text-[10px] text-neutral-400 font-mono truncate">
                     {user?.email || "admin@workhub.io"}
                   </div>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-slate-200">
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-400 hover:text-white">
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>
@@ -290,59 +290,63 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
           <SidebarRail />
         </Sidebar>
 
-        {/* Sidebar Inset Wrapper for Main Content Area */}
-        <SidebarInset className="relative z-10 flex flex-col flex-1 min-w-0 bg-transparent">
-          {/* Top Navbar Header */}
-          <header className="sticky top-0 z-20 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl h-16 flex items-center justify-between px-4 sm:px-6">
+        {/* Content Wrapper */}
+        <SidebarInset className="relative flex flex-col flex-1 min-w-0 bg-black">
+          {/* Header Navbar */}
+          <header className="sticky top-0 z-20 border-b border-neutral-800 bg-black/90 backdrop-blur-2xl h-16 flex items-center justify-between px-4 sm:px-6">
             <div className="flex items-center gap-3">
-              {/* Trigger for collapsing/opening sidebar */}
-              <SidebarTrigger className="text-slate-300 hover:bg-slate-900 hover:text-white" />
-              <div className="h-5 w-px bg-slate-800"></div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-slate-400">Dashboard</span>
-                <ChevronRight className="h-3.5 w-3.5 text-slate-600" />
-                <span className="text-xs font-semibold text-slate-200 uppercase tracking-wider">
+              <SidebarTrigger className="text-neutral-400 hover:bg-neutral-900 hover:text-white rounded-lg p-2" />
+              <div className="h-5 w-px bg-neutral-800"></div>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="font-mono text-neutral-400">WorkHub</span>
+                <ChevronRight className="h-3.5 w-3.5 text-neutral-600" />
+                <span className="font-semibold text-white uppercase tracking-wider">
                   {title || activeItem}
                 </span>
               </div>
             </div>
 
-            {/* Right Header Actions */}
+            {/* Right Header Command Palette & Actions */}
             <div className="flex items-center gap-3">
-              {/* Search Input */}
-              <div className="relative hidden sm:block w-56 lg:w-72">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search tasks, projects..."
-                  className="w-full bg-slate-900/90 border border-slate-800 rounded-lg pl-9 pr-4 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
-                />
+              <div className="relative hidden sm:flex items-center justify-between w-64 lg:w-72 bg-black border border-neutral-800 hover:border-neutral-700 rounded-xl px-3.5 py-1.5 text-xs text-neutral-400 transition-colors cursor-pointer group">
+                <div className="flex items-center gap-2">
+                  <Search className="h-4 w-4 text-neutral-400 group-hover:text-white transition-colors" />
+                  <span>Search or jump to...</span>
+                </div>
+                <kbd className="font-mono text-[10px] bg-neutral-900 border border-neutral-800 px-1.5 py-0.5 rounded text-neutral-400">
+                  ⌘K
+                </kbd>
               </div>
 
-              <Button variant="outline" size="icon" className="relative">
-                <Bell className="h-4 w-4 text-slate-300" />
-                <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-indigo-500 ring-2 ring-slate-950 animate-pulse"></span>
-              </Button>
-
-              {actions}
+              <div className="flex items-center gap-2">
+                {actions}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-9 w-9 bg-black border-neutral-800 hover:bg-neutral-900 hover:text-white text-neutral-400 rounded-xl relative"
+                >
+                  <Bell className="h-4 w-4" />
+                  <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-black"></span>
+                </Button>
+              </div>
             </div>
           </header>
 
-          {/* Page Slot Content */}
-          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Page Slot */}
+          <main className="flex-1 w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-black">
             {children}
           </main>
 
-          {/* Footer */}
-          <footer className="mt-auto border-t border-slate-800/80 bg-slate-950/80 py-4 text-center text-xs text-slate-500">
+          {/* Classic Black Footer */}
+          <footer className="mt-auto border-t border-neutral-800 bg-black py-4 text-center text-xs text-neutral-500 font-mono">
             <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-              <span>WorkHub Inertia.js + React JS Application</span>
+              <span>WorkHub Pure Black Edition • Inertia.js + React</span>
               <div className="flex items-center gap-4">
-                <a href="/dashboard" className="hover:text-slate-300 transition-colors">
+                <a href="/dashboard" className="hover:text-neutral-300 transition-colors">
                   Classic Dashboard
                 </a>
-                <span className="text-slate-800">•</span>
-                <span className="text-indigo-400 font-medium">Powered by shadcn/ui Sidebar</span>
+                <span className="text-neutral-800">•</span>
+                <span className="text-neutral-300 font-medium">Powered by shadcn/ui Sidebar</span>
               </div>
             </div>
           </footer>

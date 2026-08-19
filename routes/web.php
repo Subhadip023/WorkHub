@@ -301,6 +301,36 @@ Route::get('/new/tasks', function () {
     ]);
 })->name('new.tasks');
 
+Route::get('/new/task-view', function () {
+    return Inertia::render('New/TaskView');
+})->name('new.task.view');
+
+Route::get('/new/task/{id}', function ($id) {
+    return Inertia::render('New/TaskView', [
+        'task' => [
+            'id' => str_starts_with($id, 'WH-') ? $id : "WH-{$id}",
+            'title' => "Inertia.js React layout hydration error on cold start (#{$id})",
+            'description' => "When launching the application on a cold browser refresh, React throws a client-side hydration mismatch warning. The DOM attributes generated on the server render differ slightly from the client state.\n\n### Steps to Reproduce\n1. Clear browser cache and navigate to /new/dashboard.\n2. Observe console warning: Hydration failed because the initial UI does not match the server-rendered HTML.\n3. Notice temporary layout flicker during component mounting.\n\n### Expected Behavior\nThe Inertia page wrapper should hydrate seamlessly without layout reflows or console warnings.",
+            'status' => 'In Progress',
+            'priority' => 'Urgent',
+            'dueDate' => 'Today, 5:00 PM',
+            'project' => 'Inertia.js Migration',
+            'branch' => 'fix/inertia-hydration',
+            'category' => 'Frontend Bug',
+            'created' => '2 hours ago by Alex Morgan',
+            'assignee' => ['name' => 'Alex Morgan', 'avatar' => 'AM', 'email' => 'alex@workhub.io'],
+            'reporter' => ['name' => 'Sarah Chen', 'avatar' => 'SC'],
+            'completed' => false,
+            'pr' => ['id' => '#148', 'title' => 'fix(layout): resolve hydration mismatch', 'status' => 'Merged'],
+            'tags' => ['Bug', 'Frontend', 'Inertia.js'],
+        ],
+    ]);
+})->name('new.task.show');
+
+Route::get('/new/tasks/{id}', function ($id) {
+    return redirect()->route('new.task.show', ['id' => $id]);
+})->name('new.tasks.show');
+
 Route::get('/new/companies', function () {
     return Inertia::render('New/ComingSoon', ['feature' => 'Companies Workspace', 'activeItem' => 'companies']);
 })->name('new.companies');

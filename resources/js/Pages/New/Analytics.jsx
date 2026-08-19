@@ -5,25 +5,20 @@ import {
   TrendingUp,
   Clock,
   CheckCircle2,
-  Users,
+  AlertTriangle,
+  Zap,
   Download,
   Calendar,
-  Filter,
-  Sparkles,
-  ArrowUpRight,
-  ArrowDownRight,
-  Zap,
-  Target,
-  Award,
+  Users,
   Layers,
-  PieChart as PieChartIcon
+  Sparkles,
+  Crown
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
 import { Avatar, AvatarFallback } from "@/Components/ui/avatar";
-import { Progress } from "@/Components/ui/progress";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -34,76 +29,55 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
-  Legend
 } from "recharts";
 
-export default function Analytics({ analytics_data, team_members }) {
+export default function Analytics({ metrics, team_performance, velocity_data }) {
   const [timeRange, setTimeRange] = useState("30d");
 
-  // Fallback demo dataset for charts
-  const throughputData = analytics_data?.throughput || [
-    { period: "Week 1", created: 45, completed: 38, backlog: 7 },
-    { period: "Week 2", created: 52, completed: 48, backlog: 11 },
-    { period: "Week 3", created: 61, completed: 59, backlog: 13 },
-    { period: "Week 4", created: 48, completed: 54, backlog: 7 },
-    { period: "Week 5", created: 70, completed: 66, backlog: 11 },
-    { period: "Week 6", created: 58, completed: 62, backlog: 7 },
+  const displayVelocity = velocity_data || [
+    { sprint: "Sprint 20", planned: 40, completed: 38, velocity: 95 },
+    { sprint: "Sprint 21", planned: 45, completed: 42, velocity: 93 },
+    { sprint: "Sprint 22", planned: 50, completed: 48, velocity: 96 },
+    { sprint: "Sprint 23", planned: 48, completed: 46, velocity: 95 },
+    { sprint: "Sprint 24", planned: 55, completed: 52, velocity: 94 },
+    { sprint: "Sprint 25", planned: 60, completed: 58, velocity: 96 },
   ];
 
-  const categoryDistribution = analytics_data?.categories || [
-    { category: "Frontend Dev", tasks: 42, hours: 168 },
-    { category: "Backend API", tasks: 36, hours: 144 },
-    { category: "UI/UX Design", tasks: 24, hours: 96 },
-    { category: "QA & Testing", tasks: 18, hours: 72 },
-    { category: "DevOps / Infra", tasks: 12, hours: 48 },
-  ];
-
-  const teamPerformance = team_members || [
-    { name: "Alex Morgan", role: "Fullstack Engineer", avatar: "AM", assigned: 18, completed: 16, rate: 88, velocity: "3.2/day" },
-    { name: "Sarah Chen", role: "UI/UX Lead", avatar: "SC", assigned: 14, completed: 14, rate: 100, velocity: "2.8/day" },
-    { name: "Michael Scott", role: "Backend Developer", avatar: "MS", assigned: 22, completed: 19, rate: 86, velocity: "3.8/day" },
-    { name: "Emma Watson", role: "QA Engineer", avatar: "EW", assigned: 15, completed: 13, rate: 86, velocity: "2.6/day" },
-    { name: "David Kim", role: "DevOps Engineer", avatar: "DK", assigned: 10, completed: 9, rate: 90, velocity: "1.8/day" },
+  const displayTeam = team_performance || [
+    { name: "Alex Morgan", role: "Tech Lead", tasksCompleted: 42, velocity: 98, avatar: "AM" },
+    { name: "Sarah Chen", role: "Senior Frontend Eng", tasksCompleted: 38, velocity: 95, avatar: "SC" },
+    { name: "Michael Scott", role: "Backend Architect", tasksCompleted: 35, velocity: 92, avatar: "MS" },
+    { name: "Emma Watson", role: "QA Engineer", tasksCompleted: 29, velocity: 90, avatar: "EW" },
+    { name: "David Kim", role: "DevOps Engineer", tasksCompleted: 26, velocity: 88, avatar: "DK" },
   ];
 
   const headerActions = (
-    <div className="flex items-center gap-2">
-      <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-        <Download className="h-3.5 w-3.5" /> Export PDF
-      </Button>
-    </div>
+    <Button size="sm" className="bg-white text-black hover:bg-neutral-200 font-semibold text-sm gap-2 transition-all rounded-xl h-9 px-3.5">
+      <Download className="h-4 w-4 text-black" /> Export Report
+    </Button>
   );
 
   return (
-    <DashboardLayout title="Analytics & Performance" activeItem="analytics" actions={headerActions}>
-      <div className="space-y-8">
-        {/* Header Title Banner */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-purple-950/60 via-slate-900/80 to-slate-900/60 p-6 rounded-2xl border border-purple-500/20 shadow-2xl relative overflow-hidden">
-          <div className="space-y-1 z-10">
-            <div className="flex items-center gap-2">
-              <Badge variant="default" className="gap-1 bg-purple-500/20 text-purple-300 border-purple-500/30">
-                <BarChart3 className="h-3 w-3 text-purple-400" /> Executive Analytics
-              </Badge>
-              <span className="text-xs text-slate-400">WorkHub Intelligence Engine</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-              Performance & Velocity Metrics
+    <DashboardLayout title="Performance Analytics" activeItem="analytics" actions={headerActions}>
+      <div className="space-y-6">
+        {/* Header Hero Bar */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-neutral-800 bg-neutral-900/90 p-6 rounded-xl shadow-xl">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-2">
+              Engineering Velocity & Analytics <Crown className="h-6 w-6 text-neutral-300" />
             </h1>
-            <p className="text-sm text-slate-400 max-w-xl">
-              Track throughput, sprint velocity, cycle time, and team output in real-time.
+            <p className="text-sm sm:text-base text-neutral-400 font-mono mt-1">
+              Sprint throughput, cycle times, and team member velocity
             </p>
           </div>
 
-          {/* Time Range Selector */}
-          <div className="flex items-center gap-1.5 bg-slate-950/90 p-1.5 rounded-xl border border-slate-800 z-10">
-            {["7d", "30d", "90d", "ytd"].map((range) => (
+          <div className="flex items-center gap-1 bg-black p-1 rounded-lg border border-neutral-800 text-xs sm:text-sm font-mono">
+            {["7d", "30d", "90d"].map((range) => (
               <button
                 key={range}
                 onClick={() => setTimeRange(range)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all ${
-                  timeRange === range
-                    ? "bg-purple-600 text-white shadow-lg shadow-purple-600/30"
-                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
+                className={`px-4 py-1.5 rounded-md transition-all ${
+                  timeRange === range ? "bg-neutral-800 text-white font-semibold" : "text-neutral-400 hover:text-neutral-200"
                 }`}
               >
                 {range}
@@ -112,230 +86,141 @@ export default function Analytics({ analytics_data, team_members }) {
           </div>
         </div>
 
-        {/* Top Metric Cards Grid */}
+        {/* Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Metric 1 */}
-          <Card className="border-slate-800/80 hover:border-purple-500/50 transition-all">
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center justify-between text-xs text-slate-400 font-medium">
-                <span>Team Velocity</span>
-                <span className="inline-flex items-center text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
-                  <ArrowUpRight className="h-3 w-3 mr-0.5" /> +18.4%
-                </span>
-              </CardDescription>
-              <CardTitle className="text-3xl font-extrabold text-white pt-1">
-                24.8 <span className="text-sm font-normal text-slate-400">tasks/day</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="text-xs text-slate-400">
-                <span className="text-purple-400 font-medium">+3.8/day</span> vs last period
-              </div>
-              <Progress value={82} className="h-1.5 mt-3" />
-            </CardContent>
-          </Card>
+          <div className="border border-neutral-800 bg-neutral-900/90 p-5 rounded-xl space-y-2 shadow-xl">
+            <span className="text-xs font-mono text-neutral-400 font-bold uppercase tracking-wider block">
+              Average Cycle Time
+            </span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl sm:text-3xl font-bold font-mono text-white">1.8 Days</span>
+              <span className="text-xs sm:text-sm text-emerald-400 font-mono">-12% faster</span>
+            </div>
+            <span className="text-xs text-neutral-500 font-mono block">From creation to merge</span>
+          </div>
 
-          {/* Metric 2 */}
-          <Card className="border-slate-800/80 hover:border-cyan-500/50 transition-all">
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center justify-between text-xs text-slate-400 font-medium">
-                <span>Average Cycle Time</span>
-                <span className="inline-flex items-center text-xs font-semibold text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">
-                  <ArrowDownRight className="h-3 w-3 mr-0.5" /> -12% Faster
-                </span>
-              </CardDescription>
-              <CardTitle className="text-3xl font-extrabold text-white pt-1">
-                1.4 <span className="text-sm font-normal text-slate-400">days</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="text-xs text-slate-400">
-                <span className="text-cyan-400 font-medium">0.3 days reduced</span> turnaround
-              </div>
-              <Progress value={90} className="h-1.5 mt-3" />
-            </CardContent>
-          </Card>
+          <div className="border border-neutral-800 bg-neutral-900/90 p-5 rounded-xl space-y-2 shadow-xl">
+            <span className="text-xs font-mono text-neutral-400 font-bold uppercase tracking-wider block">
+              Sprint Completion Rate
+            </span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl sm:text-3xl font-bold font-mono text-white">96.4%</span>
+              <span className="text-xs sm:text-sm text-emerald-400 font-mono">+3.2% vs target</span>
+            </div>
+            <span className="text-xs text-neutral-500 font-mono block">58 of 60 tasks shipped</span>
+          </div>
 
-          {/* Metric 3 */}
-          <Card className="border-slate-800/80 hover:border-emerald-500/50 transition-all">
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center justify-between text-xs text-slate-400 font-medium">
-                <span>Sprint Goal Completion</span>
-                <span className="inline-flex items-center text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
-                  <Target className="h-3 w-3 mr-0.5" /> On Target
-                </span>
-              </CardDescription>
-              <CardTitle className="text-3xl font-extrabold text-white pt-1">
-                88.4%
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="text-xs text-slate-400">
-                <span className="text-emerald-400 font-medium">142 of 160</span> milestone tasks
-              </div>
-              <Progress value={88.4} className="h-1.5 mt-3" />
-            </CardContent>
-          </Card>
+          <div className="border border-neutral-800 bg-neutral-900/90 p-5 rounded-xl space-y-2 shadow-xl">
+            <span className="text-xs font-mono text-neutral-400 font-bold uppercase tracking-wider block">
+              Code Review Latency
+            </span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl sm:text-3xl font-bold font-mono text-white">4.2 Hrs</span>
+              <span className="text-xs sm:text-sm text-emerald-400 font-mono">-45 mins</span>
+            </div>
+            <span className="text-xs text-neutral-500 font-mono block">PR turn-around time</span>
+          </div>
 
-          {/* Metric 4 */}
-          <Card className="border-slate-800/80 hover:border-indigo-500/50 transition-all">
-            <CardHeader className="pb-2">
-              <CardDescription className="flex items-center justify-between text-xs text-slate-400 font-medium">
-                <span>Team Efficiency Rating</span>
-                <span className="inline-flex items-center text-xs font-semibold text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded">
-                  <Award className="h-3 w-3 mr-0.5" /> Top 5%
-                </span>
-              </CardDescription>
-              <CardTitle className="text-3xl font-extrabold text-white pt-1">
-                96 / 100
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="text-xs text-slate-400">
-                Based on delivery speed & code reviews
-              </div>
-              <Progress value={96} className="h-1.5 mt-3" />
-            </CardContent>
-          </Card>
+          <div className="border border-neutral-800 bg-neutral-900/90 p-5 rounded-xl space-y-2 shadow-xl">
+            <span className="text-xs font-mono text-neutral-400 font-bold uppercase tracking-wider block">
+              Bug Leakage Rate
+            </span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl sm:text-3xl font-bold font-mono text-white">0.4%</span>
+              <span className="text-xs sm:text-sm text-emerald-400 font-mono font-semibold">Ultra Low</span>
+            </div>
+            <span className="text-xs text-neutral-500 font-mono block">Post-release defects</span>
+          </div>
         </div>
 
-        {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Throughput & Velocity Chart */}
-          <Card className="lg:col-span-2 border-slate-800/80">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+        {/* Velocity Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="border border-neutral-800 bg-neutral-900/90 p-5 sm:p-6 rounded-xl space-y-4 shadow-xl">
+            <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <TrendingUp className="h-5 w-5 text-purple-400" /> Sprint Throughput & Cumulative Flow
-                </CardTitle>
-                <CardDescription>
-                  Comparison of tasks created vs tasks completed per weekly cycle
-                </CardDescription>
+                <h3 className="text-sm font-mono font-bold uppercase tracking-wider text-white">
+                  Sprint Velocity Trend
+                </h3>
+                <p className="text-xs sm:text-sm text-neutral-400 font-mono mt-0.5">
+                  Planned story points vs completed points
+                </p>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80 w-full pt-4">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={throughputData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorCreated" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#a855f7" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="#a855f7" stopOpacity={0.0} />
-                      </linearGradient>
-                      <linearGradient id="colorCompleted" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                    <XAxis dataKey="period" stroke="#64748b" fontSize={12} tickLine={false} />
-                    <YAxis stroke="#64748b" fontSize={12} tickLine={false} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#0f172a",
-                        borderColor: "#334155",
-                        borderRadius: "0.5rem",
-                        color: "#f8fafc",
-                      }}
-                    />
-                    <Legend />
-                    <Area type="monotone" dataKey="created" stroke="#a855f7" strokeWidth={3} fillOpacity={1} fill="url(#colorCreated)" name="Tasks Created" />
-                    <Area type="monotone" dataKey="completed" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorCompleted)" name="Tasks Completed" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+              <span className="text-xs sm:text-sm font-mono text-emerald-400 bg-emerald-950/40 px-3 py-1 rounded-full border border-emerald-800/40 font-semibold">
+                Optimal
+              </span>
+            </div>
 
-          {/* Work Category Distribution Bar Chart */}
-          <Card className="border-slate-800/80">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Layers className="h-5 w-5 text-indigo-400" /> Work Distribution
-              </CardTitle>
-              <CardDescription>Tasks logged per domain category</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80 w-full pt-4">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={categoryDistribution} layout="vertical" margin={{ top: 10, right: 10, left: 30, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={false} />
-                    <XAxis type="number" stroke="#64748b" fontSize={12} tickLine={false} />
-                    <YAxis dataKey="category" type="category" stroke="#64748b" fontSize={11} tickLine={false} width={80} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#0f172a",
-                        borderColor: "#334155",
-                        borderRadius: "0.5rem",
-                        color: "#f8fafc",
-                      }}
-                    />
-                    <Bar dataKey="tasks" fill="#6366f1" radius={[0, 6, 6, 0]} name="Tasks Count" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+            <div className="h-56 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={displayVelocity}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#262626" />
+                  <XAxis dataKey="sprint" stroke="#737373" fontSize={11} fontFamily="monospace" />
+                  <YAxis stroke="#737373" fontSize={11} fontFamily="monospace" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#0a0a0a",
+                      borderColor: "#262626",
+                      color: "#ffffff",
+                      fontSize: "12px",
+                      fontFamily: "monospace",
+                      borderRadius: "8px"
+                    }}
+                  />
+                  <Bar dataKey="planned" fill="#525252" radius={[4, 4, 0, 0]} name="Planned Points" />
+                  <Bar dataKey="completed" fill="#e5e5e5" radius={[4, 4, 0, 0]} name="Completed Points" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Team Performance Ranking */}
+          <div className="border border-neutral-800 bg-neutral-900/90 p-5 sm:p-6 rounded-xl space-y-4 shadow-xl">
+            <div className="flex items-center justify-between pb-2.5 border-b border-neutral-800">
+              <h3 className="text-sm font-mono font-bold uppercase tracking-wider text-white">
+                Team Member Output
+              </h3>
+              <span className="text-xs font-mono text-neutral-400">
+                Top Performers
+              </span>
+            </div>
+
+            <div className="space-y-3">
+              {displayTeam.map((member, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between p-3.5 rounded-lg bg-black border border-neutral-800"
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-9 w-9 border border-neutral-700">
+                      <AvatarFallback className="bg-neutral-800 text-neutral-200 font-mono text-xs font-bold">
+                        {member.avatar}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <span className="font-semibold text-sm text-white block">
+                        {member.name}
+                      </span>
+                      <span className="text-xs text-neutral-400 font-mono block">
+                        {member.role}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 text-right">
+                    <div>
+                      <span className="font-mono text-xs sm:text-sm font-bold text-white block">
+                        {member.tasksCompleted} tasks
+                      </span>
+                      <span className="text-xs text-emerald-400 font-mono block">
+                        {member.velocity}% rate
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-
-        {/* Team Velocity Matrix Table */}
-        <Card className="border-slate-800/80">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Users className="h-5 w-5 text-cyan-400" /> Team Velocity Matrix
-              </CardTitle>
-              <CardDescription>Individual contribution breakdown and completion rate</CardDescription>
-            </div>
-            <Badge variant="outline" className="text-xs text-slate-400">
-              5 Active Engineers
-            </Badge>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-slate-800 text-slate-400 uppercase tracking-wider font-semibold">
-                    <th className="pb-3 px-2">Member</th>
-                    <th className="pb-3 px-2">Role</th>
-                    <th className="pb-3 px-2">Assigned</th>
-                    <th className="pb-3 px-2">Completed</th>
-                    <th className="pb-3 px-2">Velocity</th>
-                    <th className="pb-3 px-2 w-40">Completion Rate</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60">
-                  {teamPerformance.map((member, idx) => (
-                    <tr key={idx} className="hover:bg-slate-900/50 transition-colors">
-                      <td className="py-3 px-2">
-                        <div className="flex items-center gap-2.5">
-                          <Avatar className="h-7 w-7">
-                            <AvatarFallback className="bg-indigo-600/30 text-indigo-300 font-bold text-[10px]">
-                              {member.avatar}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="font-semibold text-slate-100">{member.name}</span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-2 text-slate-400">{member.role}</td>
-                      <td className="py-3 px-2 font-mono font-medium text-slate-300">{member.assigned}</td>
-                      <td className="py-3 px-2 font-mono font-medium text-emerald-400">{member.completed}</td>
-                      <td className="py-3 px-2 font-mono text-indigo-400 font-semibold">{member.velocity}</td>
-                      <td className="py-3 px-2">
-                        <div className="space-y-1">
-                          <div className="flex justify-between text-[10px]">
-                            <span className="text-slate-400">{member.rate}%</span>
-                          </div>
-                          <Progress value={member.rate} className="h-1.5" />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </DashboardLayout>
   );

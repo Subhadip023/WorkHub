@@ -4,21 +4,13 @@ import {
   FolderKanban,
   Plus,
   Search,
-  Filter,
   Grid,
   List,
-  Calendar,
-  Users,
   CheckCircle2,
   Clock,
-  MoreVertical,
   ChevronRight,
   Sparkles,
-  Layers,
-  ArrowUpRight,
-  Code,
-  Tag,
-  AlertCircle
+  Tag
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/Components/ui/card";
@@ -28,17 +20,17 @@ import { Avatar, AvatarFallback } from "@/Components/ui/avatar";
 import { Progress } from "@/Components/ui/progress";
 
 export default function Projects({ initial_projects }) {
-  const [filterStatus, setFilterStatus] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState("grid"); // 'grid' | 'table'
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const [projectsList, setProjectsList] = useState(
     initial_projects || [
       {
         id: 1,
         name: "WorkHub Mobile App",
-        description: "Cross-platform mobile application for real-time task management and team synchronization.",
+        description: "Cross-platform mobile workspace manager for iOS and Android.",
         progress: 78,
         status: "In Progress",
         dueDate: "Aug 28, 2026",
@@ -47,8 +39,8 @@ export default function Projects({ initial_projects }) {
           { name: "Sarah Chen", avatar: "SC" },
           { name: "David Kim", avatar: "DK" },
         ],
-        completedTasks: 42,
-        totalTasks: 54,
+        completedTasks: 34,
+        totalTasks: 42,
         tag: "React Native",
         category: "Mobile",
         priority: "High",
@@ -56,35 +48,33 @@ export default function Projects({ initial_projects }) {
       {
         id: 2,
         name: "Inertia.js Migration",
-        description: "Upgrading legacy Laravel blade views to Inertia.js + React JS SPA stack with shadcn UI.",
+        description: "Migrating legacy Blade components to Inertia.js React SPA views.",
         progress: 92,
         status: "Near Completion",
         dueDate: "Aug 22, 2026",
         teamMembers: [
           { name: "Michael Scott", avatar: "MS" },
-          { name: "Emma Watson", avatar: "EW" },
+          { name: "Alex Morgan", avatar: "AM" },
         ],
-        completedTasks: 38,
-        totalTasks: 41,
+        completedTasks: 22,
+        totalTasks: 24,
         tag: "Laravel + React",
-        category: "Web App",
+        category: "Core",
         priority: "High",
       },
       {
         id: 3,
         name: "shadcn/ui Design System",
-        description: "Unified design component token library built with Tailwind CSS and Radix primitives.",
+        description: "Implementing consistent design tokens and accessible UI primitives.",
         progress: 100,
         status: "Completed",
         dueDate: "Aug 18, 2026",
         teamMembers: [
           { name: "Sarah Chen", avatar: "SC" },
-          { name: "Alex Morgan", avatar: "AM" },
           { name: "Emma Watson", avatar: "EW" },
-          { name: "David Kim", avatar: "DK" },
         ],
-        completedTasks: 30,
-        totalTasks: 30,
+        completedTasks: 18,
+        totalTasks: 18,
         tag: "Tailwind CSS",
         category: "Design",
         priority: "Medium",
@@ -92,16 +82,16 @@ export default function Projects({ initial_projects }) {
       {
         id: 4,
         name: "Customer Portal v2",
-        description: "Self-service analytics and billing management portal for corporate clients.",
+        description: "Self-service client dashboard for subscription and task tracking.",
         progress: 45,
         status: "In Progress",
         dueDate: "Sep 15, 2026",
         teamMembers: [
-          { name: "Michael Scott", avatar: "MS" },
           { name: "David Kim", avatar: "DK" },
+          { name: "Sarah Chen", avatar: "SC" },
         ],
-        completedTasks: 18,
-        totalTasks: 40,
+        completedTasks: 12,
+        totalTasks: 28,
         tag: "Next.js",
         category: "Frontend",
         priority: "Medium",
@@ -109,11 +99,13 @@ export default function Projects({ initial_projects }) {
       {
         id: 5,
         name: "Automated CI/CD Pipeline",
-        description: "GitHub Actions workflow setup with Pest test runner and zero-downtime deployment.",
+        description: "Zero-downtime deployment workflows with GitHub Actions & Docker.",
         progress: 30,
         status: "In Progress",
         dueDate: "Sep 30, 2026",
-        teamMembers: [{ name: "David Kim", avatar: "DK" }],
+        teamMembers: [
+          { name: "David Kim", avatar: "DK" },
+        ],
         completedTasks: 6,
         totalTasks: 20,
         tag: "DevOps",
@@ -127,7 +119,9 @@ export default function Projects({ initial_projects }) {
         progress: 15,
         status: "On Hold",
         dueDate: "Oct 10, 2026",
-        teamMembers: [{ name: "Alex Morgan", avatar: "AM" }],
+        teamMembers: [
+          { name: "Alex Morgan", avatar: "AM" },
+        ],
         completedTasks: 3,
         totalTasks: 22,
         tag: "Redis + Laravel",
@@ -137,12 +131,11 @@ export default function Projects({ initial_projects }) {
     ]
   );
 
-  // New Project Form State
   const [newProject, setNewProject] = useState({
     name: "",
     description: "",
     tag: "React",
-    dueDate: "Sep 20, 2026",
+    category: "Frontend",
     priority: "Medium",
   });
 
@@ -153,391 +146,272 @@ export default function Projects({ initial_projects }) {
     const projectObj = {
       id: Date.now(),
       name: newProject.name,
-      description: newProject.description || "Newly created project space.",
+      description: newProject.description || "Project workspace item.",
       progress: 0,
       status: "In Progress",
-      dueDate: newProject.dueDate,
+      dueDate: "Sep 30, 2026",
       teamMembers: [{ name: "Current User", avatar: "CU" }],
       completedTasks: 0,
       totalTasks: 10,
       tag: newProject.tag,
-      category: "Development",
+      category: newProject.category,
       priority: newProject.priority,
     };
 
     setProjectsList([projectObj, ...projectsList]);
-    setNewProject({ name: "", description: "", tag: "React", dueDate: "Sep 20, 2026", priority: "Medium" });
-    setShowAddModal(false);
+    setNewProject({ name: "", description: "", tag: "React", category: "Frontend", priority: "Medium" });
+    setShowCreateModal(false);
   };
 
   const filteredProjects = projectsList.filter((p) => {
-    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          p.tag.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    if (filterStatus === "in_progress") return matchesSearch && (p.status === "In Progress" || p.status === "Near Completion");
-    if (filterStatus === "completed") return matchesSearch && p.status === "Completed";
-    if (filterStatus === "on_hold") return matchesSearch && p.status === "On Hold";
+    const matchesSearch =
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.tag.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.category.toLowerCase().includes(searchQuery.toLowerCase());
+
+    if (statusFilter === "active") return matchesSearch && p.status === "In Progress";
+    if (statusFilter === "completed") return matchesSearch && p.status === "Completed";
+    if (statusFilter === "high_priority") return matchesSearch && p.priority === "High";
     return matchesSearch;
   });
 
   const headerActions = (
     <Button
-      variant="gradient"
       size="sm"
-      onClick={() => setShowAddModal(true)}
-      className="hidden sm:flex items-center gap-1.5 shadow-indigo-500/25"
+      onClick={() => setShowCreateModal(true)}
+      className="bg-white text-black hover:bg-neutral-200 font-semibold text-sm gap-2 transition-all rounded-xl h-9 px-3.5"
     >
-      <Plus className="h-4 w-4" /> New Project
+      <Plus className="h-4 w-4 text-black" /> Create Project
     </Button>
   );
 
   return (
     <DashboardLayout title="Projects Workspace" activeItem="projects" actions={headerActions}>
-      <div className="space-y-8">
-        {/* Header Banner */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-indigo-950/60 via-slate-900/80 to-slate-900/60 p-6 rounded-2xl border border-indigo-500/20 shadow-2xl relative overflow-hidden">
-          <div className="space-y-1 z-10">
-            <div className="flex items-center gap-2">
-              <Badge variant="default" className="gap-1 bg-indigo-500/20 text-indigo-300 border-indigo-500/30">
-                <FolderKanban className="h-3.5 w-3.5 text-indigo-400" /> Projects Hub
-              </Badge>
-              <span className="text-xs text-slate-400">{filteredProjects.length} projects total</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-              Projects & Workspaces
+      <div className="space-y-6">
+        {/* Header Bar */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-neutral-800 bg-neutral-900/90 p-6 rounded-xl shadow-xl">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-2">
+              Projects & Workspaces <FolderKanban className="h-6 w-6 text-neutral-300" />
             </h1>
-            <p className="text-sm text-slate-400 max-w-xl">
-              Organize, track milestones, and manage team output across active project spaces.
+            <p className="text-sm sm:text-base text-neutral-400 font-mono mt-1">
+              Manage workspace initiatives, milestone progress, and team assignments
             </p>
           </div>
 
-          <div className="flex items-center gap-3 z-10">
-            <Button
-              variant="gradient"
-              className="gap-2 shadow-indigo-500/25"
-              onClick={() => setShowAddModal(true)}
-            >
-              <Plus className="h-4 w-4" /> Create Project
-            </Button>
-          </div>
-        </div>
-
-        {/* Quick KPI Overview */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="border-slate-800/80">
-            <CardHeader className="pb-2">
-              <CardDescription className="text-xs text-slate-400 font-medium">
-                Active Workspaces
-              </CardDescription>
-              <CardTitle className="text-3xl font-extrabold text-white pt-1">
-                {projectsList.filter((p) => p.status !== "Completed").length}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <span className="text-xs text-indigo-400 font-medium">In active development</span>
-            </CardContent>
-          </Card>
-
-          <Card className="border-slate-800/80">
-            <CardHeader className="pb-2">
-              <CardDescription className="text-xs text-slate-400 font-medium">
-                Completed Projects
-              </CardDescription>
-              <CardTitle className="text-3xl font-extrabold text-emerald-400 pt-1">
-                {projectsList.filter((p) => p.status === "Completed").length}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <span className="text-xs text-slate-400">100% Milestone achieved</span>
-            </CardContent>
-          </Card>
-
-          <Card className="border-slate-800/80">
-            <CardHeader className="pb-2">
-              <CardDescription className="text-xs text-slate-400 font-medium">
-                Total Team Members
-              </CardDescription>
-              <CardTitle className="text-3xl font-extrabold text-white pt-1">
-                18
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <span className="text-xs text-purple-400 font-medium">Across 6 project pods</span>
-            </CardContent>
-          </Card>
-
-          <Card className="border-slate-800/80">
-            <CardHeader className="pb-2">
-              <CardDescription className="text-xs text-slate-400 font-medium">
-                Average Completion
-              </CardDescription>
-              <CardTitle className="text-3xl font-extrabold text-white pt-1">
-                {Math.round(projectsList.reduce((acc, p) => acc + p.progress, 0) / projectsList.length)}%
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <Progress
-                value={Math.round(projectsList.reduce((acc, p) => acc + p.progress, 0) / projectsList.length)}
-                className="h-1.5 mt-1"
-              />
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Filter Bar & Controls */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
-          {/* Status Tabs */}
-          <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs w-full sm:w-auto">
-            {[
-              { key: "all", label: "All Projects" },
-              { key: "in_progress", label: "In Progress" },
-              { key: "completed", label: "Completed" },
-              { key: "on_hold", label: "On Hold" },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setFilterStatus(tab.key)}
-                className={`px-3 py-1.5 rounded-md font-medium transition-all ${
-                  filterStatus === tab.key
-                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
-                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Search & View Mode */}
           <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-            <div className="relative w-full sm:w-56">
-              <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-neutral-400" />
               <input
                 type="text"
                 placeholder="Search projects..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                className="w-full bg-black border border-neutral-800 rounded-lg pl-9 pr-3 py-2 text-xs sm:text-sm text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-neutral-700 font-mono"
               />
             </div>
 
-            <div className="flex items-center bg-slate-950 p-1 rounded-lg border border-slate-800">
+            <div className="flex items-center bg-black p-1 rounded-lg border border-neutral-800 text-xs">
               <button
                 onClick={() => setViewMode("grid")}
-                className={`p-1.5 rounded ${viewMode === "grid" ? "bg-slate-800 text-white" : "text-slate-400"}`}
+                className={`p-2 rounded-md transition-colors ${viewMode === "grid" ? "bg-neutral-800 text-white" : "text-neutral-400"}`}
+                title="Grid View"
               >
-                <Grid className="h-3.5 w-3.5" />
+                <Grid className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setViewMode("table")}
-                className={`p-1.5 rounded ${viewMode === "table" ? "bg-slate-800 text-white" : "text-slate-400"}`}
+                className={`p-2 rounded-md transition-colors ${viewMode === "table" ? "bg-neutral-800 text-white" : "text-neutral-400"}`}
+                title="Table View"
               >
-                <List className="h-3.5 w-3.5" />
+                <List className="h-4 w-4" />
               </button>
             </div>
           </div>
         </div>
 
-        {/* Modal for Creating New Project */}
-        {showAddModal && (
-          <div className="p-6 rounded-xl bg-slate-900 border border-indigo-500/30 space-y-4 shadow-2xl relative">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Plus className="h-5 w-5 text-indigo-400" /> Create New Project Workspace
+        {/* Modal Form for Creating Project */}
+        {showCreateModal && (
+          <div className="p-6 rounded-xl bg-neutral-900 border border-neutral-800 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between pb-2.5 border-b border-neutral-800">
+              <h3 className="text-sm font-mono font-bold uppercase tracking-wider text-white">
+                New Project Initiative
               </h3>
-              <Button variant="ghost" size="sm" onClick={() => setShowAddModal(false)}>
+              <Button variant="ghost" size="sm" onClick={() => setShowCreateModal(false)} className="text-xs sm:text-sm text-neutral-400">
                 Cancel
               </Button>
             </div>
 
-            <form onSubmit={handleCreateProject} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Project Name</label>
+            <form onSubmit={handleCreateProject} className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm">
+              <div className="md:col-span-2">
+                <label className="font-mono text-neutral-400 block mb-1">Project Name</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. WorkHub AI Assistant"
+                  placeholder="e.g. WorkHub Core Migration"
                   value={newProject.name}
                   onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Tech Stack Tag</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Vue.js, Node.js"
-                  value={newProject.tag}
-                  onChange={(e) => setNewProject({ ...newProject, tag: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-neutral-200 focus:outline-none focus:border-neutral-700"
                 />
               </div>
 
               <div className="md:col-span-2">
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Description</label>
-                <textarea
-                  rows={2}
-                  placeholder="Short outline of the project objective..."
+                <label className="font-mono text-neutral-400 block mb-1">Description</label>
+                <input
+                  type="text"
+                  placeholder="Brief summary of goals..."
                   value={newProject.description}
                   onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-neutral-200 focus:outline-none focus:border-neutral-700"
                 />
               </div>
 
-              <div className="md:col-span-2 flex justify-end gap-2">
-                <Button type="button" variant="outline" size="sm" onClick={() => setShowAddModal(false)}>
+              <div>
+                <label className="font-mono text-neutral-400 block mb-1">Tag Stack</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Laravel + React"
+                  value={newProject.tag}
+                  onChange={(e) => setNewProject({ ...newProject, tag: e.target.value })}
+                  className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-neutral-200 focus:outline-none focus:border-neutral-700"
+                />
+              </div>
+
+              <div>
+                <label className="font-mono text-neutral-400 block mb-1">Priority</label>
+                <select
+                  value={newProject.priority}
+                  onChange={(e) => setNewProject({ ...newProject, priority: e.target.value })}
+                  className="w-full bg-black border border-neutral-800 rounded-lg p-3 text-neutral-200 focus:outline-none focus:border-neutral-700 font-mono"
+                >
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
+                </select>
+              </div>
+
+              <div className="md:col-span-2 flex justify-end gap-2.5 pt-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => setShowCreateModal(false)} className="text-sm h-9">
                   Cancel
                 </Button>
-                <Button type="submit" variant="gradient" size="sm">
-                  Create Workspace
+                <Button type="submit" size="sm" className="bg-white text-black hover:bg-neutral-200 font-semibold text-sm h-9 px-4">
+                  Save Project
                 </Button>
               </div>
             </form>
           </div>
         )}
 
-        {/* Projects Listing (Grid View or Table View) */}
+        {/* View Mode Rendering */}
         {viewMode === "grid" ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProjects.map((prj) => (
-              <Card
-                key={prj.id}
-                className="border-slate-800/80 hover:border-indigo-500/40 transition-all flex flex-col justify-between group"
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filteredProjects.map((p) => (
+              <div
+                key={p.id}
+                className="border border-neutral-800 bg-neutral-900/90 p-6 rounded-xl space-y-4 hover:border-neutral-700 transition-all flex flex-col justify-between shadow-xl"
               >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 text-[10px] font-semibold bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 rounded-md">
-                          {prj.tag}
-                        </span>
-                        <span className="text-[10px] text-slate-500 font-mono">
-                          {prj.category}
-                        </span>
-                      </div>
-                      <CardTitle className="text-lg font-bold text-white group-hover:text-indigo-300 transition-colors pt-1">
-                        {prj.name}
-                      </CardTitle>
-                    </div>
-
-                    <Badge
-                      variant={
-                        prj.progress === 100
-                          ? "success"
-                          : prj.status === "On Hold"
-                          ? "outline"
-                          : "default"
-                      }
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs bg-black text-neutral-300 px-2.5 py-0.5 rounded border border-neutral-800">
+                      [{p.tag}]
+                    </span>
+                    <span
+                      className={`px-3 py-0.5 rounded-full text-xs font-mono font-semibold ${
+                        p.status === "Completed"
+                          ? "bg-emerald-950/40 text-emerald-400 border border-emerald-800/40"
+                          : p.status === "Near Completion"
+                          ? "bg-emerald-950/40 text-emerald-400 border border-emerald-800/40"
+                          : "bg-amber-950/40 text-amber-300 border border-amber-800/40"
+                      }`}
                     >
-                      {prj.status}
-                    </Badge>
+                      {p.status}
+                    </span>
                   </div>
-                  <CardDescription className="text-xs text-slate-400 line-clamp-2 pt-2">
-                    {prj.description}
-                  </CardDescription>
-                </CardHeader>
 
-                <CardContent className="space-y-4 pt-0">
-                  {/* Progress */}
+                  <h3 className="font-bold text-base sm:text-lg text-white">{p.name}</h3>
+                  <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed line-clamp-2">
+                    {p.description}
+                  </p>
+                </div>
+
+                <div className="space-y-3.5 pt-2">
                   <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-xs font-medium">
-                      <span className="text-slate-400">Milestone Progress</span>
-                      <span className="text-slate-200 font-mono">{prj.progress}%</span>
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-neutral-400">Progress</span>
+                      <span className="text-neutral-200 font-semibold">{p.progress}%</span>
                     </div>
-                    <Progress value={prj.progress} className="h-2" />
-                  </div>
-
-                  {/* Meta details */}
-                  <div className="flex items-center justify-between pt-2 text-xs text-slate-400 border-t border-slate-800/60">
-                    <div className="flex items-center gap-1 text-[11px]">
-                      <Calendar className="h-3.5 w-3.5 text-slate-500" />
-                      <span>{prj.dueDate}</span>
-                    </div>
-
-                    <div className="flex items-center gap-1 font-mono text-[11px]">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-                      <span>{prj.completedTasks}/{prj.totalTasks} tasks</span>
+                    <div className="h-2 w-full bg-black rounded-full overflow-hidden border border-neutral-800">
+                      <div
+                        className="h-full bg-gradient-to-r from-neutral-200 to-neutral-400 rounded-full transition-all duration-500"
+                        style={{ width: `${p.progress}%` }}
+                      ></div>
                     </div>
                   </div>
 
-                  {/* Team Avatars */}
-                  <div className="flex items-center justify-between pt-2">
-                    <div className="flex -space-x-2 overflow-hidden">
-                      {prj.teamMembers.map((m, idx) => (
-                        <Avatar key={idx} className="h-7 w-7 ring-2 ring-slate-950">
-                          <AvatarFallback className="bg-slate-800 text-slate-300 text-[10px] font-bold">
+                  <div className="flex items-center justify-between border-t border-neutral-800/80 pt-3 text-xs font-mono text-neutral-400">
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="h-4 w-4 text-neutral-500" />
+                      <span>{p.dueDate}</span>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      {p.teamMembers.map((m, idx) => (
+                        <Avatar key={idx} className="h-6 w-6 border border-neutral-700">
+                          <AvatarFallback className="bg-neutral-800 text-neutral-300 text-[8px] font-bold">
                             {m.avatar}
                           </AvatarFallback>
                         </Avatar>
                       ))}
                     </div>
-
-                    <Button variant="ghost" size="sm" className="h-7 text-xs text-indigo-400 hover:text-indigo-300">
-                      Open <ChevronRight className="h-3.5 w-3.5 ml-1" />
-                    </Button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         ) : (
-          /* Table View Mode */
-          <Card className="border-slate-800/80">
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead>
-                    <tr className="border-b border-slate-800 bg-slate-950/60 text-slate-400 uppercase tracking-wider font-semibold">
-                      <th className="py-3 px-4">Project</th>
-                      <th className="py-3 px-4">Tag</th>
-                      <th className="py-3 px-4">Status</th>
-                      <th className="py-3 px-4">Due Date</th>
-                      <th className="py-3 px-4 w-44">Progress</th>
-                      <th className="py-3 px-4">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800/60">
-                    {filteredProjects.map((prj) => (
-                      <tr key={prj.id} className="hover:bg-slate-900/50 transition-colors">
-                        <td className="py-3 px-4">
-                          <div>
-                            <div className="font-semibold text-slate-100">{prj.name}</div>
-                            <div className="text-[11px] text-slate-500 truncate max-w-xs">{prj.description}</div>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className="px-2 py-0.5 text-[10px] font-semibold bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 rounded">
-                            {prj.tag}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <Badge variant={prj.progress === 100 ? "success" : "default"}>
-                            {prj.status}
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4 text-slate-400 font-mono">{prj.dueDate}</td>
-                        <td className="py-3 px-4">
-                          <div className="space-y-1">
-                            <div className="flex justify-between text-[10px]">
-                              <span className="text-slate-400">{prj.progress}%</span>
-                            </div>
-                            <Progress value={prj.progress} className="h-1.5" />
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <Button variant="ghost" size="sm" className="h-7 text-xs text-indigo-400">
-                            Open
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+          /* Table View */
+          <div className="border border-neutral-800 bg-neutral-900/90 rounded-xl overflow-hidden shadow-2xl">
+            <table className="w-full text-left text-xs sm:text-sm font-sans">
+              <thead>
+                <tr className="border-b border-neutral-800 bg-black/60 text-neutral-400 font-mono text-xs uppercase tracking-wider">
+                  <th className="py-3.5 px-4">Project</th>
+                  <th className="py-3.5 px-4">Tag Stack</th>
+                  <th className="py-3.5 px-4">Status</th>
+                  <th className="py-3.5 px-4">Progress</th>
+                  <th className="py-3.5 px-4">Due Date</th>
+                  <th className="py-3.5 px-4">Tasks</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-800/60">
+                {filteredProjects.map((p) => (
+                  <tr key={p.id} className="hover:bg-neutral-800/50 transition-colors duration-150">
+                    <td className="py-3.5 px-4 font-semibold text-white text-xs sm:text-sm">{p.name}</td>
+                    <td className="py-3.5 px-4">
+                      <span className="font-mono text-xs bg-black text-neutral-300 px-2.5 py-0.5 rounded border border-neutral-800">
+                        [{p.tag}]
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold ${
+                          p.status === "Completed"
+                            ? "bg-emerald-950/40 text-emerald-400 border border-emerald-800/40"
+                            : "bg-amber-950/40 text-amber-300 border border-amber-800/40"
+                        }`}
+                      >
+                        {p.status}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4 font-mono text-neutral-200">{p.progress}%</td>
+                    <td className="py-3.5 px-4 font-mono text-neutral-400">{p.dueDate}</td>
+                    <td className="py-3.5 px-4 font-mono text-neutral-200">
+                      {p.completedTasks}/{p.totalTasks}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </DashboardLayout>
