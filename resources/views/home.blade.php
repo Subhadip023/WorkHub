@@ -679,6 +679,8 @@
                     <a href="{{ route('login') }}" class="btn btn-outline">Sign In</a>
                     <a href="{{ route('register') }}" class="btn btn-primary">Get Started</a>
                 @endauth
+
+                <a href="/new/dashboard" class="btn btn-outline">Try New Dashboard</a>
             </div>
         </div>
     </header>
@@ -723,6 +725,113 @@
                             <img src="{{ asset('images/dashboard.png') }}" alt="WorkHub Workspace Dashboard">
                         </div>
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- New Look Inertia Showcase Section -->
+        <section class="new-look-section" id="new-look" style="padding: 90px 0; background: linear-gradient(180deg, #090d16 0%, #0f172a 100%); color: #ffffff; border-top: 1px solid rgba(99, 102, 241, 0.2); border-bottom: 1px solid rgba(99, 102, 241, 0.2);">
+            <div class="container">
+                <div class="section-header" style="text-align: center; max-width: 800px; margin: 0 auto 60px;">
+                    <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); padding: 6px 14px; border-radius: 30px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">
+                        <i class="fas fa-sparkles"></i> New Release • Inertia.js + React JS + shadcn/ui
+                    </div>
+                    <h2 style="font-size: 40px; font-weight: 800; background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 16px;">
+                        Experience the Next-Gen WorkHub Look
+                    </h2>
+                    <p style="color: #94a3b8; font-size: 18px; line-height: 1.6;">
+                        Standardized SPA layout featuring the official <strong>shadcn/ui collapsible sidebar</strong>, interactive <strong>Recharts velocity metrics</strong>, responsive dark mode design system, and multi-view task Kanban boards.
+                    </p>
+                </div>
+
+                <!-- Preview Grid Cards -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; margin-bottom: 50px;">
+                    <!-- Card 1: Dashboard -->
+                    <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 28px; transition: all 0.3s ease; display: flex; flex-direction: column; justify-content: space-between;" onmouseover="this.style.borderColor='rgba(99, 102, 241, 0.5)'; this.style.transform='translateY(-6px)'" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.1)'; this.style.transform='translateY(0)'">
+                        <div>
+                            <div style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);">
+                                <i class="fas fa-tachometer-alt"></i>
+                            </div>
+                            <h3 style="font-size: 20px; font-weight: 700; color: #ffffff; margin-bottom: 10px;">
+                                Executive Dashboard
+                            </h3>
+                            <p style="color: #94a3b8; font-size: 14px; line-height: 1.5; margin-bottom: 20px;">
+                                Centralized hub with real-time project statistics, activity feed timeline, revenue trend charts, and quick task filters.
+                            </p>
+                        </div>
+                        <a href="/new/dashboard" style="display: inline-flex; align-items: center; gap: 8px; color: #818cf8; font-weight: 600; font-size: 14px; text-decoration: none;">
+                            Launch New Dashboard <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+
+                    <!-- Card 2: Analytics -->
+                    <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 28px; transition: all 0.3s ease; display: flex; flex-direction: column; justify-content: space-between;" onmouseover="this.style.borderColor='rgba(168, 85, 247, 0.5)'; this.style.transform='translateY(-6px)'" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.1)'; this.style.transform='translateY(0)'">
+                        <div>
+                            <div style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, #a855f7, #ec4899); display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(168, 85, 247, 0.3);">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h3 style="font-size: 20px; font-weight: 700; color: #ffffff; margin-bottom: 10px;">
+                                Velocity & Analytics Engine
+                            </h3>
+                            <p style="color: #94a3b8; font-size: 14px; line-height: 1.5; margin-bottom: 20px;">
+                                Interactive throughput area charts, domain work distribution, cycle turnaround time metrics, and engineer velocity tables.
+                            </p>
+                        </div>
+                        <a href="/new/analytics" style="display: inline-flex; align-items: center; gap: 8px; color: #c084fc; font-weight: 600; font-size: 14px; text-decoration: none;">
+                            View Analytics Engine <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+
+                    <!-- Card 3: Projects Workspace -->
+                    <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 28px; transition: all 0.3s ease; display: flex; flex-direction: column; justify-content: space-between;" onmouseover="this.style.borderColor='rgba(59, 130, 246, 0.5)'; this.style.transform='translateY(-6px)'" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.1)'; this.style.transform='translateY(0)'">
+                        <div>
+                            <div style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, #3b82f6, #06b6d4); display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);">
+                                <i class="fas fa-folder"></i>
+                            </div>
+                            <h3 style="font-size: 20px; font-weight: 700; color: #ffffff; margin-bottom: 10px;">
+                                Projects & Workspaces
+                            </h3>
+                            <p style="color: #94a3b8; font-size: 14px; line-height: 1.5; margin-bottom: 20px;">
+                                Modular project cards with tech stack tags, progress bars, team member avatars, and instant workspace modal creation.
+                            </p>
+                        </div>
+                        <a href="/new/projects" style="display: inline-flex; align-items: center; gap: 8px; color: #60a5fa; font-weight: 600; font-size: 14px; text-decoration: none;">
+                            Explore Projects <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+
+                    <!-- Card 4: Tasks Kanban -->
+                    <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 28px; transition: all 0.3s ease; display: flex; flex-direction: column; justify-content: space-between;" onmouseover="this.style.borderColor='rgba(244, 63, 94, 0.5)'; this.style.transform='translateY(-6px)'" onmouseout="this.style.borderColor='rgba(255, 255, 255, 0.1)'; this.style.transform='translateY(0)'">
+                        <div>
+                            <div style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, #f43f5e, #fb7185); display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(244, 63, 94, 0.3);">
+                                <i class="fas fa-tasks"></i>
+                            </div>
+                            <h3 style="font-size: 20px; font-weight: 700; color: #ffffff; margin-bottom: 10px;">
+                                Task Kanban & Checklist
+                            </h3>
+                            <p style="color: #94a3b8; font-size: 14px; line-height: 1.5; margin-bottom: 20px;">
+                                Multi-column workflow Kanban board with priority flags, checkable subtasks, and quick switch between Kanban & List view.
+                            </p>
+                        </div>
+                        <a href="/new/tasks" style="display: inline-flex; align-items: center; gap: 8px; color: #fb7185; font-weight: 600; font-size: 14px; text-decoration: none;">
+                            Check My Tasks <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Call to Action Banner -->
+                <div style="text-align: center; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 16px; padding: 28px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; max-width: 960px; margin: 0 auto;">
+                    <div style="text-align: left;">
+                        <h4 style="font-size: 20px; font-weight: 700; color: #ffffff; margin-bottom: 4px;">
+                            Ready to try the new Inertia.js interface?
+                        </h4>
+                        <p style="color: #94a3b8; font-size: 14px; margin: 0;">
+                            Experience faster page loads, smooth client-side transitions, and modern UI components.
+                        </p>
+                    </div>
+                    <a href="/new/dashboard" class="btn btn-primary" style="white-space: nowrap; background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none; padding: 12px 24px; font-size: 14px; border-radius: 10px; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);">
+                        Launch New Look Now <i class="fas fa-external-link-alt" style="margin-left: 8px;"></i>
+                    </a>
                 </div>
             </div>
         </section>

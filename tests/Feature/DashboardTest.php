@@ -305,3 +305,68 @@ it('does not display status 4 tasks or tasks of status 4 projects on dashboard',
     expect($dashboardTasks->pluck('id'))->not->toContain($onHoldTask->id);
     expect($dashboardTasks->pluck('id'))->not->toContain($taskInOnHoldProject->id);
 });
+
+it('loads new inertia dashboard page successfully', function () {
+    $user = User::factory()->create(['email_verified_at' => now()]);
+    $this->actingAs($user);
+
+    $response = $this->get(route('new.dashboard'));
+    $response->assertStatus(200);
+    $response->assertInertia(fn ($page) => $page
+        ->component('New/Dashboard')
+        ->has('stats')
+        ->has('recent_activity')
+        ->has('chart_data')
+        ->has('projects')
+    );
+});
+
+it('loads new inertia analytics page successfully', function () {
+    $user = User::factory()->create(['email_verified_at' => now()]);
+    $this->actingAs($user);
+
+    $response = $this->get(route('new.analytics'));
+    $response->assertStatus(200);
+    $response->assertInertia(fn ($page) => $page
+        ->component('New/Analytics')
+        ->has('analytics_data')
+        ->has('team_members')
+    );
+});
+
+it('loads new inertia projects page successfully', function () {
+    $user = User::factory()->create(['email_verified_at' => now()]);
+    $this->actingAs($user);
+
+    $response = $this->get(route('new.projects'));
+    $response->assertStatus(200);
+    $response->assertInertia(fn ($page) => $page
+        ->component('New/Projects')
+        ->has('initial_projects')
+    );
+});
+
+it('loads new inertia tasks page successfully', function () {
+    $user = User::factory()->create(['email_verified_at' => now()]);
+    $this->actingAs($user);
+
+    $response = $this->get(route('new.tasks'));
+    $response->assertStatus(200);
+    $response->assertInertia(fn ($page) => $page
+        ->component('New/Tasks')
+        ->has('initial_tasks')
+    );
+});
+
+it('loads coming soon placeholder page for unbuilt sidebar items', function () {
+    $user = User::factory()->create(['email_verified_at' => now()]);
+    $this->actingAs($user);
+
+    $response = $this->get(route('new.settings'));
+    $response->assertStatus(200);
+    $response->assertInertia(fn ($page) => $page
+        ->component('New/ComingSoon')
+        ->has('feature')
+        ->has('activeItem')
+    );
+});
