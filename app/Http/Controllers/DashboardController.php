@@ -6,7 +6,9 @@ use App\Models\Company;
 use App\Models\CompanyUsers;
 use App\Models\Project;
 use App\Models\Task;
+use App\Models\User;
 use App\Services\TaskServiceInterface;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Spatie\Activitylog\Models\Activity;
@@ -115,7 +117,7 @@ class DashboardController extends Controller
 
         $dbTasks = $dbTasksQuery->latest()->take(10)->get();
 
-        $initialTasks = $dbTasks->map(function ($task) {
+        $initialTasks = $dbTasks->map(function (Task $task) {
             $priorityName = match ((int) $task->priority) {
                 4 => 'Urgent',
                 3 => 'High',
@@ -125,7 +127,7 @@ class DashboardController extends Controller
             $typeName = $task->getTypeName();
 
             return [
-                'id' => 'WH-'.str_pad($task->id, 3, '0', STR_PAD_LEFT),
+                'id' => 'WH-'.str_pad((string) $task->id, 3, '0', STR_PAD_LEFT),
                 'title' => $task->title,
                 'completed' => (int) $task->status === 3,
                 'tags' => [$typeName],
@@ -141,11 +143,17 @@ class DashboardController extends Controller
         })->toArray();
 
         // Fetch actual activity log stream
-        $activityStream = Activity::with('causer')->latest()->take(6)->get()->map(function ($log) {
+        /** @var Collection<int, Activity> $activities */
+        $activities = Activity::with('causer')->latest()->take(6)->get();
+
+        $activityStream = $activities->map(function (Activity $log) {
+            $causer = $log->causer;
+            $causerName = $causer instanceof User ? $causer->name : 'System';
+
             return [
                 'id' => $log->id,
                 'time' => $log->created_at ? $log->created_at->format('H:i:s') : now()->format('H:i:s'),
-                'source' => $log->causer ? $log->causer->name : 'System',
+                'source' => $causerName,
                 'event' => $log->description,
                 'relTime' => $log->created_at ? $log->created_at->diffForHumans() : 'Just now',
             ];
