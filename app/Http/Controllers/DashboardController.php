@@ -174,6 +174,90 @@ class DashboardController extends Controller
             ];
         }
 
+        // Formatted team members list for sidebar/widget
+        $formattedTeamMembers = $teamMembers->map(function ($member) {
+            $u = $member->user;
+            $c = $member->company;
+
+            return [
+                'id' => $member->id,
+                'name' => $u ? $u->name : 'User',
+                'email' => $u ? $u->email : '',
+                'company_name' => $c ? $c->name : null,
+                'role' => (int) $member->role === 1 ? 'Admin' : 'Member',
+            ];
+        })->values()->toArray();
+
+        // User companies for workspace filter selector
+        $userCompanies = $auth_user ? $auth_user->companies()->with('company')->get()->map(function ($cUser) {
+            return [
+                'id' => $cUser->company ? $cUser->company->id : null,
+                'name' => $cUser->company ? $cUser->company->name : '',
+            ];
+        })->filter(fn ($item) => ! empty($item['id']))->values()->toArray() : [];
+
+        // Fetch today & pending tasks with active filter and pagination
+        $activeTaskFilter = (string) $request->get('task_filter', 'today_past');
+        $perPage = (int) $request->get('per_page', 5);
+        $todayTasksPaginator = $auth_user ? $this->taskService->getTodayTasks($auth_user, $company, $activeTaskFilter, $perPage) : null;
+
+        $formattedTodayTasks = [];
+        $paginationMeta = null;
+        if ($todayTasksPaginator) {
+            $formattedTodayTasks = collect($todayTasksPaginator->items())->map(function (Task $task) use ($counts) {
+                $todayDate = $counts['today'] ?? now()->toDateString();
+                $isOverdue = $task->due_date && $task->due_date < $todayDate;
+                $isDueToday = $task->due_date && $task->due_date == $todayDate;
+
+                return [
+                    'id' => $task->id,
+                    'display_id' => 'WH-'.str_pad((string) $task->id, 3, '0', STR_PAD_LEFT),
+                    'title' => $task->title,
+                    'priority' => (int) $task->priority,
+                    'priority_name' => match ((int) $task->priority) {
+                        4 => 'Urgent',
+                        3 => 'High',
+                        2 => 'Medium',
+                        default => 'Low',
+                    },
+                    'status' => (int) $task->status,
+                    'completed' => (int) $task->status === 3,
+                    'due_date' => $task->due_date,
+                    'is_overdue' => $isOverdue,
+                    'is_due_today' => $isDueToday,
+                    'project' => $task->project ? [
+                        'id' => $task->project->id,
+                        'name' => $task->project->name,
+                        'theme' => $task->project->theme,
+                    ] : null,
+                    'external_source' => (bool) $task->externalSource,
+                ];
+            })->toArray();
+
+            $paginationMeta = [
+                'current_page' => $todayTasksPaginator->currentPage(),
+                'last_page' => $todayTasksPaginator->lastPage(),
+                'per_page' => $todayTasksPaginator->perPage(),
+                'total' => $todayTasksPaginator->total(),
+            ];
+        }
+
+        // Projects detailed progress list
+        $formattedProjectsDetail = $projects->map(function ($project) {
+            $pTotal = $project->tasks->count();
+            $pCompleted = $project->tasks->where('status', 3)->count();
+            $pPercentage = $pTotal > 0 ? (int) round(($pCompleted / $pTotal) * 100) : 0;
+
+            return [
+                'id' => $project->id,
+                'name' => $project->name,
+                'theme' => $project->theme ?? '#3b82f6',
+                'total_tasks' => $pTotal,
+                'completed_tasks' => $pCompleted,
+                'percentage' => $pPercentage,
+            ];
+        })->toArray();
+
         log_activity(
             description: "Viewed dashboard ({$currentWorkspaceName})",
             event: 'viewed_dashboard',
@@ -188,14 +272,30 @@ class DashboardController extends Controller
                 'name' => $auth_user->name,
                 'email' => $auth_user->email,
             ] : null,
+            'current_workspace_name' => $currentWorkspaceName,
+            'company' => $company ? [
+                'id' => $company->id,
+                'name' => $company->name,
+            ] : null,
+            'user_companies' => $userCompanies,
             'stats' => [
                 'total_projects' => $projectsCount,
+                'total_tasks' => $totalTasks,
                 'active_tasks' => $totalTasks - $completedTasks,
                 'completed_tasks' => $completedTasks,
                 'team_members' => $teamMembers->count(),
                 'overdue_tasks' => $counts['overdueCount'] ?? 0,
                 'today_tasks' => $counts['todayCount'] ?? 0,
+                'today_past_tasks' => $counts['todayPastCount'] ?? 0,
+                'all_pending_tasks' => $counts['allPendingCount'] ?? 0,
             ],
+            'counts' => $counts,
+            'active_task_filter' => $activeTaskFilter,
+            'per_page' => $perPage,
+            'today_tasks_list' => $formattedTodayTasks,
+            'pagination_meta' => $paginationMeta,
+            'projects_detail' => $formattedProjectsDetail,
+            'team_members_list' => $formattedTeamMembers,
             'recent_activity' => $activityStream,
             'activity_stream' => $activityStream,
             'chart_data' => $chartData,

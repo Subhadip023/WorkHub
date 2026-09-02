@@ -1,5 +1,6 @@
-import React from "react";
-import { Head, Link, usePage } from "@inertiajs/react";
+import React, { useState, useEffect, useCallback } from "react";
+import { Head, Link, usePage, router } from "@inertiajs/react";
+import axios from "axios";
 import {
   LayoutDashboard,
   FolderKanban,
@@ -17,7 +18,9 @@ import {
   FileText,
   ShieldCheck,
   Settings,
-  ArrowLeft
+  ArrowLeft,
+  Check,
+  CheckCheck
 } from "lucide-react";
 
 import { Button } from "@/Components/ui/button";
@@ -44,6 +47,92 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
   const { auth } = usePage().props;
   const user = auth?.user;
 
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [loadingNotifs, setLoadingNotifs] = useState(false);
+
+  // Search State
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState(null);
+  const [searching, setSearching] = useState(false);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const searchInputRef = React.useRef(null);
+
+  // Key listener for Cmd+K / Ctrl+K & Escape
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setShowSearchDropdown(true);
+        setTimeout(() => searchInputRef.current?.focus(), 50);
+      }
+      if (e.key === "Escape") {
+        setShowSearchDropdown(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // Debounced search query fetcher
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults(null);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await axios.get('/search', { params: { q: searchQuery } });
+        setSearchResults(res.data);
+      } catch (e) {
+        console.error('Search failed', e);
+      } finally {
+        setSearching(false);
+      }
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const fetchNotifications = useCallback(async () => {
+    try {
+      setLoadingNotifs(true);
+      const res = await axios.get('/notifications');
+      if (res.data && Array.isArray(res.data.notifications)) {
+        setNotifications(res.data.notifications);
+      }
+    } catch (e) {
+      console.error('Failed to fetch notifications', e);
+    } finally {
+      setLoadingNotifs(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  const handleMarkAsRead = async (id, e) => {
+    e.stopPropagation();
+    try {
+      await axios.patch(`/notifications/${id}/read`);
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+    } catch (err) {
+      console.error('Failed to mark notification read', err);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await axios.post('/notifications/read-all');
+      setNotifications([]);
+    } catch (err) {
+      console.error('Failed to mark all notifications read', err);
+    }
+  };
+
   return (
     <SidebarProvider defaultOpen={true}>
       {title && <Head title={`${title} - WorkHub`} />}
@@ -52,10 +141,31 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
         {/* Layered Sidebar with clean border separation */}
         <Sidebar className="border-r border-zinc-800 bg-zinc-950 text-zinc-100 z-30">
           {/* Header Workspace Switcher */}
-          <SidebarHeader className="h-16 px-3.5 flex items-center justify-between border-b border-zinc-800 bg-zinc-950 shrink-0">
+          <SidebarHeader className="h-14 px-3 flex items-center justify-between border-b border-zinc-800 bg-zinc-950 shrink-0">
             <div className="flex items-center justify-between w-full">
-              <button className="flex items-center justify-between w-full p-2 rounded-lg bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-colors group">
-                <div className="flex items-center gap-3 min-w-0">
+              {user?.companies && user.companies.length > 0 ? (
+                <select
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "all") {
+                      router.get("/dashboard");
+                    } else if (val) {
+                      router.get(`/dashboard/${val}`);
+                    }
+                  }}
+                  className="w-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-xs text-zinc-200 font-semibold rounded-lg p-2 focus:outline-none focus:border-emerald-500 cursor-pointer shadow-sm"
+                  defaultValue=""
+                >
+                  <option value="" disabled>🏢 Switch Workspace...</option>
+                  <option value="all">🌐 All Workspaces</option>
+                  {user.companies.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      🏢 {c.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div className="flex items-center gap-3 p-2 rounded-lg bg-zinc-900 border border-zinc-800 w-full">
                   <div className="h-7 w-7 rounded-md bg-zinc-100 text-zinc-950 flex items-center justify-center font-bold text-xs shadow-sm">
                     <Crown className="h-3.5 w-3.5" />
                   </div>
@@ -64,12 +174,11 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       WorkHub
                     </span>
                     <span className="text-[10px] text-zinc-400 font-mono block leading-tight">
-                      Engineering
+                      Personal Space
                     </span>
                   </div>
                 </div>
-                <ChevronDown className="h-3.5 w-3.5 text-zinc-400 group-hover:text-zinc-200 transition-colors" />
-              </button>
+              )}
             </div>
           </SidebarHeader>
 
@@ -309,26 +418,308 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
 
             {/* Right Header Actions */}
             <div className="flex items-center gap-3">
-              <div className="relative hidden sm:flex items-center justify-between w-64 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-lg px-3 py-1.5 text-xs text-zinc-400 transition-colors cursor-pointer group">
+              {/* Header Search Trigger Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSearchDropdown(true);
+                  setTimeout(() => searchInputRef.current?.focus(), 50);
+                }}
+                className="relative hidden sm:flex items-center justify-between w-64 md:w-80 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-lg px-3 py-1.5 text-xs text-zinc-400 transition-colors cursor-pointer group"
+              >
                 <div className="flex items-center gap-2">
                   <Search className="h-3.5 w-3.5 text-zinc-400 group-hover:text-zinc-200 transition-colors" />
-                  <span>Search or jump to...</span>
+                  <span>Search projects, tasks, notes...</span>
                 </div>
-                <kbd className="font-mono text-[10px] bg-zinc-950 border border-zinc-800 px-1.5 py-0.5 rounded text-zinc-400">
+                <kbd className="font-mono text-[10px] bg-zinc-950 border border-zinc-800 px-1.5 py-0.5 rounded text-zinc-400 group-hover:border-zinc-700 transition-colors">
                   ⌘K
                 </kbd>
-              </div>
+              </button>
+
+              {/* Full Command Palette Search Modal Overlay */}
+              {showSearchDropdown && (
+                <div
+                  className="fixed inset-0 bg-zinc-950/80 backdrop-blur-sm z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 font-sans"
+                  onClick={() => setShowSearchDropdown(false)}
+                >
+                  <div
+                    className="bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {/* Top Search Input Bar */}
+                    <div className="relative flex items-center px-4 py-3.5 border-b border-zinc-800 bg-zinc-950">
+                      <Search className="w-5 h-5 text-zinc-400 mr-3 shrink-0" />
+                      <input
+                        ref={searchInputRef}
+                        type="text"
+                        placeholder="Search projects, tasks, notes, team members..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full bg-transparent text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none"
+                        autoFocus
+                      />
+                      <kbd className="font-mono text-[10px] bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded text-zinc-400 shrink-0 ml-2">
+                        ESC
+                      </kbd>
+                    </div>
+
+                    {/* Modal Body Content */}
+                    <div className="max-h-[60vh] overflow-y-auto p-3 space-y-4 divide-y divide-zinc-800/60 text-xs">
+                      {searching ? (
+                        <div className="py-8 text-center text-zinc-400 font-mono text-xs">Searching WorkHub...</div>
+                      ) : !searchQuery.trim() ? (
+                        /* Quick Jump Navigation Links when empty */
+                        <div className="space-y-3 pt-1">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 px-2 font-mono">
+                            Quick Navigation
+                          </p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                            <Link
+                              href="/dashboard"
+                              onClick={() => setShowSearchDropdown(false)}
+                              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-zinc-800/80 transition-colors group text-zinc-200"
+                            >
+                              <div className="p-2 rounded-lg bg-zinc-800 text-zinc-300 group-hover:bg-emerald-500/20 group-hover:text-emerald-400 transition-colors">
+                                <LayoutDashboard className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-xs">Dashboard</p>
+                                <p className="text-[10px] text-zinc-400">Main overview & tasks</p>
+                              </div>
+                            </Link>
+
+                            <Link
+                              href="/new/projects"
+                              onClick={() => setShowSearchDropdown(false)}
+                              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-zinc-800/80 transition-colors group text-zinc-200"
+                            >
+                              <div className="p-2 rounded-lg bg-zinc-800 text-zinc-300 group-hover:bg-blue-500/20 group-hover:text-blue-400 transition-colors">
+                                <FolderKanban className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-xs">Projects</p>
+                                <p className="text-[10px] text-zinc-400">View active projects</p>
+                              </div>
+                            </Link>
+
+                            <Link
+                              href="/new/tasks"
+                              onClick={() => setShowSearchDropdown(false)}
+                              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-zinc-800/80 transition-colors group text-zinc-200"
+                            >
+                              <div className="p-2 rounded-lg bg-zinc-800 text-zinc-300 group-hover:bg-cyan-500/20 group-hover:text-cyan-400 transition-colors">
+                                <CheckSquare className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-xs">My Tasks</p>
+                                <p className="text-[10px] text-zinc-400">Assigned task list</p>
+                              </div>
+                            </Link>
+
+                            <Link
+                              href="/new/notes"
+                              onClick={() => setShowSearchDropdown(false)}
+                              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-zinc-800/80 transition-colors group text-zinc-200"
+                            >
+                              <div className="p-2 rounded-lg bg-zinc-800 text-zinc-300 group-hover:bg-amber-500/20 group-hover:text-amber-400 transition-colors">
+                                <FileText className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-xs">Notes & Docs</p>
+                                <p className="text-[10px] text-zinc-400">Knowledge base & notes</p>
+                              </div>
+                            </Link>
+                          </div>
+                        </div>
+                      ) : !searchResults || (
+                          (!searchResults.projects || searchResults.projects.length === 0) &&
+                          (!searchResults.tasks || searchResults.tasks.length === 0) &&
+                          (!searchResults.notes || searchResults.notes.length === 0) &&
+                          (!searchResults.users || searchResults.users.length === 0)
+                        ) ? (
+                        <div className="py-8 text-center text-zinc-400 text-xs">
+                          No results found for "<span className="text-zinc-200 font-semibold">{searchQuery}</span>"
+                        </div>
+                      ) : (
+                        <>
+                          {/* Projects */}
+                          {searchResults.projects && searchResults.projects.length > 0 && (
+                            <div className="pt-2">
+                              <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 px-2 mb-1.5 flex items-center gap-1.5 font-mono">
+                                <FolderKanban className="w-3.5 h-3.5" /> Projects ({searchResults.projects.length})
+                              </p>
+                              <div className="space-y-1">
+                                {searchResults.projects.map((p) => (
+                                  <Link
+                                    key={p.id}
+                                    href={p.url}
+                                    onClick={() => setShowSearchDropdown(false)}
+                                    className="flex items-center justify-between p-2 rounded-lg hover:bg-zinc-800/70 transition-colors text-zinc-200"
+                                  >
+                                    <span className="font-medium">{p.title}</span>
+                                    <span className="text-[10px] text-zinc-400 font-mono">View Project →</span>
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Tasks */}
+                          {searchResults.tasks && searchResults.tasks.length > 0 && (
+                            <div className="pt-2">
+                              <p className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 px-2 mb-1.5 flex items-center gap-1.5 font-mono">
+                                <CheckSquare className="w-3.5 h-3.5" /> Tasks ({searchResults.tasks.length})
+                              </p>
+                              <div className="space-y-1">
+                                {searchResults.tasks.map((t) => (
+                                  <Link
+                                    key={t.id}
+                                    href={t.url}
+                                    onClick={() => setShowSearchDropdown(false)}
+                                    className="flex items-center justify-between p-2 rounded-lg hover:bg-zinc-800/70 transition-colors text-zinc-200"
+                                  >
+                                    <span className="font-medium truncate">{t.title}</span>
+                                    <span className="text-[10px] text-zinc-400 font-mono shrink-0 ml-2">View Task →</span>
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Notes */}
+                          {searchResults.notes && searchResults.notes.length > 0 && (
+                            <div className="pt-2">
+                              <p className="text-[10px] font-bold uppercase tracking-wider text-amber-400 px-2 mb-1.5 flex items-center gap-1.5 font-mono">
+                                <FileText className="w-3.5 h-3.5" /> Notes ({searchResults.notes.length})
+                              </p>
+                              <div className="space-y-1">
+                                {searchResults.notes.map((n) => (
+                                  <Link
+                                    key={n.id}
+                                    href={n.url}
+                                    onClick={() => setShowSearchDropdown(false)}
+                                    className="flex items-center justify-between p-2 rounded-lg hover:bg-zinc-800/70 transition-colors text-zinc-200"
+                                  >
+                                    <span className="font-medium">{n.title}</span>
+                                    <span className="text-[10px] text-zinc-400 font-mono">View Note →</span>
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Users */}
+                          {searchResults.users && searchResults.users.length > 0 && (
+                            <div className="pt-2">
+                              <p className="text-[10px] font-bold uppercase tracking-wider text-purple-400 px-2 mb-1.5 flex items-center gap-1.5 font-mono">
+                                <Users className="w-3.5 h-3.5" /> Team Members ({searchResults.users.length})
+                              </p>
+                              <div className="space-y-1">
+                                {searchResults.users.map((u) => (
+                                  <div
+                                    key={u.id}
+                                    className="flex items-center justify-between p-2 rounded-lg hover:bg-zinc-800/70 transition-colors text-zinc-200"
+                                  >
+                                    <div>
+                                      <p className="font-medium">{u.title}</p>
+                                      <p className="text-[10px] text-zinc-400 font-mono">{u.email}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="flex items-center gap-2">
                 {actions}
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8 bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300 rounded-lg relative"
-                >
-                  <Bell className="h-3.5 w-3.5" />
-                  <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-zinc-950"></span>
-                </Button>
+
+                {/* Interactive Notification Popover */}
+                <div className="relative">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      setShowNotifications((prev) => !prev);
+                      if (!showNotifications) fetchNotifications();
+                    }}
+                    className="h-8 w-8 bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300 rounded-lg relative cursor-pointer"
+                    title="Notifications"
+                  >
+                    <Bell className="h-3.5 w-3.5" />
+                    {notifications.length > 0 && (
+                      <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-emerald-500 text-zinc-950 font-bold text-[10px] flex items-center justify-center border border-zinc-950 shadow-sm">
+                        {notifications.length}
+                      </span>
+                    )}
+                  </Button>
+
+                  {showNotifications && (
+                    <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl z-50 overflow-hidden font-sans">
+                      <div className="p-3 border-b border-zinc-800 bg-zinc-950 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Bell className="w-4 h-4 text-emerald-400" />
+                          <h4 className="text-xs font-bold text-zinc-100 uppercase tracking-wider">Notifications</h4>
+                          {notifications.length > 0 && (
+                            <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold px-1.5 py-0.2 rounded-full">
+                              {notifications.length} unread
+                            </span>
+                          )}
+                        </div>
+                        {notifications.length > 0 && (
+                          <button
+                            onClick={handleMarkAllAsRead}
+                            className="text-[11px] text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-1 font-medium cursor-pointer"
+                          >
+                            <CheckCheck className="w-3.5 h-3.5" /> Mark all read
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="max-h-80 overflow-y-auto divide-y divide-zinc-800/60">
+                        {loadingNotifs ? (
+                          <div className="p-6 text-center text-xs text-zinc-400">Loading notifications...</div>
+                        ) : notifications.length === 0 ? (
+                          <div className="p-6 text-center text-xs text-zinc-400 space-y-1">
+                            <CheckCheck className="w-8 h-8 text-emerald-500/60 mx-auto mb-2" />
+                            <p className="font-semibold text-zinc-300">All caught up!</p>
+                            <p className="text-[11px]">No unread notifications right now.</p>
+                          </div>
+                        ) : (
+                          notifications.map((n) => (
+                            <div
+                              key={n.id}
+                              className="p-3 hover:bg-zinc-800/50 transition-colors flex items-start justify-between gap-3 group"
+                            >
+                              <div className="space-y-1 min-w-0 flex-1">
+                                <div className="flex items-center justify-between gap-2">
+                                  <p className="text-xs font-semibold text-zinc-200 truncate">{n.title || n.type || "Notification"}</p>
+                                  <span className="text-[10px] text-zinc-400 font-mono shrink-0">
+                                    {n.created_at ? new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-zinc-400 leading-snug line-clamp-2">{n.message}</p>
+                              </div>
+
+                              <button
+                                onClick={(e) => handleMarkAsRead(n.id, e)}
+                                className="p-1 rounded bg-zinc-800 text-zinc-400 hover:bg-emerald-500/20 hover:text-emerald-400 transition-colors shrink-0 mt-0.5 cursor-pointer"
+                                title="Mark as read"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </header>
