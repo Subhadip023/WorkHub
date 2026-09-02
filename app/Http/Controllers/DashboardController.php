@@ -108,8 +108,8 @@ class DashboardController extends Controller
         } elseif ($auth_user) {
             $dbTasksQuery->where(function ($q) use ($projectIds, $auth_user) {
                 $q->whereIn('project_id', $projectIds)
-                  ->orWhere('user_id', $auth_user->id)
-                  ->orWhere('assigned_to', $auth_user->id);
+                    ->orWhere('user_id', $auth_user->id)
+                    ->orWhere('assigned_to', $auth_user->id);
             });
         }
 
@@ -125,7 +125,7 @@ class DashboardController extends Controller
             $typeName = $task->getTypeName();
 
             return [
-                'id' => 'WH-' . str_pad($task->id, 3, '0', STR_PAD_LEFT),
+                'id' => 'WH-'.str_pad($task->id, 3, '0', STR_PAD_LEFT),
                 'title' => $task->title,
                 'completed' => (int) $task->status === 3,
                 'tags' => [$typeName],
@@ -305,4 +305,3 @@ class DashboardController extends Controller
         ));
     }
 }
-
