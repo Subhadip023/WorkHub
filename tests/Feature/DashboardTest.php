@@ -12,7 +12,11 @@ it('loads default dashboard successfully showing all workspaces', function () {
 
     $response = $this->get(route('dashboard'));
     $response->assertStatus(200);
-    $response->assertSee('All Workspaces');
+    $response->assertInertia(fn ($page) => $page
+        ->component('Dashboard')
+        ->has('stats')
+        ->has('projects')
+    );
 });
 
 it('loads organization-specific dashboard successfully for member', function () {
@@ -38,8 +42,11 @@ it('loads organization-specific dashboard successfully for member', function () 
 
     $response = $this->get(route('dashboard.org', $company));
     $response->assertStatus(200);
-    $response->assertSee('Member Org');
-    $response->assertSee('Org Project Unique Name');
+    $response->assertInertia(fn ($page) => $page
+        ->component('Dashboard')
+        ->has('stats')
+        ->has('projects')
+    );
 });
 
 it('prevents non-members from accessing organization-specific dashboard', function () {
@@ -98,7 +105,7 @@ it('displays today and pending tasks ordered priority-wise on the dashboard', fu
 
     $this->actingAs($user);
 
-    $response = $this->get(route('dashboard'));
+    $response = $this->get(route('old.dashboard'));
     $response->assertStatus(200);
     $response->assertSee('Pending Tasks');
     $response->assertSee('Urgent Priority Today Task');
@@ -144,14 +151,14 @@ it('filters dashboard tasks by filter parameters', function () {
     $this->actingAs($user);
 
     // Overdue filter check
-    $responseOverdue = $this->get(route('dashboard', ['task_filter' => 'overdue']));
+    $responseOverdue = $this->get(route('old.dashboard', ['task_filter' => 'overdue']));
     $responseOverdue->assertStatus(200);
     $overdueTasks = $responseOverdue->viewData('todayTasks');
     expect($overdueTasks->pluck('id'))->toContain($overdueTask->id);
     expect($overdueTasks->pluck('id'))->not->toContain($futureTask->id);
 
     // All Pending filter check
-    $responseAll = $this->get(route('dashboard', ['task_filter' => 'all_pending']));
+    $responseAll = $this->get(route('old.dashboard', ['task_filter' => 'all_pending']));
     $responseAll->assertStatus(200);
     $allTasks = $responseAll->viewData('todayTasks');
     expect($allTasks->pluck('id'))->toContain($overdueTask->id);
@@ -193,7 +200,7 @@ it('only includes tasks assigned to current user on the dashboard', function () 
 
     $this->actingAs($user);
 
-    $response = $this->get(route('dashboard'));
+    $response = $this->get(route('old.dashboard'));
     $response->assertStatus(200);
     $dashboardTasks = $response->viewData('todayTasks');
 
@@ -227,7 +234,7 @@ it('paginates dashboard tasks with 5 per page', function () {
 
     $this->actingAs($user);
 
-    $response = $this->get(route('dashboard'));
+    $response = $this->get(route('old.dashboard'));
     $response->assertStatus(200);
     $todayTasks = $response->viewData('todayTasks');
 
@@ -236,7 +243,7 @@ it('paginates dashboard tasks with 5 per page', function () {
     expect($todayTasks->total())->toBe(8);
 
     // Test custom per_page parameter
-    $responseCustom = $this->get(route('dashboard', ['per_page' => 10]));
+    $responseCustom = $this->get(route('old.dashboard', ['per_page' => 10]));
     $responseCustom->assertStatus(200);
     $customTasks = $responseCustom->viewData('todayTasks');
 
@@ -297,7 +304,7 @@ it('does not display status 4 tasks or tasks of status 4 projects on dashboard',
 
     $this->actingAs($user);
 
-    $response = $this->get(route('dashboard'));
+    $response = $this->get(route('old.dashboard'));
     $response->assertStatus(200);
     $dashboardTasks = $response->viewData('todayTasks');
 
@@ -313,7 +320,7 @@ it('loads new inertia dashboard page successfully', function () {
     $response = $this->get(route('new.dashboard'));
     $response->assertStatus(200);
     $response->assertInertia(fn ($page) => $page
-        ->component('New/Dashboard')
+        ->component('Dashboard')
         ->has('stats')
         ->has('recent_activity')
         ->has('chart_data')

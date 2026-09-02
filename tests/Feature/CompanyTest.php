@@ -476,7 +476,7 @@ it('renders the invitations modal on dashboard if user has pending invitations',
 
     $this->actingAs($invitedUser);
 
-    $response = $this->get(route('dashboard'));
+    $response = $this->get(route('old.dashboard'));
     $response->assertStatus(200);
     $response->assertSee('Workspace Invitation');
     $response->assertSee('Invite Org');
