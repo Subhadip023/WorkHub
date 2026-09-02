@@ -39,118 +39,126 @@ import {
   CartesianGrid,
 } from "recharts";
 
-export default function NewDashboard({ user, stats, recent_activity, chart_data, projects }) {
+export default function NewDashboard({ user, stats, recent_activity, chart_data, projects, initial_tasks, activity_stream }) {
   const [taskFilter, setTaskFilter] = useState("all");
   const [copiedId, setCopiedId] = useState(null);
 
   // High-density issue list matching Linear/GitHub issue table format
-  const [issuesList, setIssuesList] = useState([
-    {
-      id: "WH-042",
-      title: "Inertia.js React layout hydration error on cold start",
-      completed: false,
-      tags: ["Bug", "Frontend"],
-      project: "WorkHub",
-      branch: "fix/inertia-hydration",
-      priority: "Urgent",
-      assignee: { name: "Alex Morgan", avatar: "AM" },
-      updatedAt: "12m ago",
-    },
-    {
-      id: "WH-039",
-      title: "Rate-limiting middleware for webhook ingestion endpoints",
-      completed: false,
-      tags: ["API", "Backend"],
-      project: "WorkHub Core",
-      branch: "feat/rate-limit",
-      priority: "High",
-      assignee: { name: "Sarah Chen", avatar: "SC" },
-      updatedAt: "45m ago",
-    },
-    {
-      id: "WH-035",
-      title: "Refactor task status filter query in TaskRepository.php",
-      completed: true,
-      tags: ["Database", "Backend"],
-      project: "WorkHub Core",
-      branch: "fix/query-filter",
-      priority: "Medium",
-      assignee: { name: "Michael Scott", avatar: "MS" },
-      updatedAt: "2h ago",
-    },
-    {
-      id: "WH-031",
-      title: "Monochrome dark mode design tokens with zinc palette",
-      completed: false,
-      tags: ["UI/UX", "Design"],
-      project: "shadcn/ui",
-      branch: "feat/zinc-theme",
-      priority: "Urgent",
-      assignee: { name: "Sarah Chen", avatar: "SC" },
-      updatedAt: "3h ago",
-    },
-    {
-      id: "WH-028",
-      title: "Pest feature test suite for /new/analytics Inertia props",
-      completed: false,
-      tags: ["QA", "Testing"],
-      project: "WorkHub",
-      branch: "test/inertia-props",
-      priority: "Medium",
-      assignee: { name: "Emma Watson", avatar: "EW" },
-      updatedAt: "5h ago",
-    },
-    {
-      id: "WH-022",
-      title: "Setup Telegram webhook dispatch listener for critical alerts",
-      completed: true,
-      tags: ["DevOps", "Integration"],
-      project: "WorkHub Core",
-      branch: "main",
-      priority: "Low",
-      assignee: { name: "David Kim", avatar: "DK" },
-      updatedAt: "1d ago",
-    },
-  ]);
+  const [issuesList, setIssuesList] = useState(
+    initial_tasks && initial_tasks.length > 0
+      ? initial_tasks
+      : [
+          {
+            id: "WH-042",
+            title: "Inertia.js React layout hydration error on cold start",
+            completed: false,
+            tags: ["Bug", "Frontend"],
+            project: "WorkHub",
+            branch: "fix/inertia-hydration",
+            priority: "Urgent",
+            assignee: { name: "Alex Morgan", avatar: "AM" },
+            updatedAt: "12m ago",
+          },
+          {
+            id: "WH-039",
+            title: "Rate-limiting middleware for webhook ingestion endpoints",
+            completed: false,
+            tags: ["API", "Backend"],
+            project: "WorkHub Core",
+            branch: "feat/rate-limit",
+            priority: "High",
+            assignee: { name: "Sarah Chen", avatar: "SC" },
+            updatedAt: "45m ago",
+          },
+          {
+            id: "WH-035",
+            title: "Refactor task status filter query in TaskRepository.php",
+            completed: true,
+            tags: ["Database", "Backend"],
+            project: "WorkHub Core",
+            branch: "fix/query-filter",
+            priority: "Medium",
+            assignee: { name: "Michael Scott", avatar: "MS" },
+            updatedAt: "2h ago",
+          },
+          {
+            id: "WH-031",
+            title: "Monochrome dark mode design tokens with zinc palette",
+            completed: false,
+            tags: ["UI/UX", "Design"],
+            project: "shadcn/ui",
+            branch: "feat/zinc-theme",
+            priority: "Urgent",
+            assignee: { name: "Sarah Chen", avatar: "SC" },
+            updatedAt: "3h ago",
+          },
+          {
+            id: "WH-028",
+            title: "Pest feature test suite for /new/analytics Inertia props",
+            completed: false,
+            tags: ["QA", "Testing"],
+            project: "WorkHub",
+            branch: "test/inertia-props",
+            priority: "Medium",
+            assignee: { name: "Emma Watson", avatar: "EW" },
+            updatedAt: "5h ago",
+          },
+          {
+            id: "WH-022",
+            title: "Setup Telegram webhook dispatch listener for critical alerts",
+            completed: true,
+            tags: ["DevOps", "Integration"],
+            project: "WorkHub Core",
+            branch: "main",
+            priority: "Low",
+            assignee: { name: "David Kim", avatar: "DK" },
+            updatedAt: "1d ago",
+          },
+        ]
+  );
 
   // Live inbound activity stream
-  const [activityStream, setActivityStream] = useState([
-    {
-      id: 1,
-      time: "10:42:15",
-      source: "Telegram",
-      event: "Alert #WH-042 triggered by @alexm",
-      relTime: "2m ago",
-    },
-    {
-      id: 2,
-      time: "10:35:00",
-      source: "Webhook",
-      event: "POST /api/v1/ingest - 200 OK (14ms)",
-      relTime: "9m ago",
-    },
-    {
-      id: 3,
-      time: "10:12:44",
-      source: "GitHub",
-      event: "PR #148 merged into main by @sarahc",
-      relTime: "31m ago",
-    },
-    {
-      id: 4,
-      time: "09:50:12",
-      source: "Webhook",
-      event: "POST /api/v1/ingest - 200 OK (18ms)",
-      relTime: "54m ago",
-    },
-    {
-      id: 5,
-      time: "09:15:30",
-      source: "GitHub",
-      event: "Branch fix/inertia-hydration created",
-      relTime: "1h ago",
-    },
-  ]);
+  const [activityStream, setActivityStream] = useState(
+    activity_stream && activity_stream.length > 0
+      ? activity_stream
+      : [
+          {
+            id: 1,
+            time: "10:42:15",
+            source: "Telegram",
+            event: "Alert #WH-042 triggered by @alexm",
+            relTime: "2m ago",
+          },
+          {
+            id: 2,
+            time: "10:35:00",
+            source: "Webhook",
+            event: "POST /api/v1/ingest - 200 OK (14ms)",
+            relTime: "9m ago",
+          },
+          {
+            id: 3,
+            time: "10:12:44",
+            source: "GitHub",
+            event: "PR #148 merged into main by @sarahc",
+            relTime: "31m ago",
+          },
+          {
+            id: 4,
+            time: "09:50:12",
+            source: "Webhook",
+            event: "POST /api/v1/ingest - 200 OK (18ms)",
+            relTime: "54m ago",
+          },
+          {
+            id: 5,
+            time: "09:15:30",
+            source: "GitHub",
+            event: "Branch fix/inertia-hydration created",
+            relTime: "1h ago",
+          },
+        ]
+  );
 
   const toggleIssueCompleted = (id) => {
     setIssuesList((prev) =>
