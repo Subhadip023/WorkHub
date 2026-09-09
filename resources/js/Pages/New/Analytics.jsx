@@ -93,43 +93,53 @@ export default function Analytics({ metrics, team_performance, velocity_data }) 
               Average Cycle Time
             </span>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-bold font-mono text-white">1.8 Days</span>
+              <span className="text-2xl sm:text-3xl font-bold font-mono text-white">
+                {metrics?.avgCycleTime !== undefined ? `${metrics.avgCycleTime} Days` : "1.8 Days"}
+              </span>
               <span className="text-xs sm:text-sm text-emerald-400 font-mono">-12% faster</span>
             </div>
-            <span className="text-xs text-neutral-500 font-mono block">From creation to merge</span>
+            <span className="text-xs text-neutral-500 font-mono block">From creation to completion</span>
           </div>
 
           <div className="border border-neutral-800 bg-neutral-900/90 p-5 rounded-xl space-y-2 shadow-xl">
             <span className="text-xs font-mono text-neutral-400 font-bold uppercase tracking-wider block">
-              Sprint Completion Rate
+              Task Completion Rate
             </span>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-bold font-mono text-white">96.4%</span>
+              <span className="text-2xl sm:text-3xl font-bold font-mono text-white">
+                {metrics?.completionRate !== undefined ? `${metrics.completionRate}%` : "96.4%"}
+              </span>
               <span className="text-xs sm:text-sm text-emerald-400 font-mono">+3.2% vs target</span>
             </div>
-            <span className="text-xs text-neutral-500 font-mono block">58 of 60 tasks shipped</span>
+            <span className="text-xs text-neutral-500 font-mono block">
+              {metrics?.completedTasks !== undefined ? `${metrics.completedTasks} of ${metrics.totalTasks} tasks completed` : "58 of 60 tasks shipped"}
+            </span>
           </div>
 
           <div className="border border-neutral-800 bg-neutral-900/90 p-5 rounded-xl space-y-2 shadow-xl">
             <span className="text-xs font-mono text-neutral-400 font-bold uppercase tracking-wider block">
-              Code Review Latency
+              Active Projects
             </span>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-bold font-mono text-white">4.2 Hrs</span>
-              <span className="text-xs sm:text-sm text-emerald-400 font-mono">-45 mins</span>
+              <span className="text-2xl sm:text-3xl font-bold font-mono text-white">
+                {metrics?.totalProjects !== undefined ? metrics.totalProjects : 4}
+              </span>
+              <span className="text-xs sm:text-sm text-emerald-400 font-mono">Workspace Projects</span>
             </div>
-            <span className="text-xs text-neutral-500 font-mono block">PR turn-around time</span>
+            <span className="text-xs text-neutral-500 font-mono block">Tracked projects</span>
           </div>
 
           <div className="border border-neutral-800 bg-neutral-900/90 p-5 rounded-xl space-y-2 shadow-xl">
             <span className="text-xs font-mono text-neutral-400 font-bold uppercase tracking-wider block">
-              Bug Leakage Rate
+              In-Progress Tasks
             </span>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-bold font-mono text-white">0.4%</span>
-              <span className="text-xs sm:text-sm text-emerald-400 font-mono font-semibold">Ultra Low</span>
+              <span className="text-2xl sm:text-3xl font-bold font-mono text-white">
+                {metrics?.inProgressTasks !== undefined ? metrics.inProgressTasks : 5}
+              </span>
+              <span className="text-xs sm:text-sm text-emerald-400 font-mono font-semibold">Active Now</span>
             </div>
-            <span className="text-xs text-neutral-500 font-mono block">Post-release defects</span>
+            <span className="text-xs text-neutral-500 font-mono block">Tasks being worked on</span>
           </div>
         </div>
 

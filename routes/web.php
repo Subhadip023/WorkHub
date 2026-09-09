@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\Admin\FeatureManagementController;
+use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\DashboardController;
@@ -18,6 +19,12 @@ use App\Http\Controllers\TrashController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
+
 Route::get('/', function () {
     return view('home');
 });
@@ -28,36 +35,9 @@ Route::get('/dashboard/{company}', DashboardController::class)->middleware(['aut
 Route::get('/old-dashboard', [DashboardController::class, 'oldDashboard'])->middleware(['auth', 'verified'])->name('old.dashboard');
 Route::get('/old-dashboard/{company}', [DashboardController::class, 'oldDashboard'])->middleware(['auth', 'verified'])->name('old.dashboard.org');
 
+Route::get('/analytics', AnalyticsController::class)->middleware(['auth', 'verified'])->name('analytics');
 Route::get('/new/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('new.dashboard');
-
-Route::get('/new/analytics', function () {
-    return Inertia::render('New/Analytics', [
-        'analytics_data' => [
-            'throughput' => [
-                ['period' => 'Week 1', 'created' => 45, 'completed' => 38, 'backlog' => 7],
-                ['period' => 'Week 2', 'created' => 52, 'completed' => 48, 'backlog' => 11],
-                ['period' => 'Week 3', 'created' => 61, 'completed' => 59, 'backlog' => 13],
-                ['period' => 'Week 4', 'created' => 48, 'completed' => 54, 'backlog' => 7],
-                ['period' => 'Week 5', 'created' => 70, 'completed' => 66, 'backlog' => 11],
-                ['period' => 'Week 6', 'created' => 58, 'completed' => 62, 'backlog' => 7],
-            ],
-            'categories' => [
-                ['category' => 'Frontend Dev', 'tasks' => 42, 'hours' => 168],
-                ['category' => 'Backend API', 'tasks' => 36, 'hours' => 144],
-                ['category' => 'UI/UX Design', 'tasks' => 24, 'hours' => 96],
-                ['category' => 'QA & Testing', 'tasks' => 18, 'hours' => 72],
-                ['category' => 'DevOps / Infra', 'tasks' => 12, 'hours' => 48],
-            ],
-        ],
-        'team_members' => [
-            ['name' => 'Alex Morgan', 'role' => 'Fullstack Engineer', 'avatar' => 'AM', 'assigned' => 18, 'completed' => 16, 'rate' => 88, 'velocity' => '3.2/day'],
-            ['name' => 'Sarah Chen', 'role' => 'UI/UX Lead', 'avatar' => 'SC', 'assigned' => 14, 'completed' => 14, 'rate' => 100, 'velocity' => '2.8/day'],
-            ['name' => 'Michael Scott', 'role' => 'Backend Developer', 'avatar' => 'MS', 'assigned' => 22, 'completed' => 19, 'rate' => 86, 'velocity' => '3.8/day'],
-            ['name' => 'Emma Watson', 'role' => 'QA Engineer', 'avatar' => 'EW', 'assigned' => 15, 'completed' => 13, 'rate' => 86, 'velocity' => '2.6/day'],
-            ['name' => 'David Kim', 'role' => 'DevOps Engineer', 'avatar' => 'DK', 'assigned' => 10, 'completed' => 9, 'rate' => 90, 'velocity' => '1.8/day'],
-        ],
-    ]);
-})->name('new.analytics');
+Route::get('/new/analytics', AnalyticsController::class)->middleware(['auth', 'verified'])->name('new.analytics');
 
 Route::get('/new/projects', function () {
     return Inertia::render('New/Projects', [
