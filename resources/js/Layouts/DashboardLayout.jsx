@@ -179,7 +179,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                         <span className="font-semibold text-xs text-zinc-100 block truncate leading-tight group-hover:text-emerald-400 transition-colors">
                           {currentWorkspaceDisplay}
                         </span>
-                        <span className="text-[10px] text-zinc-400 font-mono block leading-tight mt-0.5">
+                        <span className="text-xs text-zinc-400 font-mono block leading-tight mt-0.5">
                           Switch workspace
                         </span>
                       </div>
@@ -231,7 +231,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                     <span className="font-semibold text-xs text-zinc-100 block truncate leading-tight">
                       WorkHub
                     </span>
-                    <span className="text-[10px] text-zinc-400 font-mono block leading-tight">
+                    <span className="text-xs text-zinc-400 font-mono block leading-tight">
                       Personal Space
                     </span>
                   </div>
@@ -244,7 +244,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
           <SidebarContent className="px-2.5 py-4 space-y-6 bg-zinc-950">
             {/* Group 1: Core Application */}
             <SidebarGroup>
-              <SidebarGroupLabel className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider px-3 mb-2 font-mono">
+              <SidebarGroupLabel className="text-xs font-semibold text-zinc-400 uppercase tracking-wider px-3 mb-2 font-mono">
                 Main Suite
               </SidebarGroupLabel>
               <SidebarGroupContent>
@@ -319,7 +319,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
 
             {/* Group 2: Workspaces & Team */}
             <SidebarGroup>
-              <SidebarGroupLabel className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider px-3 mb-2 font-mono">
+              <SidebarGroupLabel className="text-xs font-semibold text-zinc-400 uppercase tracking-wider px-3 mb-2 font-mono">
                 Organization
               </SidebarGroupLabel>
               <SidebarGroupContent>
@@ -355,7 +355,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
 
             {/* Group 3: Account & Management */}
             <SidebarGroup>
-              <SidebarGroupLabel className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider px-3 mb-2 font-mono">
+              <SidebarGroupLabel className="text-xs font-semibold text-zinc-400 uppercase tracking-wider px-3 mb-2 font-mono">
                 System & Tools
               </SidebarGroupLabel>
               <SidebarGroupContent>
@@ -416,7 +416,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                   <div className="text-xs font-medium text-zinc-100 truncate">
                     {user?.name || "Demo Administrator"}
                   </div>
-                  <div className="text-[10px] text-zinc-400 font-mono truncate">
+                  <div className="text-xs text-zinc-400 font-mono truncate">
                     {user?.email || "admin@workhub.io"}
                   </div>
                 </div>
@@ -468,7 +468,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                   <Search className="h-3.5 w-3.5 text-zinc-400 group-hover:text-zinc-200 transition-colors" />
                   <span>Search projects, tasks, notes...</span>
                 </div>
-                <kbd className="font-mono text-[10px] bg-zinc-950 border border-zinc-800 px-1.5 py-0.5 rounded text-zinc-400 group-hover:border-zinc-700 transition-colors">
+                <kbd className="font-mono text-xs bg-zinc-950 border border-zinc-800 px-1.5 py-0.5 rounded text-zinc-400 group-hover:border-zinc-700 transition-colors">
                   ⌘K
                 </kbd>
               </button>
@@ -495,7 +495,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                         className="w-full bg-transparent text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none"
                         autoFocus
                       />
-                      <kbd className="font-mono text-[10px] bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded text-zinc-400 shrink-0 ml-2">
+                      <kbd className="font-mono text-xs bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded text-zinc-400 shrink-0 ml-2">
                         ESC
                       </kbd>
                     </div>
@@ -507,7 +507,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       ) : !searchQuery.trim() ? (
                         /* Quick Jump Navigation Links when empty */
                         <div className="space-y-3 pt-1">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 px-2 font-mono">
+                          <p className="text-xs font-bold uppercase tracking-wider text-zinc-400 px-2 font-mono">
                             Quick Navigation
                           </p>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
@@ -521,7 +521,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                               </div>
                               <div>
                                 <p className="font-medium text-xs">Dashboard</p>
-                                <p className="text-[10px] text-zinc-400">Main overview & tasks</p>
+                                <p className="text-xs text-zinc-400">Main overview & tasks</p>
                               </div>
                             </Link>
 
@@ -535,7 +535,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                               </div>
                               <div>
                                 <p className="font-medium text-xs">Projects</p>
-                                <p className="text-[10px] text-zinc-400">View active projects</p>
+                                <p className="text-xs text-zinc-400">View active projects</p>
                               </div>
                             </Link>
 
@@ -549,7 +549,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                               </div>
                               <div>
                                 <p className="font-medium text-xs">My Tasks</p>
-                                <p className="text-[10px] text-zinc-400">Assigned task list</p>
+                                <p className="text-xs text-zinc-400">Assigned task list</p>
                               </div>
                             </Link>
 
@@ -563,7 +563,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                               </div>
                               <div>
                                 <p className="font-medium text-xs">Notes & Docs</p>
-                                <p className="text-[10px] text-zinc-400">Knowledge base & notes</p>
+                                <p className="text-xs text-zinc-400">Knowledge base & notes</p>
                               </div>
                             </Link>
                           </div>
@@ -582,7 +582,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                           {/* Projects */}
                           {searchResults.projects && searchResults.projects.length > 0 && (
                             <div className="pt-2">
-                              <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 px-2 mb-1.5 flex items-center gap-1.5 font-mono">
+                              <p className="text-xs font-bold uppercase tracking-wider text-emerald-400 px-2 mb-1.5 flex items-center gap-1.5 font-mono">
                                 <FolderKanban className="w-3.5 h-3.5" /> Projects ({searchResults.projects.length})
                               </p>
                               <div className="space-y-1">
@@ -591,10 +591,10 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                                     key={p.id}
                                     href={p.url}
                                     onClick={() => setShowSearchDropdown(false)}
-                                    className="flex items-center justify-between p-2 rounded-lg hover:bg-zinc-800/70 transition-colors text-zinc-200"
+                                    className="flex items-center justify-between p-2 rounded-lg hover:bg-zinc-800/70 transition-colors text-zinc-200 text-xs"
                                   >
                                     <span className="font-medium">{p.title}</span>
-                                    <span className="text-[10px] text-zinc-400 font-mono">View Project →</span>
+                                    <span className="text-xs text-zinc-400 font-mono">View Project →</span>
                                   </Link>
                                 ))}
                               </div>
@@ -604,7 +604,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                           {/* Tasks */}
                           {searchResults.tasks && searchResults.tasks.length > 0 && (
                             <div className="pt-2">
-                              <p className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 px-2 mb-1.5 flex items-center gap-1.5 font-mono">
+                              <p className="text-xs font-bold uppercase tracking-wider text-cyan-400 px-2 mb-1.5 flex items-center gap-1.5 font-mono">
                                 <CheckSquare className="w-3.5 h-3.5" /> Tasks ({searchResults.tasks.length})
                               </p>
                               <div className="space-y-1">
@@ -613,10 +613,10 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                                     key={t.id}
                                     href={t.url}
                                     onClick={() => setShowSearchDropdown(false)}
-                                    className="flex items-center justify-between p-2 rounded-lg hover:bg-zinc-800/70 transition-colors text-zinc-200"
+                                    className="flex items-center justify-between p-2 rounded-lg hover:bg-zinc-800/70 transition-colors text-zinc-200 text-xs"
                                   >
                                     <span className="font-medium truncate">{t.title}</span>
-                                    <span className="text-[10px] text-zinc-400 font-mono shrink-0 ml-2">View Task →</span>
+                                    <span className="text-xs text-zinc-400 font-mono shrink-0 ml-2">View Task →</span>
                                   </Link>
                                 ))}
                               </div>
@@ -626,7 +626,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                           {/* Notes */}
                           {searchResults.notes && searchResults.notes.length > 0 && (
                             <div className="pt-2">
-                              <p className="text-[10px] font-bold uppercase tracking-wider text-amber-400 px-2 mb-1.5 flex items-center gap-1.5 font-mono">
+                              <p className="text-xs font-bold uppercase tracking-wider text-amber-400 px-2 mb-1.5 flex items-center gap-1.5 font-mono">
                                 <FileText className="w-3.5 h-3.5" /> Notes ({searchResults.notes.length})
                               </p>
                               <div className="space-y-1">
@@ -635,10 +635,10 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                                     key={n.id}
                                     href={n.url}
                                     onClick={() => setShowSearchDropdown(false)}
-                                    className="flex items-center justify-between p-2 rounded-lg hover:bg-zinc-800/70 transition-colors text-zinc-200"
+                                    className="flex items-center justify-between p-2 rounded-lg hover:bg-zinc-800/70 transition-colors text-zinc-200 text-xs"
                                   >
                                     <span className="font-medium">{n.title}</span>
-                                    <span className="text-[10px] text-zinc-400 font-mono">View Note →</span>
+                                    <span className="text-xs text-zinc-400 font-mono">View Note →</span>
                                   </Link>
                                 ))}
                               </div>
@@ -648,18 +648,18 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                           {/* Users */}
                           {searchResults.users && searchResults.users.length > 0 && (
                             <div className="pt-2">
-                              <p className="text-[10px] font-bold uppercase tracking-wider text-purple-400 px-2 mb-1.5 flex items-center gap-1.5 font-mono">
+                              <p className="text-xs font-bold uppercase tracking-wider text-purple-400 px-2 mb-1.5 flex items-center gap-1.5 font-mono">
                                 <Users className="w-3.5 h-3.5" /> Team Members ({searchResults.users.length})
                               </p>
                               <div className="space-y-1">
                                 {searchResults.users.map((u) => (
                                   <div
                                     key={u.id}
-                                    className="flex items-center justify-between p-2 rounded-lg hover:bg-zinc-800/70 transition-colors text-zinc-200"
+                                    className="flex items-center justify-between p-2 rounded-lg hover:bg-zinc-800/70 transition-colors text-zinc-200 text-xs"
                                   >
                                     <div>
                                       <p className="font-medium">{u.title}</p>
-                                      <p className="text-[10px] text-zinc-400 font-mono">{u.email}</p>
+                                      <p className="text-xs text-zinc-400 font-mono">{u.email}</p>
                                     </div>
                                   </div>
                                 ))}
@@ -690,7 +690,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                   >
                     <Bell className="h-3.5 w-3.5" />
                     {notifications.length > 0 && (
-                      <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-emerald-500 text-zinc-950 font-bold text-[10px] flex items-center justify-center border border-zinc-950 shadow-sm">
+                      <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-emerald-500 text-zinc-950 font-bold text-xs flex items-center justify-center border border-zinc-950 shadow-sm">
                         {notifications.length}
                       </span>
                     )}
@@ -703,7 +703,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                           <Bell className="w-4 h-4 text-emerald-400" />
                           <h4 className="text-xs font-bold text-zinc-100 uppercase tracking-wider">Notifications</h4>
                           {notifications.length > 0 && (
-                            <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold px-1.5 py-0.2 rounded-full">
+                            <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold px-2 py-0.5 rounded-full">
                               {notifications.length} unread
                             </span>
                           )}
@@ -711,7 +711,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                         {notifications.length > 0 && (
                           <button
                             onClick={handleMarkAllAsRead}
-                            className="text-[11px] text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-1 font-medium cursor-pointer"
+                            className="text-xs text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-1 font-medium cursor-pointer"
                           >
                             <CheckCheck className="w-3.5 h-3.5" /> Mark all read
                           </button>
@@ -724,8 +724,8 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                         ) : notifications.length === 0 ? (
                           <div className="p-6 text-center text-xs text-zinc-400 space-y-1">
                             <CheckCheck className="w-8 h-8 text-emerald-500/60 mx-auto mb-2" />
-                            <p className="font-semibold text-zinc-300">All caught up!</p>
-                            <p className="text-[11px]">No unread notifications right now.</p>
+                            <p className="font-semibold text-zinc-300 text-xs">All caught up!</p>
+                            <p className="text-xs text-zinc-400">No unread notifications right now.</p>
                           </div>
                         ) : (
                           notifications.map((n) => (
@@ -736,7 +736,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                               <div className="space-y-1 min-w-0 flex-1">
                                 <div className="flex items-center justify-between gap-2">
                                   <p className="text-xs font-semibold text-zinc-200 truncate">{n.title || n.type || "Notification"}</p>
-                                  <span className="text-[10px] text-zinc-400 font-mono shrink-0">
+                                  <span className="text-xs text-zinc-400 font-mono shrink-0">
                                     {n.created_at ? new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                                   </span>
                                 </div>
@@ -762,8 +762,8 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
           </header>
 
           {/* Page Slot */}
-          <main className="flex-1 w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 bg-zinc-950">
-            <div className="w-full  mx-auto">
+          <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6 bg-zinc-950">
+            <div className="w-full space-y-6">
               {children}
             </div>
           </main>

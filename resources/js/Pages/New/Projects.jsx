@@ -357,7 +357,7 @@ export default function Projects({ initial_projects }) {
                     <div className="flex items-center gap-1">
                       {p.teamMembers.map((m, idx) => (
                         <Avatar key={idx} className="h-6 w-6 border border-neutral-700">
-                          <AvatarFallback className="bg-neutral-800 text-neutral-300 text-[8px] font-bold">
+                          <AvatarFallback className="bg-neutral-800 text-neutral-300 text-xs font-bold">
                             {m.avatar}
                           </AvatarFallback>
                         </Avatar>

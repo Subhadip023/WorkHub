@@ -417,8 +417,8 @@ The Inertia page wrapper should hydrate seamlessly without layout reflows or con
                   <div className="flex items-center gap-2 bg-black px-3 py-1.5 rounded-lg border border-neutral-800">
                     <span className="text-neutral-400">Assignee:</span>
                     <div className="flex items-center gap-1.5">
-                      <Avatar className="h-5 w-5 border border-neutral-700">
-                        <AvatarFallback className="bg-neutral-800 text-neutral-200 text-[9px] font-bold">
+                      <Avatar className="h-6 w-6 border border-neutral-700">
+                        <AvatarFallback className="bg-neutral-800 text-neutral-200 text-xs font-bold">
                           {currentTask.assignee.avatar}
                         </AvatarFallback>
                       </Avatar>
@@ -587,7 +587,7 @@ The Inertia page wrapper should hydrate seamlessly without layout reflows or con
                         {n.content}
                       </p>
                     </div>
-                    <span className="text-[11px] font-mono text-neutral-500 block pt-2 border-t border-neutral-900">
+                    <span className="text-xs font-mono text-neutral-500 block pt-2 border-t border-neutral-900">
                       {n.time}
                     </span>
                   </div>
@@ -677,10 +677,10 @@ The Inertia page wrapper should hydrate seamlessly without layout reflows or con
                     key={log.id}
                     className="p-3 rounded-xl bg-black border border-neutral-800 space-y-1"
                   >
-                    <div className="flex items-center justify-between text-[11px]">
+                    <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-1.5">
-                        <Avatar className="h-4 w-4 border border-neutral-700">
-                          <AvatarFallback className="bg-neutral-800 text-neutral-200 text-[8px] font-bold">
+                        <Avatar className="h-5 w-5 border border-neutral-700">
+                          <AvatarFallback className="bg-neutral-800 text-neutral-200 text-xs font-bold">
                             {log.avatar}
                           </AvatarFallback>
                         </Avatar>
@@ -689,7 +689,7 @@ The Inertia page wrapper should hydrate seamlessly without layout reflows or con
                       <span className="text-neutral-500">{log.time}</span>
                     </div>
                     <div className="flex items-center gap-1 text-neutral-300">
-                      <span className="px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-300 text-[9px] uppercase font-bold">
+                      <span className="px-1.5 py-0.5 rounded bg-neutral-800 text-neutral-300 text-xs uppercase font-bold">
                         {log.action}
                       </span>
                     </div>
@@ -735,7 +735,7 @@ The Inertia page wrapper should hydrate seamlessly without layout reflows or con
                     <div className="flex items-center justify-between text-xs sm:text-sm">
                       <div className="flex items-center gap-2">
                         <Avatar className="h-6 w-6 border border-neutral-700">
-                          <AvatarFallback className="bg-neutral-800 text-neutral-200 font-mono text-[9px] font-bold">
+                          <AvatarFallback className="bg-neutral-800 text-neutral-200 font-mono text-xs font-bold">
                             {c.user.avatar}
                           </AvatarFallback>
                         </Avatar>

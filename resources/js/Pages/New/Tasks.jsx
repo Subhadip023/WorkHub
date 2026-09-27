@@ -400,8 +400,8 @@ export default function Tasks({ initial_tasks }) {
 
                           <div className="flex items-center justify-between pt-2 border-t border-neutral-800/80 text-xs font-mono text-neutral-400">
                             <span className="text-neutral-400">{t.dueDate}</span>
-                            <Avatar className="h-5 w-5 border border-neutral-700">
-                              <AvatarFallback className="bg-neutral-800 text-neutral-200 text-[8px] font-bold">
+                            <Avatar className="h-6 w-6 border border-neutral-700">
+                              <AvatarFallback className="bg-neutral-800 text-neutral-200 text-xs font-bold">
                                 {t.assignee.avatar}
                               </AvatarFallback>
                             </Avatar>
