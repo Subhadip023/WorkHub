@@ -52,6 +52,31 @@ class User extends Authenticatable implements MustVerifyEmail
     ];
 
     /**
+     * The accessors to append to the model's array form.
+     *
+     * @var list<string>
+     */
+    protected $appends = [
+        'profile_image_url',
+    ];
+
+    /**
+     * Get the resolved URL for the profile image.
+     */
+    public function getProfileImageUrlAttribute(): ?string
+    {
+        if (! $this->profile_image) {
+            return null;
+        }
+
+        if (str_starts_with($this->profile_image, 'http://') || str_starts_with($this->profile_image, 'https://')) {
+            return $this->profile_image;
+        }
+
+        return '/storage/'.ltrim($this->profile_image, '/');
+    }
+
+    /**
      * The attributes that should be hidden for serialization.
      *
      * @var list<string>

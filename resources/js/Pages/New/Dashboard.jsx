@@ -34,7 +34,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/ui/card";
 import { Button } from "@/Components/ui/button";
 import { Badge } from "@/Components/ui/badge";
-import { Avatar, AvatarFallback } from "@/Components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -852,6 +852,9 @@ export default function NewDashboard({
                       <div key={m.id || idx} className="py-2.5 flex items-center justify-between gap-2">
                         <div className="flex items-center gap-3 min-w-0">
                           <Avatar className="h-8 w-8 border border-neutral-700 shrink-0">
+                            {m.profile_image && (
+                              <AvatarImage src={m.profile_image} alt={m.name} className="object-cover" />
+                            )}
                             <AvatarFallback className="bg-neutral-800 text-emerald-400 text-xs font-bold font-mono">
                               {m.name ? m.name.substring(0, 2).toUpperCase() : "TM"}
                             </AvatarFallback>

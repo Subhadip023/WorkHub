@@ -313,19 +313,12 @@ it('does not display status 4 tasks or tasks of status 4 projects on dashboard',
     expect($dashboardTasks->pluck('id'))->not->toContain($taskInOnHoldProject->id);
 });
 
-it('loads new inertia dashboard page successfully', function () {
+it('redirects new dashboard route to main dashboard', function () {
     $user = User::factory()->create(['email_verified_at' => now()]);
     $this->actingAs($user);
 
     $response = $this->get(route('new.dashboard'));
-    $response->assertStatus(200);
-    $response->assertInertia(fn ($page) => $page
-        ->component('Dashboard')
-        ->has('stats')
-        ->has('recent_activity')
-        ->has('chart_data')
-        ->has('projects')
-    );
+    $response->assertRedirect(route('dashboard'));
 });
 
 it('loads new inertia analytics page successfully', function () {
@@ -341,16 +334,24 @@ it('loads new inertia analytics page successfully', function () {
     );
 });
 
-it('loads new inertia projects page successfully', function () {
+it('loads inertia projects page successfully', function () {
     $user = User::factory()->create(['email_verified_at' => now()]);
     $this->actingAs($user);
 
-    $response = $this->get(route('new.projects'));
+    $response = $this->get(route('projects.index'));
     $response->assertStatus(200);
     $response->assertInertia(fn ($page) => $page
         ->component('New/Projects')
         ->has('initial_projects')
     );
+});
+
+it('redirects new projects route to main projects', function () {
+    $user = User::factory()->create(['email_verified_at' => now()]);
+    $this->actingAs($user);
+
+    $response = $this->get(route('new.projects'));
+    $response->assertRedirect(route('projects.index'));
 });
 
 it('loads new inertia tasks page successfully', function () {

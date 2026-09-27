@@ -38,7 +38,7 @@
                     <div class="d-flex align-items-center mb-4">
                         <div class="position-relative" id="avatarPreviewContainer">
                             @if($user->profile_image)
-                                <img id="avatarPreview" src="{{ asset('storage/' . $user->profile_image) }}" alt="Profile" class="rounded-circle img-thumbnail shadow-sm" style="width: 100px; height: 100px; object-fit: cover;">
+                                <img id="avatarPreview" src="{{ $user->profile_image_url ?? asset('storage/' . $user->profile_image) }}" alt="Profile" class="rounded-circle img-thumbnail shadow-sm" style="width: 100px; height: 100px; object-fit: cover;">
                             @else
                                 <div id="avatarInitials" class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center font-weight-bold shadow-sm" style="width: 100px; height: 100px; font-size: 2.5rem;">
                                     {{ strtoupper(substr($user->name, 0, 1)) }}

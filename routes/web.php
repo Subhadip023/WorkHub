@@ -36,118 +36,10 @@ Route::get('/old-dashboard', [DashboardController::class, 'oldDashboard'])->midd
 Route::get('/old-dashboard/{company}', [DashboardController::class, 'oldDashboard'])->middleware(['auth', 'verified'])->name('old.dashboard.org');
 
 Route::get('/analytics', AnalyticsController::class)->middleware(['auth', 'verified'])->name('analytics');
-Route::get('/new/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('new.dashboard');
+Route::redirect('/new/dashboard', '/dashboard')->name('new.dashboard');
 Route::get('/new/analytics', AnalyticsController::class)->middleware(['auth', 'verified'])->name('new.analytics');
 
-Route::get('/new/projects', function () {
-    return Inertia::render('New/Projects', [
-        'initial_projects' => [
-            [
-                'id' => 1,
-                'name' => 'WorkHub Mobile App',
-                'description' => 'Cross-platform mobile application for real-time task management and team synchronization.',
-                'progress' => 78,
-                'status' => 'In Progress',
-                'dueDate' => 'Aug 28, 2026',
-                'teamMembers' => [
-                    ['name' => 'Alex Morgan', 'avatar' => 'AM'],
-                    ['name' => 'Sarah Chen', 'avatar' => 'SC'],
-                    ['name' => 'David Kim', 'avatar' => 'DK'],
-                ],
-                'completedTasks' => 42,
-                'totalTasks' => 54,
-                'tag' => 'React Native',
-                'category' => 'Mobile',
-                'priority' => 'High',
-            ],
-            [
-                'id' => 2,
-                'name' => 'Inertia.js Migration',
-                'description' => 'Upgrading legacy Laravel blade views to Inertia.js + React JS SPA stack with shadcn UI.',
-                'progress' => 92,
-                'status' => 'Near Completion',
-                'dueDate' => 'Aug 22, 2026',
-                'teamMembers' => [
-                    ['name' => 'Michael Scott', 'avatar' => 'MS'],
-                    ['name' => 'Emma Watson', 'avatar' => 'EW'],
-                ],
-                'completedTasks' => 38,
-                'totalTasks' => 41,
-                'tag' => 'Laravel + React',
-                'category' => 'Web App',
-                'priority' => 'High',
-            ],
-            [
-                'id' => 3,
-                'name' => 'shadcn/ui Design System',
-                'description' => 'Unified design component token library built with Tailwind CSS and Radix primitives.',
-                'progress' => 100,
-                'status' => 'Completed',
-                'dueDate' => 'Aug 18, 2026',
-                'teamMembers' => [
-                    ['name' => 'Sarah Chen', 'avatar' => 'SC'],
-                    ['name' => 'Alex Morgan', 'avatar' => 'AM'],
-                    ['name' => 'Emma Watson', 'avatar' => 'EW'],
-                    ['name' => 'David Kim', 'avatar' => 'DK'],
-                ],
-                'completedTasks' => 30,
-                'totalTasks' => 30,
-                'tag' => 'Tailwind CSS',
-                'category' => 'Design',
-                'priority' => 'Medium',
-            ],
-            [
-                'id' => 4,
-                'name' => 'Customer Portal v2',
-                'description' => 'Self-service analytics and billing management portal for corporate clients.',
-                'progress' => 45,
-                'status' => 'In Progress',
-                'dueDate' => 'Sep 15, 2026',
-                'teamMembers' => [
-                    ['name' => 'Michael Scott', 'avatar' => 'MS'],
-                    ['name' => 'David Kim', 'avatar' => 'DK'],
-                ],
-                'completedTasks' => 18,
-                'totalTasks' => 40,
-                'tag' => 'Next.js',
-                'category' => 'Frontend',
-                'priority' => 'Medium',
-            ],
-            [
-                'id' => 5,
-                'name' => 'Automated CI/CD Pipeline',
-                'description' => 'GitHub Actions workflow setup with Pest test runner and zero-downtime deployment.',
-                'progress' => 30,
-                'status' => 'In Progress',
-                'dueDate' => 'Sep 30, 2026',
-                'teamMembers' => [
-                    ['name' => 'David Kim', 'avatar' => 'DK'],
-                ],
-                'completedTasks' => 6,
-                'totalTasks' => 20,
-                'tag' => 'DevOps',
-                'category' => 'Infra',
-                'priority' => 'Low',
-            ],
-            [
-                'id' => 6,
-                'name' => 'Real-time Notification Engine',
-                'description' => 'WebSockets & Redis pub/sub integration for instant task deadline triggers.',
-                'progress' => 15,
-                'status' => 'On Hold',
-                'dueDate' => 'Oct 10, 2026',
-                'teamMembers' => [
-                    ['name' => 'Alex Morgan', 'avatar' => 'AM'],
-                ],
-                'completedTasks' => 3,
-                'totalTasks' => 22,
-                'tag' => 'Redis + Laravel',
-                'category' => 'Backend',
-                'priority' => 'Low',
-            ],
-        ],
-    ]);
-})->name('new.projects');
+Route::redirect('/new/projects', '/projects')->name('new.projects');
 
 Route::get('/new/tasks', function () {
     return Inertia::render('New/Tasks', [
@@ -206,7 +98,7 @@ Route::get('/new/tasks', function () {
             ],
             [
                 'id' => 5,
-                'title' => 'Setup Pest feature tests for /new/analytics & /new/projects',
+                'title' => 'Setup Pest feature tests for /new/analytics & /projects',
                 'description' => 'Write assertions confirming Inertia props resolution.',
                 'status' => 'Review',
                 'priority' => 'High',
@@ -256,7 +148,7 @@ Route::get('/new/task/{id}', function ($id) {
         'task' => [
             'id' => str_starts_with($id, 'WH-') ? $id : "WH-{$id}",
             'title' => "Inertia.js React layout hydration error on cold start (#{$id})",
-            'description' => "When launching the application on a cold browser refresh, React throws a client-side hydration mismatch warning. The DOM attributes generated on the server render differ slightly from the client state.\n\n### Steps to Reproduce\n1. Clear browser cache and navigate to /new/dashboard.\n2. Observe console warning: Hydration failed because the initial UI does not match the server-rendered HTML.\n3. Notice temporary layout flicker during component mounting.\n\n### Expected Behavior\nThe Inertia page wrapper should hydrate seamlessly without layout reflows or console warnings.",
+            'description' => "When launching the application on a cold browser refresh, React throws a client-side hydration mismatch warning. The DOM attributes generated on the server render differ slightly from the client state.\n\n### Steps to Reproduce\n1. Clear browser cache and navigate to /dashboard.\n2. Observe console warning: Hydration failed because the initial UI does not match the server-rendered HTML.\n3. Notice temporary layout flicker during component mounting.\n\n### Expected Behavior\nThe Inertia page wrapper should hydrate seamlessly without layout reflows or console warnings.",
             'status' => 'In Progress',
             'priority' => 'Urgent',
             'dueDate' => 'Today, 5:00 PM',

@@ -32,7 +32,7 @@ export default function ComingSoon({ feature = "This Feature", activeItem = "com
 
           <div className="flex items-center justify-center gap-3 pt-2">
             <Button asChild size="sm" className="bg-white text-black hover:bg-neutral-200 font-semibold text-sm gap-2 rounded-xl h-10 px-4">
-              <Link href="/new/dashboard">
+              <Link href="/dashboard">
                 <LayoutDashboard className="h-4 w-4" /> Dashboard
               </Link>
             </Button>

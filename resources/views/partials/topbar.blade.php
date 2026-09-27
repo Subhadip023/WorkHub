@@ -142,7 +142,7 @@
                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ Auth::user()->name }}</span>
                 @if(Auth::user()->profile_image)
-                    <img class="img-profile rounded-circle" style="object-fit: cover;" src="{{ asset('storage/' . Auth::user()->profile_image) }}">
+                    <img class="img-profile rounded-circle" style="object-fit: cover;" src="{{ Auth::user()->profile_image_url ?? asset('storage/' . Auth::user()->profile_image) }}">
                 @else
                     <img class="img-profile rounded-circle" src="{{ asset('asset/img/undraw_profile.svg') }}">
                 @endif

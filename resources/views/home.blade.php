@@ -680,7 +680,7 @@
                     <a href="{{ route('register') }}" class="btn btn-primary">Get Started</a>
                 @endauth
 
-                <a href="/new/dashboard" class="btn btn-outline">Try New Dashboard</a>
+                <a href="/dashboard" class="btn btn-outline">Try New Dashboard</a>
             </div>
         </div>
     </header>
@@ -759,7 +759,7 @@
                                 Centralized hub with real-time project statistics, activity feed timeline, revenue trend charts, and quick task filters.
                             </p>
                         </div>
-                        <a href="/new/dashboard" style="display: inline-flex; align-items: center; gap: 8px; color: #818cf8; font-weight: 600; font-size: 14px; text-decoration: none;">
+                        <a href="/dashboard" style="display: inline-flex; align-items: center; gap: 8px; color: #818cf8; font-weight: 600; font-size: 14px; text-decoration: none;">
                             Launch New Dashboard <i class="fas fa-arrow-right"></i>
                         </a>
                     </div>
@@ -795,7 +795,7 @@
                                 Modular project cards with tech stack tags, progress bars, team member avatars, and instant workspace modal creation.
                             </p>
                         </div>
-                        <a href="/new/projects" style="display: inline-flex; align-items: center; gap: 8px; color: #60a5fa; font-weight: 600; font-size: 14px; text-decoration: none;">
+                        <a href="/projects" style="display: inline-flex; align-items: center; gap: 8px; color: #60a5fa; font-weight: 600; font-size: 14px; text-decoration: none;">
                             Explore Projects <i class="fas fa-arrow-right"></i>
                         </a>
                     </div>
@@ -829,7 +829,7 @@
                             Experience faster page loads, smooth client-side transitions, and modern UI components.
                         </p>
                     </div>
-                    <a href="/new/dashboard" class="btn btn-primary" style="white-space: nowrap; background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none; padding: 12px 24px; font-size: 14px; border-radius: 10px; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);">
+                    <a href="/dashboard" class="btn btn-primary" style="white-space: nowrap; background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none; padding: 12px 24px; font-size: 14px; border-radius: 10px; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);">
                         Launch New Look Now <i class="fas fa-external-link-alt" style="margin-left: 8px;"></i>
                     </a>
                 </div>

@@ -67,7 +67,7 @@
         @if($task->assignedUser)
             <span title="Assigned to {{ $task->assignedUser->name }}">
                 @if($task->assignedUser->profile_image)
-                    <img class="rounded-circle" style="width: 28px; height: 28px; object-fit: cover;" src="{{ asset('storage/' . $task->assignedUser->profile_image) }}">
+                    <img class="rounded-circle" style="width: 28px; height: 28px; object-fit: cover;" src="{{ $task->assignedUser->profile_image_url ?? asset('storage/' . $task->assignedUser->profile_image) }}">
                 @else
                     <div class="rounded-circle bg-gray-200 text-gray-600 d-flex align-items-center justify-content-center font-weight-bold text-xs" style="width: 28px; height: 28px;">
                         {{ strtoupper(substr($task->assignedUser->name, 0, 1)) }}

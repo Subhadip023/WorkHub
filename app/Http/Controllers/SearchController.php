@@ -146,7 +146,7 @@ class SearchController extends Controller
                         'id' => $u->id,
                         'title' => $u->name,
                         'email' => $u->email,
-                        'profile_image' => $u->profile_image ? asset('storage/'.$u->profile_image) : null,
+                        'profile_image' => $u->profile_image_url,
                     ];
                 }),
             ]);

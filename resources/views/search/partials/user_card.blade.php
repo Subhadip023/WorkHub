@@ -3,7 +3,7 @@
         <!-- Avatar -->
         <div class="mb-3">
             @if($user->profile_image)
-                <img class="rounded-circle shadow-sm" style="width: 64px; height: 64px; object-fit: cover;" src="{{ asset('storage/' . $user->profile_image) }}">
+                <img class="rounded-circle shadow-sm" style="width: 64px; height: 64px; object-fit: cover;" src="{{ $user->profile_image_url ?? asset('storage/' . $user->profile_image) }}">
             @else
                 <div class="rounded-circle bg-gray-200 text-gray-600 d-flex align-items-center justify-content-center font-weight-bold shadow-sm" style="width: 64px; height: 64px; font-size: 1.5rem;">
                     {{ strtoupper(substr($user->name, 0, 1)) }}

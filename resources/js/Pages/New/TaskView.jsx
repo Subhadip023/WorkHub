@@ -48,7 +48,7 @@ export default function TaskView({ task }) {
     description: `When launching the application on a cold browser refresh, React throws a client-side hydration mismatch warning. The DOM attributes generated on the server render (Laravel Inertia root view) differ slightly from the client state.
 
 ### Steps to Reproduce
-1. Clear browser cache and navigate to \`/new/dashboard\`.
+1. Clear browser cache and navigate to \`/dashboard\`.
 2. Observe console warning: \`Hydration failed because the initial UI does not match the server-rendered HTML.\`
 3. Notice temporary layout flicker during component mounting.
 

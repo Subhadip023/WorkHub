@@ -19,7 +19,7 @@
         $assigneeOptions[$user->id] = $user->name;
         $assigneeMeta[$user->id] = [
             'badge' => 'badge-light border text-gray-800',
-            'avatar' => $user->profile_image ? asset('storage/' . $user->profile_image) : null,
+            'avatar' => $user->profile_image_url ?? ($user->profile_image ? asset('storage/' . $user->profile_image) : null),
             'initials' => strtoupper(substr($user->name, 0, 1)),
         ];
     }
@@ -28,7 +28,7 @@
         $assigneeOptions[$assignedUser->id] = $assignedUser->name;
         $assigneeMeta[$assignedUser->id] = [
             'badge' => 'badge-light border text-gray-800',
-            'avatar' => $assignedUser->profile_image ? asset('storage/' . $assignedUser->profile_image) : null,
+            'avatar' => $assignedUser->profile_image_url ?? ($assignedUser->profile_image ? asset('storage/' . $assignedUser->profile_image) : null),
             'initials' => strtoupper(substr($assignedUser->name, 0, 1)),
         ];
     }

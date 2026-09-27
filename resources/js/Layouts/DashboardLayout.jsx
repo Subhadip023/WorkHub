@@ -28,7 +28,7 @@ import {
 
 import ApplicationLogo from "@/Components/ApplicationLogo";
 import { Button } from "@/Components/ui/button";
-import { Avatar, AvatarFallback } from "@/Components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
 import {
   SidebarProvider,
   Sidebar,
@@ -56,6 +56,9 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
   const workspaceDropdownRef = useRef(null);
   const currentWorkspaceDisplay = current_workspace_name || (company ? company.name : "All Workspaces");
 
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const userMenuRef = useRef(null);
+
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [loadingNotifs, setLoadingNotifs] = useState(false);
@@ -67,11 +70,14 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const searchInputRef = useRef(null);
 
-  // Close workspace dropdown on outside click
+  // Close workspace and user dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (workspaceDropdownRef.current && !workspaceDropdownRef.current.contains(e.target)) {
         setWorkspaceDropdownOpen(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setShowUserMenu(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -160,9 +166,9 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
 
       <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-zinc-800 selection:text-white flex w-full">
         {/* Layered Sidebar with clean border separation */}
-        <Sidebar className="border-r border-zinc-800/80 bg-zinc-950 text-zinc-100 z-30">
+        <Sidebar className="border-r border-zinc-800 bg-zinc-950 text-zinc-100 z-30">
           {/* Header Workspace Switcher */}
-          <SidebarHeader className="h-16 px-3 flex items-center justify-between border-b border-zinc-800/80 bg-zinc-950 shrink-0">
+          <SidebarHeader className="h-16 px-3 flex items-center justify-between border-b border-zinc-800 bg-zinc-950 shrink-0">
             <div className="flex items-center justify-between w-full" ref={workspaceDropdownRef}>
               {user?.companies && user.companies.length > 0 ? (
                 <div className="relative w-full">
@@ -255,7 +261,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       isActive={currentActive === "dashboard"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
-                      <Link href="/new/dashboard">
+                      <Link href="/dashboard">
                         <LayoutDashboard className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
                         <span>Dashboard</span>
                       </Link>
@@ -281,7 +287,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       isActive={currentActive === "projects"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
-                      <Link href="/new/projects">
+                      <Link href="/projects">
                         <FolderKanban className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
                         <span>Projects</span>
                       </Link>
@@ -406,21 +412,24 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
           {/* User Profile Footer */}
           <SidebarFooter className="p-3 border-t border-zinc-800 bg-zinc-950">
             <div className="flex items-center justify-between gap-3 p-1.5 rounded-lg bg-zinc-900/60 border border-zinc-800/80">
-              <div className="flex items-center gap-2.5 min-w-0">
+              <Link href="/profile" className="flex items-center gap-2.5 min-w-0 hover:opacity-85 transition-opacity group flex-1">
                 <Avatar className="h-8 w-8 border border-zinc-700 shrink-0">
+                  {user?.profile_image && (
+                    <AvatarImage src={user.profile_image} alt={user?.name || "Avatar"} className="object-cover" />
+                  )}
                   <AvatarFallback className="bg-zinc-800 text-zinc-200 text-xs font-bold font-mono">
                     {user?.name ? user.name.substring(0, 2).toUpperCase() : "AD"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <div className="text-xs font-medium text-zinc-100 truncate">
+                  <div className="text-xs font-medium text-zinc-100 truncate group-hover:text-emerald-400 transition-colors">
                     {user?.name || "Demo Administrator"}
                   </div>
                   <div className="text-xs text-zinc-400 font-mono truncate">
                     {user?.email || "admin@workhub.io"}
                   </div>
                 </div>
-              </div>
+              </Link>
               <Link
                 href="/logout"
                 method="post"
@@ -439,10 +448,10 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
         {/* Content Wrapper */}
         <SidebarInset className="relative flex flex-col flex-1 min-w-0 bg-zinc-950">
           {/* Header Navbar */}
-          <header className="sticky top-0 z-20 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md h-14 flex items-center justify-between px-4 sm:px-6">
+          <header className="sticky top-0 z-20 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md h-16 flex items-center justify-between px-4 sm:px-6">
             <div className="flex items-center gap-3">
               <SidebarTrigger className="text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100 rounded-md p-1.5" />
-              <div className="h-4 w-px bg-zinc-800"></div>
+              <div className="h-5 w-px bg-zinc-800"></div>
               <div className="flex items-center gap-2 text-xs">
                 <ApplicationLogo className="w-4 h-4 shrink-0" />
                 <span className="font-mono text-zinc-300 font-bold">WorkHub</span>
@@ -526,7 +535,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                             </Link>
 
                             <Link
-                              href="/new/projects"
+                              href="/projects"
                               onClick={() => setShowSearchDropdown(false)}
                               className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-zinc-800/80 transition-colors group text-zinc-200"
                             >
@@ -657,9 +666,19 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                                     key={u.id}
                                     className="flex items-center justify-between p-2 rounded-lg hover:bg-zinc-800/70 transition-colors text-zinc-200 text-xs"
                                   >
-                                    <div>
-                                      <p className="font-medium">{u.title}</p>
-                                      <p className="text-xs text-zinc-400 font-mono">{u.email}</p>
+                                    <div className="flex items-center gap-2.5">
+                                      <Avatar className="h-6 w-6 border border-zinc-700 shrink-0">
+                                        {u.profile_image && (
+                                          <AvatarImage src={u.profile_image} alt={u.title} className="object-cover" />
+                                        )}
+                                        <AvatarFallback className="bg-zinc-800 text-zinc-300 text-xs font-bold font-mono">
+                                          {u.title ? u.title.substring(0, 2).toUpperCase() : "U"}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div>
+                                        <p className="font-medium">{u.title}</p>
+                                        <p className="text-xs text-zinc-400 font-mono">{u.email}</p>
+                                      </div>
                                     </div>
                                   </div>
                                 ))}
@@ -754,6 +773,60 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                           ))
                         )}
                       </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* User Profile Avatar Dropdown */}
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    type="button"
+                    onClick={() => setShowUserMenu((prev) => !prev)}
+                    className="flex items-center gap-2 p-0.5 rounded-full hover:ring-2 hover:ring-emerald-500/40 transition-all cursor-pointer focus:outline-none"
+                    title="User account menu"
+                  >
+                    <Avatar className="h-8 w-8 border border-zinc-700 shrink-0">
+                      {user?.profile_image && (
+                        <AvatarImage src={user.profile_image} alt={user?.name || "Avatar"} className="object-cover" />
+                      )}
+                      <AvatarFallback className="bg-zinc-800 text-zinc-200 text-xs font-bold font-mono">
+                        {user?.name ? user.name.substring(0, 2).toUpperCase() : "AD"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+
+                  {showUserMenu && (
+                    <div className="absolute right-0 mt-2 w-56 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl z-50 p-1.5 space-y-1 font-sans">
+                      <div className="px-3 py-2 border-b border-zinc-800">
+                        <p className="text-xs font-semibold text-zinc-100 truncate">{user?.name || "Administrator"}</p>
+                        <p className="text-xs text-zinc-400 font-mono truncate">{user?.email || ""}</p>
+                      </div>
+                      <Link
+                        href="/profile"
+                        onClick={() => setShowUserMenu(false)}
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-zinc-200 hover:bg-zinc-800 transition-colors"
+                      >
+                        <Settings className="w-3.5 h-3.5 text-zinc-400" />
+                        <span>Profile & Account</span>
+                      </Link>
+                      <Link
+                        href="/activity-logs?scope=mine"
+                        onClick={() => setShowUserMenu(false)}
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-zinc-200 hover:bg-zinc-800 transition-colors"
+                      >
+                        <FileText className="w-3.5 h-3.5 text-zinc-400" />
+                        <span>My Activity Log</span>
+                      </Link>
+                      <div className="h-px bg-zinc-800 my-1" />
+                      <Link
+                        href="/logout"
+                        method="post"
+                        as="button"
+                        className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-rose-400 hover:bg-rose-500/10 transition-colors text-left cursor-pointer"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>Log Out</span>
+                      </Link>
                     </div>
                   )}
                 </div>

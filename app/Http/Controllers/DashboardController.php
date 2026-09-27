@@ -185,6 +185,7 @@ class DashboardController extends Controller
                 'email' => $u ? $u->email : '',
                 'company_name' => $c ? $c->name : null,
                 'role' => (int) $member->role === 1 ? 'Admin' : 'Member',
+                'profile_image' => $u?->profile_image_url,
             ];
         })->values()->toArray();
 
@@ -269,8 +270,11 @@ class DashboardController extends Controller
 
         return Inertia::render('Dashboard', [
             'user' => $auth_user ? [
+                'id' => $auth_user->id,
                 'name' => $auth_user->name,
                 'email' => $auth_user->email,
+                'profile_image' => $auth_user->profile_image_url,
+                'avatar' => $auth_user->profile_image_url,
             ] : null,
             'current_workspace_name' => $currentWorkspaceName,
             'company' => $company ? [

@@ -42,6 +42,8 @@ class HandleInertiaRequests extends Middleware
                     'id' => $request->user()->id,
                     'name' => $request->user()->name,
                     'email' => $request->user()->email,
+                    'profile_image' => $request->user()->profile_image_url,
+                    'avatar' => $request->user()->profile_image_url,
                     'companies' => $request->user()->companies()->with('company')->get()->map(function ($cUser) {
                         return [
                             'id' => $cUser->company ? $cUser->company->id : null,

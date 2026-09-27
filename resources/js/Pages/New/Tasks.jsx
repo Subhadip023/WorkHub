@@ -83,7 +83,7 @@ export default function Tasks({ initial_tasks }) {
       },
       {
         id: "WH-028",
-        title: "Setup Pest feature tests for /new/analytics & /new/projects",
+        title: "Setup Pest feature tests for /new/analytics & /projects",
         description: "Write assertions confirming Inertia props resolution.",
         status: "Review",
         priority: "Urgent",
