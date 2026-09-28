@@ -62,7 +62,7 @@ class ProjectController extends Controller
         $userCompanies = $user ? $user->companies()->with('company')->get()->map(function ($cu) {
             return [
                 'id' => $cu->company?->id,
-                'name' => $cu->company?->name ?? '',
+                'name' => $cu->company->name ?? '',
             ];
         })->filter(fn ($item) => ! empty($item['id']))->values()->toArray() : [];
 
