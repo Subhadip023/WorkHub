@@ -24,7 +24,7 @@ class TaskRepository implements TaskRepositoryInterface
             })
             ->pluck('id')->toArray();
 
-        return Task::select('id', 'title', 'status', 'priority', 'type', 'points', 'due_date', 'project_id', 'assigned_to', 'user_id', 'created_at', 'updated_at')
+        return Task::select('id', 'title', 'description', 'status', 'priority', 'type', 'points', 'due_date', 'project_id', 'assigned_to', 'user_id', 'created_at', 'updated_at')
             ->where(function ($query) use ($projectIds, $user) {
                 $query->whereIn('project_id', $projectIds)
                     ->orWhere(function ($q) use ($user) {
@@ -105,7 +105,7 @@ class TaskRepository implements TaskRepositoryInterface
             $tasksQuery->where('type', $filters['type']);
         }
 
-        return $tasksQuery->with(['project', 'assignedUser'])->paginate($perPage);
+        return $tasksQuery->with(['project', 'assignedUser', 'subtasks'])->latest('id')->paginate($perPage);
     }
 
     public function getTaskStatsForUser(User $user): array

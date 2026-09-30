@@ -37,7 +37,7 @@ export default function ComingSoon({ feature = "This Feature", activeItem = "com
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm" className="border-neutral-800 bg-black hover:bg-neutral-900 text-neutral-200 text-sm gap-2 rounded-xl h-10 px-4">
-              <Link href="/new/tasks">
+              <Link href="/tasks">
                 <CheckSquare className="h-4 w-4" /> Open Tasks
               </Link>
             </Button>

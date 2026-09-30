@@ -354,16 +354,24 @@ it('redirects new projects route to main projects', function () {
     $response->assertRedirect(route('projects.index'));
 });
 
-it('loads new inertia tasks page successfully', function () {
+it('loads inertia tasks page successfully', function () {
     $user = User::factory()->create(['email_verified_at' => now()]);
     $this->actingAs($user);
 
-    $response = $this->get(route('new.tasks'));
+    $response = $this->get(route('tasks.index'));
     $response->assertStatus(200);
     $response->assertInertia(fn ($page) => $page
         ->component('New/Tasks')
         ->has('initial_tasks')
     );
+});
+
+it('redirects new tasks route to main tasks', function () {
+    $user = User::factory()->create(['email_verified_at' => now()]);
+    $this->actingAs($user);
+
+    $response = $this->get(route('new.tasks'));
+    $response->assertRedirect(route('tasks.index'));
 });
 
 it('loads coming soon placeholder page for unbuilt sidebar items', function () {

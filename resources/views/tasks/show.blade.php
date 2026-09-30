@@ -436,7 +436,7 @@
                     <h6 class="m-0 font-weight-bold text-primary mr-2">
                         <i class="fas fa-sitemap mr-1"></i> Subtasks
                     </h6>
-                    <span class="badge badge-primary badge-pill">{{ $subtaskProgress['completed'] }}/{{ $subtaskProgress['total'] }}</span>
+                    <span class="badge badge-primary badge-pill subtask-progress-badge">{{ $subtaskProgress['completed'] }}/{{ $subtaskProgress['total'] }}</span>
                 </div>
                 @if($canMutate)
                     <button type="button" class="btn btn-xs btn-primary shadow-sm" data-toggle="modal" data-target="#addSubtaskModal">
@@ -449,30 +449,38 @@
                     <div class="mb-3">
                         <div class="d-flex justify-content-between text-xs font-weight-bold text-gray-600 mb-1">
                             <span>Progress</span>
-                            <span>{{ $subtaskProgress['percentage'] }}%</span>
+                            <span class="subtask-progress-pct">{{ $subtaskProgress['percentage'] }}%</span>
                         </div>
                         <div class="progress" style="height: 8px; border-radius: 4px;">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ $subtaskProgress['percentage'] }}%; border-radius: 4px;" aria-valuenow="{{ $subtaskProgress['percentage'] }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="progress-bar bg-success subtask-progress-bar" role="progressbar" style="width: {{ $subtaskProgress['percentage'] }}%; border-radius: 4px;" aria-valuenow="{{ $subtaskProgress['percentage'] }}" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                     </div>
 
                     <div class="list-group list-group-flush">
                         @foreach($task->subtasks as $subtask)
-                            <div class="list-group-item px-0 py-2 d-flex align-items-center justify-content-between border-bottom">
+                            <div class="list-group-item px-0 py-2 d-flex align-items-center justify-content-between border-bottom subtask-item-row" data-subtask-id="{{ $subtask->id }}">
                                 <div class="d-flex align-items-center mr-2 text-truncate" style="max-width: 65%;">
                                     @if($canMutate)
-                                        <form action="{{ route('tasks.toggle', $subtask) }}" method="POST" class="d-inline mr-2 mb-0">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button type="submit" class="btn btn-link p-0 text-decoration-none border-0" title="Toggle status">
-                                                <i class="{{ $subtask->status == 3 ? 'far fa-check-circle text-success' : 'far fa-circle text-gray-400' }}"></i>
-                                            </button>
-                                        </form>
+                                        <div class="custom-control custom-checkbox mr-2 subtask-custom-checkbox">
+                                            <input type="checkbox" 
+                                                   class="custom-control-input subtask-toggle-checkbox" 
+                                                   id="subtask-chk-{{ $subtask->id }}" 
+                                                   data-url="{{ route('tasks.toggle', $subtask) }}" 
+                                                   {{ $subtask->status == 3 ? 'checked' : '' }}>
+                                            <label class="custom-control-label" for="subtask-chk-{{ $subtask->id }}" style="cursor: pointer; user-select: none;"></label>
+                                        </div>
                                     @else
-                                        <i class="{{ $subtask->status == 3 ? 'far fa-check-circle text-success' : 'far fa-circle text-gray-400' }} mr-2"></i>
+                                        <div class="custom-control custom-checkbox mr-2 subtask-custom-checkbox">
+                                            <input type="checkbox" 
+                                                   class="custom-control-input" 
+                                                   id="subtask-chk-{{ $subtask->id }}" 
+                                                   {{ $subtask->status == 3 ? 'checked' : '' }} 
+                                                   disabled>
+                                            <label class="custom-control-label" for="subtask-chk-{{ $subtask->id }}"></label>
+                                        </div>
                                     @endif
 
-                                    <a href="{{ route('tasks.show', $subtask) }}" class="font-weight-bold text-gray-900 text-truncate small {{ $subtask->status == 3 ? 'text-decoration-line-through text-muted' : '' }}">
+                                    <a href="{{ route('tasks.show', $subtask) }}" class="font-weight-bold text-gray-900 text-truncate small subtask-title-link {{ $subtask->status == 3 ? 'text-decoration-line-through text-muted' : '' }}">
                                         {{ $subtask->title }}
                                     </a>
                                 </div>
@@ -557,10 +565,12 @@
 <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 <script>
     $(document).ready(function() {
-        // Render & Normalize Checkboxes in Description Read View
+        // Render & Normalize Custom Checkboxes in Description Read View
         function renderDescriptionCheckboxes() {
             // Remove Quill ql-ui spans in read view
             $('#description-read-view .ql-ui').remove();
+
+            var chkCounter = 0;
 
             // 1. Process markdown style checkboxes ([ ], [x], - [ ], * [ ]) in p tags
             $('#description-read-view p').each(function() {
@@ -569,11 +579,15 @@
                 var html = $p.html();
 
                 if (/^(\s*(-|\*)?\s*\[\s*\]\s*)/.test(text)) {
+                    chkCounter++;
+                    var chkId = 'desc-chk-' + chkCounter;
                     var newHtml = html.replace(/^(\s*(-|\*)?\s*\[\s*\]\s*)/, '');
-                    $p.replaceWith('<ul><li data-list="unchecked"><input type="checkbox" class="task-desc-checkbox"><span class="task-desc-text">' + newHtml + '</span></li></ul>');
+                    $p.replaceWith('<ul><li data-list="unchecked"><div class="custom-control custom-checkbox d-inline-flex align-items-center w-100"><input type="checkbox" class="custom-control-input task-desc-checkbox" id="' + chkId + '"><label class="custom-control-label task-desc-text" for="' + chkId + '">' + newHtml + '</label></div></li></ul>');
                 } else if (/^(\s*(-|\*)?\s*\[[xX]\]\s*)/.test(text)) {
+                    chkCounter++;
+                    var chkId = 'desc-chk-' + chkCounter;
                     var newHtml = html.replace(/^(\s*(-|\*)?\s*\[[xX]\]\s*)/, '');
-                    $p.replaceWith('<ul><li data-list="checked" class="task-item-completed"><input type="checkbox" class="task-desc-checkbox" checked="checked"><span class="task-desc-text">' + newHtml + '</span></li></ul>');
+                    $p.replaceWith('<ul><li data-list="checked" class="task-item-completed"><div class="custom-control custom-checkbox d-inline-flex align-items-center w-100"><input type="checkbox" class="custom-control-input task-desc-checkbox" id="' + chkId + '" checked="checked"><label class="custom-control-label task-desc-text" for="' + chkId + '">' + newHtml + '</label></div></li></ul>');
                 }
             });
 
@@ -583,26 +597,32 @@
                 var isChecked = $li.attr('data-list') === 'checked';
                 $li.find('.ql-ui').remove();
 
-                var $chk = $li.children('input.task-desc-checkbox');
-                if ($chk.length === 0) {
+                var $customWrap = $li.find('.custom-control.custom-checkbox');
+                if ($customWrap.length === 0) {
+                    chkCounter++;
+                    var chkId = 'desc-chk-' + chkCounter;
                     var textHtml = $li.html().replace(/<input[^>]*>/gi, '').trim();
-                    $chk = $('<input type="checkbox" class="task-desc-checkbox">');
-                    $li.html('').append($chk).append('<span class="task-desc-text">' + textHtml + '</span>');
-                }
-
-                if (isChecked) {
-                    $chk.prop('checked', true).attr('checked', 'checked');
-                    $li.addClass('task-item-completed');
+                    var customHtml = '<div class="custom-control custom-checkbox d-inline-flex align-items-center w-100">' +
+                        '<input type="checkbox" class="custom-control-input task-desc-checkbox" id="' + chkId + '"' + (isChecked ? ' checked="checked"' : '') + '>' +
+                        '<label class="custom-control-label task-desc-text" for="' + chkId + '">' + textHtml + '</label>' +
+                        '</div>';
+                    $li.html(customHtml);
                 } else {
-                    $chk.prop('checked', false).removeAttr('checked');
-                    $li.removeClass('task-item-completed');
+                    var $chk = $customWrap.find('input.task-desc-checkbox');
+                    if (isChecked) {
+                        $chk.prop('checked', true).attr('checked', 'checked');
+                        $li.addClass('task-item-completed');
+                    } else {
+                        $chk.prop('checked', false).removeAttr('checked');
+                        $li.removeClass('task-item-completed');
+                    }
                 }
             });
         }
 
         renderDescriptionCheckboxes();
 
-        // Native Checkbox Change Handler with AJAX Save
+        // Custom Checkbox Change Handler with AJAX Save
         $(document).on('change', '#description-read-view input.task-desc-checkbox', function(e) {
             @if($canMutate)
                 var $chk = $(this);
@@ -624,6 +644,12 @@
                 // Clean clone of HTML for saving to database
                 var $clone = $('#description-read-view .description-body').clone();
                 $clone.find('input.task-desc-checkbox').remove();
+                $clone.find('.custom-control-label').each(function() {
+                    $(this).replaceWith($(this).html());
+                });
+                $clone.find('.custom-control').each(function() {
+                    $(this).replaceWith($(this).html());
+                });
                 $clone.find('span.task-desc-text').each(function() {
                     $(this).replaceWith($(this).html());
                 });
@@ -659,12 +685,59 @@
         // Click on Text Label Toggles Checkbox
         $(document).on('click', '#description-read-view .task-desc-text', function(e) {
             @if($canMutate)
-                e.preventDefault();
-                var $li = $(this).closest('li[data-list]');
-                var $chk = $li.find('input.task-desc-checkbox');
-                if ($chk.length) {
-                    $chk.prop('checked', !$chk.is(':checked')).trigger('change');
+                var $label = $(this);
+                var forId = $label.attr('for');
+                if (!forId) {
+                    var $li = $label.closest('li[data-list]');
+                    var $chk = $li.find('input.task-desc-checkbox');
+                    if ($chk.length) {
+                        $chk.prop('checked', !$chk.is(':checked')).trigger('change');
+                    }
                 }
+            @endif
+        });
+
+        // Subtask Custom Checkbox Toggle with AJAX
+        $(document).on('change', '.subtask-toggle-checkbox', function(e) {
+            @if($canMutate)
+                var $chk = $(this);
+                var isChecked = $chk.is(':checked');
+                var url = $chk.data('url');
+                var $row = $chk.closest('.subtask-item-row');
+                var $title = $row.find('.subtask-title-link');
+
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        _method: "PATCH"
+                    },
+                    success: function() {
+                        if (isChecked) {
+                            $title.addClass('text-decoration-line-through text-muted');
+                            showToast('Subtask completed', 'success');
+                        } else {
+                            $title.removeClass('text-decoration-line-through text-muted');
+                            showToast('Subtask reopened', 'success');
+                        }
+
+                        // Live progress recalculation
+                        var total = $('.subtask-toggle-checkbox').length;
+                        var completed = $('.subtask-toggle-checkbox:checked').length;
+                        var pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+                        $('.subtask-progress-badge').text(completed + '/' + total);
+                        $('.subtask-progress-pct').text(pct + '%');
+                        $('.subtask-progress-bar').css('width', pct + '%').attr('aria-valuenow', pct);
+                    },
+                    error: function() {
+                        $chk.prop('checked', !isChecked);
+                        showToast('Failed to update subtask status', 'error');
+                    }
+                });
+            @else
+                e.preventDefault();
             @endif
         });
 

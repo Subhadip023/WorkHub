@@ -13,6 +13,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectCredentialsController;
+use App\Http\Controllers\RouteExplorerController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TrashController;
@@ -39,105 +40,13 @@ Route::get('/analytics', AnalyticsController::class)->middleware(['auth', 'verif
 Route::redirect('/new/dashboard', '/dashboard')->name('new.dashboard');
 Route::get('/new/analytics', AnalyticsController::class)->middleware(['auth', 'verified'])->name('new.analytics');
 
+Route::get('/routes', RouteExplorerController::class)->middleware(['auth', 'verified'])->name('routes.index');
+Route::redirect('/all-routes', '/routes')->name('all.routes');
+Route::redirect('/new/routes', '/routes')->name('new.routes');
+
 Route::redirect('/new/projects', '/projects')->name('new.projects');
 
-Route::get('/new/tasks', function () {
-    return Inertia::render('New/Tasks', [
-        'initial_tasks' => [
-            [
-                'id' => 1,
-                'title' => 'Implement Inertia.js React layout with shadcn UI Sidebar',
-                'description' => 'Migrate navigation header and left panel to official shadcn sidebar primitives.',
-                'status' => 'In Progress',
-                'priority' => 'High',
-                'dueDate' => 'Today',
-                'project' => 'Inertia.js Migration',
-                'assignee' => ['name' => 'Alex Morgan', 'avatar' => 'AM'],
-                'category' => 'Dev',
-                'completed' => false,
-                'subtasks' => '4/5',
-            ],
-            [
-                'id' => 2,
-                'title' => 'Review pull request #142 (WorkHub task API limits)',
-                'description' => 'Verify rate-limiting middleware triggers HTTP 429 when threshold exceeded.',
-                'status' => 'To Do',
-                'priority' => 'High',
-                'dueDate' => 'Today',
-                'project' => 'WorkHub API',
-                'assignee' => ['name' => 'Sarah Chen', 'avatar' => 'SC'],
-                'category' => 'Code Review',
-                'completed' => false,
-                'subtasks' => '1/2',
-            ],
-            [
-                'id' => 3,
-                'title' => 'Optimize database queries for TaskRepository dashboard filter',
-                'description' => 'Ensure status 4 tasks and on-hold projects are excluded cleanly.',
-                'status' => 'Done',
-                'priority' => 'Medium',
-                'dueDate' => 'Yesterday',
-                'project' => 'WorkHub Core',
-                'assignee' => ['name' => 'Michael Scott', 'avatar' => 'MS'],
-                'category' => 'Backend',
-                'completed' => true,
-                'subtasks' => '3/3',
-            ],
-            [
-                'id' => 4,
-                'title' => 'Design dark mode theme tokens for high-contrast cards',
-                'description' => 'Refactor Tailwind color utilities with ambient slate-950 glows.',
-                'status' => 'In Progress',
-                'priority' => 'Medium',
-                'dueDate' => 'Tomorrow',
-                'project' => 'shadcn/ui Design',
-                'assignee' => ['name' => 'Sarah Chen', 'avatar' => 'SC'],
-                'category' => 'UI/UX',
-                'completed' => false,
-                'subtasks' => '2/4',
-            ],
-            [
-                'id' => 5,
-                'title' => 'Setup Pest feature tests for /new/analytics & /projects',
-                'description' => 'Write assertions confirming Inertia props resolution.',
-                'status' => 'Review',
-                'priority' => 'High',
-                'dueDate' => 'Aug 24',
-                'project' => 'Inertia.js Migration',
-                'assignee' => ['name' => 'Emma Watson', 'avatar' => 'EW'],
-                'category' => 'QA & Testing',
-                'completed' => false,
-                'subtasks' => '2/2',
-            ],
-            [
-                'id' => 6,
-                'title' => 'Configure GitHub Actions CI pipeline with zero downtime',
-                'description' => 'Deploy automated Pest test runner before production staging releases.',
-                'status' => 'To Do',
-                'priority' => 'Low',
-                'dueDate' => 'Aug 29',
-                'project' => 'CI/CD Pipeline',
-                'assignee' => ['name' => 'David Kim', 'avatar' => 'DK'],
-                'category' => 'DevOps',
-                'completed' => false,
-                'subtasks' => '0/3',
-            ],
-            [
-                'id' => 7,
-                'title' => 'Draft sprint retrospective notes & engineering team metrics',
-                'description' => 'Compile cycle time and team velocity data into executive report.',
-                'status' => 'Done',
-                'priority' => 'Low',
-                'dueDate' => 'Aug 18',
-                'project' => 'WorkHub Management',
-                'assignee' => ['name' => 'Alex Morgan', 'avatar' => 'AM'],
-                'category' => 'Docs',
-                'completed' => true,
-                'subtasks' => '2/2',
-            ],
-        ],
-    ]);
-})->name('new.tasks');
+Route::redirect('/new/tasks', '/tasks')->name('new.tasks');
 
 Route::get('/new/task-view', function () {
     return Inertia::render('New/TaskView');

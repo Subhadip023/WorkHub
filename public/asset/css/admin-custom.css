@@ -500,23 +500,54 @@ html, body {
     background-color: #f8fafc !important;
 }
 
-#description-read-view input.task-desc-checkbox {
-    width: 1.15rem !important;
-    height: 1.15rem !important;
-    min-width: 1.15rem !important;
-    cursor: pointer !important;
-    accent-color: #4e73df !important;
-    margin-right: 0.6rem !important;
-    vertical-align: middle !important;
-    flex-shrink: 0 !important;
+#description-read-view .custom-control.custom-checkbox {
+    padding-left: 1.85rem !important;
+    min-height: 1.5rem !important;
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    margin-bottom: 0 !important;
 }
 
-#description-read-view .task-desc-text {
-    flex: 1;
-    cursor: pointer;
-    font-size: 0.95rem;
-    color: #2e384d;
-    line-height: 1.45;
+#description-read-view .custom-control-input.task-desc-checkbox {
+    position: absolute !important;
+    opacity: 0 !important;
+    z-index: -1 !important;
+    width: 1rem !important;
+    height: 1rem !important;
+    cursor: pointer !important;
+}
+
+#description-read-view .custom-control-label.task-desc-text {
+    cursor: pointer !important;
+    font-size: 0.95rem !important;
+    color: #2e384d !important;
+    line-height: 1.5 !important;
+    padding-top: 1px !important;
+    user-select: none !important;
+    margin-bottom: 0 !important;
+    flex: 1 !important;
+}
+
+#description-read-view .custom-control-label::before {
+    top: 0.2rem !important;
+    width: 1.15rem !important;
+    height: 1.15rem !important;
+    border-radius: 4px !important;
+    border-color: #b7b9cc !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+}
+
+#description-read-view .custom-control-label::after {
+    top: 0.2rem !important;
+    width: 1.15rem !important;
+    height: 1.15rem !important;
+}
+
+#description-read-view .custom-control-input:checked ~ .custom-control-label::before {
+    background-color: #4e73df !important;
+    border-color: #4e73df !important;
 }
 
 #description-read-view li[data-list="checked"] .task-desc-text,
@@ -526,6 +557,26 @@ html, body {
     text-decoration: line-through !important;
     color: #858796 !important;
     opacity: 0.75 !important;
+}
+
+/* Subtasks Custom Checkbox Styling */
+.subtask-custom-checkbox {
+    padding-left: 1.6rem !important;
+    min-height: 1.25rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+}
+.subtask-custom-checkbox .custom-control-label::before,
+.subtask-custom-checkbox .custom-control-label::after {
+    top: 0.05rem !important;
+    width: 1.15rem !important;
+    height: 1.15rem !important;
+    border-radius: 4px !important;
+    border-color: #b7b9cc !important;
+}
+.subtask-custom-checkbox .custom-control-input:checked ~ .custom-control-label::before {
+    background-color: #1cc88a !important;
+    border-color: #1cc88a !important;
 }
 
 /* ==========================================================================
