@@ -55,7 +55,7 @@ class RouteExplorerController extends Controller
 
             // Extract parameter names
             preg_match_all('/\{([a-zA-Z0-9_?]+)\}/', $uri, $matches);
-            $parameters = $matches[1] ?? [];
+            $parameters = $matches[1];
             $hasParameters = ! empty($parameters);
 
             // Generate workable sample URL for testing
