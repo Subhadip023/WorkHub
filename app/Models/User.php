@@ -73,7 +73,7 @@ class User extends Authenticatable implements MustVerifyEmail
             return $this->profile_image;
         }
 
-        return '/storage/'.ltrim($this->profile_image, '/');
+        return asset('storage/'.ltrim($this->profile_image, '/'));
     }
 
     /**

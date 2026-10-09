@@ -62,7 +62,7 @@
                             <td>
                                 <div class="d-flex align-items-center">
                                     @if($user->profile_image)
-                                        <img src="{{ $user->profile_image }}" class="rounded-circle mr-3" style="width: 38px; height: 38px; object-fit: cover;">
+                                        <img src="{{ $user->profile_image_url ?? asset('storage/' . $user->profile_image) }}" class="rounded-circle mr-3" style="width: 38px; height: 38px; object-fit: cover;">
                                     @else
                                         <div class="rounded-circle bg-gradient-primary text-white mr-3 d-flex align-items-center justify-content-center font-weight-bold text-sm" style="width: 38px; height: 38px;">
                                             {{ strtoupper(substr($user->name, 0, 1)) }}

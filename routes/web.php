@@ -181,9 +181,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('can:manage-features')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/features', [FeatureManagementController::class, 'index'])->name('features.index');
         Route::post('/features/{user}/toggle-feature', [FeatureManagementController::class, 'toggleFeature'])->name('features.toggle-feature');
-        Route::post('/features/{user}/toggle-role', [FeatureManagementController::class, 'toggleRole'])->name('features.toggle-role');
     });
 });
+
+Route::get('/storage/{path}', function (string $path) {
+    $basePath = realpath(storage_path('app/public'));
+    $fullPath = realpath(storage_path('app/public/'.$path));
+
+    if (! $fullPath || ! str_starts_with($fullPath, $basePath) || ! is_file($fullPath)) {
+        abort(404);
+    }
+
+    return response()->file($fullPath);
+})->where('path', '.*')->name('storage.fallback');
 
 require __DIR__.'/auth.php';
 require __DIR__.'/demo.php';
