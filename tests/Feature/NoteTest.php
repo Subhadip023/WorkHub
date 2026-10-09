@@ -217,3 +217,95 @@ it('prevents downloading note as PDF for unauthorized note', function () {
 
     $response->assertStatus(403);
 });
+
+it('loads v2 modern notes page via inertia', function () {
+    $user = User::factory()->create(['email_verified_at' => now()]);
+
+    $note = Note::create([
+        'title' => 'V2 Test Note',
+        'description' => '# Markdown Content',
+        'note_type' => Note::TYPE_PERSONAL,
+        'note_type_id' => $user->id,
+        'user_id' => $user->id,
+    ]);
+
+    $response = $this->actingAs($user)->get(route('v2.notes.index'));
+
+    $response->assertStatus(200);
+    $response->assertInertia(fn ($page) => $page
+        ->component('New/Notes')
+        ->has('initial_notes')
+        ->has('stats')
+        ->has('projects')
+        ->has('tasks')
+        ->where('stats.total', 1)
+    );
+});
+
+it('allows creating a personal note in v2', function () {
+    $user = User::factory()->create(['email_verified_at' => now()]);
+
+    $response = $this->actingAs($user)->post(route('v2.notes.store'), [
+        'title' => 'V2 New Documentation',
+        'note_type' => Note::TYPE_PERSONAL,
+        'description' => 'Documentation body in markdown',
+    ]);
+
+    $response->assertRedirect(route('v2.notes.index'));
+    $this->assertDatabaseHas('notes', [
+        'title' => 'V2 New Documentation',
+        'user_id' => $user->id,
+        'note_type' => Note::TYPE_PERSONAL,
+        'note_type_id' => $user->id,
+        'description' => 'Documentation body in markdown',
+    ]);
+});
+
+it('allows updating a note in v2', function () {
+    $user = User::factory()->create(['email_verified_at' => now()]);
+    $note = Note::create([
+        'title' => 'Initial V2 Title',
+        'description' => 'Initial Body',
+        'note_type' => Note::TYPE_PERSONAL,
+        'note_type_id' => $user->id,
+        'user_id' => $user->id,
+    ]);
+
+    $response = $this->actingAs($user)->patch(route('v2.notes.update', $note), [
+        'title' => 'Updated V2 Title',
+        'description' => 'Updated Body',
+    ]);
+
+    $response->assertRedirect(route('v2.notes.index'));
+    $this->assertDatabaseHas('notes', [
+        'id' => $note->id,
+        'title' => 'Updated V2 Title',
+        'description' => 'Updated Body',
+    ]);
+});
+
+it('allows deleting a note in v2', function () {
+    $user = User::factory()->create(['email_verified_at' => now()]);
+    $note = Note::create([
+        'title' => 'To be deleted in V2',
+        'description' => 'Body',
+        'note_type' => Note::TYPE_PERSONAL,
+        'note_type_id' => $user->id,
+        'user_id' => $user->id,
+    ]);
+
+    $response = $this->actingAs($user)->delete(route('v2.notes.destroy', $note));
+
+    $response->assertRedirect(route('v2.notes.index'));
+    $this->assertSoftDeleted('notes', [
+        'id' => $note->id,
+    ]);
+});
+
+it('redirects new notes route to v2 notes', function () {
+    $user = User::factory()->create(['email_verified_at' => now()]);
+
+    $response = $this->actingAs($user)->get(route('new.notes'));
+
+    $response->assertRedirect(route('v2.notes.index'));
+});

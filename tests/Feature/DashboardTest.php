@@ -12,8 +12,17 @@ it('loads default dashboard successfully showing all workspaces', function () {
 
     $response = $this->get(route('dashboard'));
     $response->assertStatus(200);
+    $response->assertViewIs('welcome');
+});
+
+it('loads v2 modern dashboard successfully showing all workspaces', function () {
+    $user = User::factory()->create(['email_verified_at' => now()]);
+    $this->actingAs($user);
+
+    $response = $this->get(route('v2.dashboard'));
+    $response->assertStatus(200);
     $response->assertInertia(fn ($page) => $page
-        ->component('Dashboard')
+        ->component('New/Dashboard')
         ->has('stats')
         ->has('projects')
     );
@@ -42,8 +51,12 @@ it('loads organization-specific dashboard successfully for member', function () 
 
     $response = $this->get(route('dashboard.org', $company));
     $response->assertStatus(200);
-    $response->assertInertia(fn ($page) => $page
-        ->component('Dashboard')
+    $response->assertViewIs('welcome');
+
+    $v2Response = $this->get(route('v2.dashboard.org', $company));
+    $v2Response->assertStatus(200);
+    $v2Response->assertInertia(fn ($page) => $page
+        ->component('New/Dashboard')
         ->has('stats')
         ->has('projects')
     );
@@ -338,7 +351,7 @@ it('loads inertia projects page successfully', function () {
     $user = User::factory()->create(['email_verified_at' => now()]);
     $this->actingAs($user);
 
-    $response = $this->get(route('projects.index'));
+    $response = $this->get(route('v2.projects.index'));
     $response->assertStatus(200);
     $response->assertInertia(fn ($page) => $page
         ->component('New/Projects')
@@ -358,7 +371,7 @@ it('loads inertia tasks page successfully', function () {
     $user = User::factory()->create(['email_verified_at' => now()]);
     $this->actingAs($user);
 
-    $response = $this->get(route('tasks.index'));
+    $response = $this->get(route('v2.tasks.index'));
     $response->assertStatus(200);
     $response->assertInertia(fn ($page) => $page
         ->component('New/Tasks')
@@ -400,6 +413,25 @@ it('loads new inertia task view page successfully', function () {
     $responseWithId = $this->get(route('new.task.show', ['id' => '042']));
     $responseWithId->assertStatus(200);
     $responseWithId->assertInertia(fn ($page) => $page
+        ->component('New/TaskView')
+        ->has('task')
+    );
+});
+
+it('loads v2 modern task details page successfully', function () {
+    $user = User::factory()->create(['email_verified_at' => now()]);
+    $this->actingAs($user);
+
+    $task = Task::create([
+        'title' => 'Test V2 Show Task',
+        'status' => 1,
+        'priority' => 2,
+        'user_id' => $user->id,
+    ]);
+
+    $response = $this->get(route('v2.tasks.show', $task));
+    $response->assertStatus(200);
+    $response->assertInertia(fn ($page) => $page
         ->component('New/TaskView')
         ->has('task')
     );

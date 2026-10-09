@@ -262,7 +262,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       isActive={currentActive === "dashboard"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
-                      <Link href="/dashboard">
+                      <Link href="/v2/dashboard">
                         <LayoutDashboard className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
                         <span>Dashboard</span>
                       </Link>
@@ -275,7 +275,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       isActive={currentActive === "analytics"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
-                      <Link href="/analytics">
+                      <Link href="/v2/analytics">
                         <BarChart3 className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
                         <span>Analytics</span>
                       </Link>
@@ -288,7 +288,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       isActive={currentActive === "projects"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
-                      <Link href="/projects">
+                      <Link href="/v2/projects">
                         <FolderKanban className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
                         <span>Projects</span>
                       </Link>
@@ -301,7 +301,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       isActive={currentActive === "tasks" || currentActive === "my tasks"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
-                      <Link href="/tasks">
+                      <Link href="/v2/tasks">
                         <CheckSquare className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
                         <span>My Tasks</span>
                       </Link>
@@ -314,7 +314,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       isActive={currentActive === "notes"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
-                      <Link href="/notes">
+                      <Link href="/v2/notes">
                         <FileText className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
                         <span>Notes & Docs</span>
                       </Link>
@@ -424,7 +424,19 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
           </SidebarContent>
 
           {/* User Profile Footer */}
-          <SidebarFooter className="p-3 border-t border-zinc-800 bg-zinc-950">
+          <SidebarFooter className="p-3 border-t border-zinc-800 bg-zinc-950 space-y-2">
+            <a
+              href="/dashboard"
+              className="w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg bg-zinc-900/90 border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800 text-xs font-medium text-zinc-300 hover:text-white transition-all shadow-sm group"
+              title="Return to Classic Blade WorkHub interface"
+            >
+              <div className="flex items-center gap-2">
+                <ArrowLeft className="w-3.5 h-3.5 text-emerald-400 group-hover:-translate-x-0.5 transition-transform" />
+                <span>Switch to Classic View</span>
+              </div>
+              <span className="font-mono text-[10px] text-zinc-500 bg-zinc-950 px-1.5 py-0.5 rounded border border-zinc-800">v1</span>
+            </a>
+
             <div className="flex items-center justify-between gap-3 p-1.5 rounded-lg bg-zinc-900/60 border border-zinc-800/80">
               <Link href="/profile" className="flex items-center gap-2.5 min-w-0 hover:opacity-85 transition-opacity group flex-1">
                 <Avatar className="h-8 w-8 border border-zinc-700 shrink-0">

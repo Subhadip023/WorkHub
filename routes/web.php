@@ -17,6 +17,10 @@ use App\Http\Controllers\RouteExplorerController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TrashController;
+use App\Http\Controllers\V2\DashboardController as V2DashboardController;
+use App\Http\Controllers\V2\NoteController as V2NoteController;
+use App\Http\Controllers\V2\ProjectController as V2ProjectController;
+use App\Http\Controllers\V2\TaskController as V2TaskController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -37,27 +41,44 @@ Route::get('/old-dashboard', [DashboardController::class, 'oldDashboard'])->midd
 Route::get('/old-dashboard/{company}', [DashboardController::class, 'oldDashboard'])->middleware(['auth', 'verified'])->name('old.dashboard.org');
 
 Route::get('/analytics', AnalyticsController::class)->middleware(['auth', 'verified'])->name('analytics');
-Route::redirect('/new/dashboard', '/dashboard')->name('new.dashboard');
-Route::get('/new/analytics', AnalyticsController::class)->middleware(['auth', 'verified'])->name('new.analytics');
-
 Route::get('/routes', RouteExplorerController::class)->middleware(['auth', 'verified'])->name('routes.index');
 Route::redirect('/all-routes', '/routes')->name('all.routes');
+
+/*
+|--------------------------------------------------------------------------
+| Modern WorkHub V2 Routes (Inertia.js + React Suite)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'verified'])->prefix('v2')->name('v2.')->group(function () {
+    Route::get('/dashboard', [V2DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/{company}', [V2DashboardController::class, 'index'])->name('dashboard.org');
+    Route::get('/projects', [V2ProjectController::class, 'index'])->name('projects.index');
+    Route::get('/tasks', [V2TaskController::class, 'index'])->name('tasks.index');
+    Route::get('/tasks/{task}', [V2TaskController::class, 'show'])->name('tasks.show');
+    Route::get('/notes', [V2NoteController::class, 'index'])->name('notes.index');
+    Route::post('/notes', [V2NoteController::class, 'store'])->name('notes.store');
+    Route::match(['put', 'patch'], '/notes/{note}', [V2NoteController::class, 'update'])->name('notes.update');
+    Route::delete('/notes/{note}', [V2NoteController::class, 'destroy'])->name('notes.destroy');
+    Route::get('/analytics', AnalyticsController::class)->name('analytics');
+    Route::get('/routes', RouteExplorerController::class)->name('routes');
+});
+
+// Legacy /new aliases
+Route::redirect('/new/dashboard', '/dashboard')->name('new.dashboard');
+Route::get('/new/analytics', AnalyticsController::class)->middleware(['auth', 'verified'])->name('new.analytics');
 Route::redirect('/new/routes', '/routes')->name('new.routes');
-
 Route::redirect('/new/projects', '/projects')->name('new.projects');
-
 Route::redirect('/new/tasks', '/tasks')->name('new.tasks');
-
+Route::redirect('/new/notes', '/v2/notes')->name('new.notes');
 Route::get('/new/task-view', function () {
     return Inertia::render('New/TaskView');
 })->name('new.task.view');
-
 Route::get('/new/task/{id}', function ($id) {
     return Inertia::render('New/TaskView', [
         'task' => [
             'id' => str_starts_with($id, 'WH-') ? $id : "WH-{$id}",
             'title' => "Inertia.js React layout hydration error on cold start (#{$id})",
-            'description' => "When launching the application on a cold browser refresh, React throws a client-side hydration mismatch warning. The DOM attributes generated on the server render differ slightly from the client state.\n\n### Steps to Reproduce\n1. Clear browser cache and navigate to /dashboard.\n2. Observe console warning: Hydration failed because the initial UI does not match the server-rendered HTML.\n3. Notice temporary layout flicker during component mounting.\n\n### Expected Behavior\nThe Inertia page wrapper should hydrate seamlessly without layout reflows or console warnings.",
+            'description' => "When launching the application on a cold browser refresh, React throws a client-side hydration mismatch warning. The DOM attributes generated on the server render differ slightly from the client state.\n\n### Steps to Reproduce\n1. Clear browser cache and navigate to /new/dashboard.\n2. Observe console warning: Hydration failed because the initial UI does not match the server-rendered HTML.\n3. Notice temporary layout flicker during component mounting.\n\n### Expected Behavior\nThe Inertia page wrapper should hydrate seamlessly without layout reflows or console warnings.",
             'status' => 'In Progress',
             'priority' => 'Urgent',
             'dueDate' => 'Today, 5:00 PM',
@@ -73,7 +94,6 @@ Route::get('/new/task/{id}', function ($id) {
         ],
     ]);
 })->name('new.task.show');
-
 Route::get('/new/tasks/{id}', function ($id) {
     return redirect()->route('new.task.show', ['id' => $id]);
 })->name('new.tasks.show');
@@ -85,10 +105,6 @@ Route::get('/new/companies', function () {
 Route::get('/new/issues', function () {
     return Inertia::render('New/ComingSoon', ['feature' => 'Issues & Bug Tracker', 'activeItem' => 'issues']);
 })->name('new.issues');
-
-Route::get('/new/notes', function () {
-    return Inertia::render('New/ComingSoon', ['feature' => 'Notes & Documentation', 'activeItem' => 'notes']);
-})->name('new.notes');
 
 Route::get('/new/team', function () {
     return Inertia::render('New/ComingSoon', ['feature' => 'Team Members Directory', 'activeItem' => 'team']);
@@ -183,17 +199,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/features/{user}/toggle-feature', [FeatureManagementController::class, 'toggleFeature'])->name('features.toggle-feature');
     });
 });
-
-Route::get('/storage/{path}', function (string $path) {
-    $basePath = realpath(storage_path('app/public'));
-    $fullPath = realpath(storage_path('app/public/'.$path));
-
-    if (! $fullPath || ! str_starts_with($fullPath, $basePath) || ! is_file($fullPath)) {
-        abort(404);
-    }
-
-    return response()->file($fullPath);
-})->where('path', '.*')->name('storage.fallback');
 
 require __DIR__.'/auth.php';
 require __DIR__.'/demo.php';

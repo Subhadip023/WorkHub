@@ -132,3 +132,26 @@ test('profile image can be uploaded as base64', function () {
     $this->assertNotNull($user->profile_image);
     Storage::disk('public')->assertExists($user->profile_image);
 });
+
+test('profile image url resolves and storage route serves image', function () {
+    $user = User::factory()->create([
+        'profile_image' => 'profile_images/test_avatar.png',
+    ]);
+
+    expect($user->profile_image_url)->toContain('profile_images/test_avatar.png');
+
+    // Create file in storage/app/public/profile_images
+    $storageDir = storage_path('app/public/profile_images');
+    if (! file_exists($storageDir)) {
+        mkdir($storageDir, 0755, true);
+    }
+    file_put_contents($storageDir.'/test_avatar.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='));
+
+    $response = $this->get('/storage/profile_images/test_avatar.png');
+    $response->assertStatus(200);
+
+    // Cleanup
+    if (file_exists($storageDir.'/test_avatar.png')) {
+        unlink($storageDir.'/test_avatar.png');
+    }
+});
