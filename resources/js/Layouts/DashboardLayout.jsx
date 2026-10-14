@@ -25,6 +25,8 @@ import {
   Globe,
   Plus,
   Route as RouteIcon,
+  Bug,
+  KeyRound,
 } from "lucide-react";
 
 import ApplicationLogo from "@/Components/ApplicationLogo";
@@ -325,6 +327,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
             </SidebarGroup>
 
             {/* Group 2: Workspaces & Team */}
+            {/* Group 2: Workspaces & Team */}
             <SidebarGroup>
               <SidebarGroupLabel className="text-xs font-semibold text-zinc-400 uppercase tracking-wider px-3 mb-2 font-mono">
                 Organization
@@ -337,7 +340,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       isActive={currentActive === "companies"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
-                      <Link href="/companies">
+                      <Link href="/v2/companies">
                         <Briefcase className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
                         <span>Companies</span>
                       </Link>
@@ -347,12 +350,38 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       asChild
-                      isActive={currentActive === "users" || currentActive === "team members"}
+                      isActive={currentActive === "team" || currentActive === "users" || currentActive === "team members"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
-                      <Link href="/users">
+                      <Link href="/v2/team">
                         <Users className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
                         <span>Team Members</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={currentActive === "issues"}
+                      className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
+                    >
+                      <Link href="/v2/issues">
+                        <Bug className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
+                        <span>Issues & Bugs</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={currentActive === "permissions"}
+                      className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
+                    >
+                      <Link href="/v2/permissions">
+                        <KeyRound className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
+                        <span>Permissions</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -386,7 +415,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       isActive={currentActive === "activity-logs" || currentActive === "activity logs"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
-                      <Link href="/activity-logs">
+                      <Link href="/v2/activity-logs">
                         <ShieldCheck className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
                         <span>Activity Logs</span>
                       </Link>
@@ -399,7 +428,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       isActive={currentActive === "trash"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
-                      <Link href="/trash">
+                      <Link href="/v2/trash">
                         <AlertCircle className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
                         <span>Recycle Bin</span>
                       </Link>
@@ -409,10 +438,10 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       asChild
-                      isActive={currentActive === "profile" || currentActive === "account settings"}
+                      isActive={currentActive === "settings" || currentActive === "profile" || currentActive === "account settings"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
-                      <Link href="/profile">
+                      <Link href="/v2/settings">
                         <Settings className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
                         <span>Account Settings</span>
                       </Link>
@@ -438,7 +467,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
             </a>
 
             <div className="flex items-center justify-between gap-3 p-1.5 rounded-lg bg-zinc-900/60 border border-zinc-800/80">
-              <Link href="/profile" className="flex items-center gap-2.5 min-w-0 hover:opacity-85 transition-opacity group flex-1">
+              <Link href="/v2/settings" className="flex items-center gap-2.5 min-w-0 hover:opacity-85 transition-opacity group flex-1">
                 <Avatar className="h-8 w-8 border border-zinc-700 shrink-0">
                   {user?.profile_image && (
                     <AvatarImage src={user.profile_image} alt={user?.name || "Avatar"} className="object-cover" />
@@ -547,7 +576,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                           </p>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                             <Link
-                              href="/dashboard"
+                              href="/v2/dashboard"
                               onClick={() => setShowSearchDropdown(false)}
                               className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-zinc-800/80 transition-colors group text-zinc-200"
                             >
@@ -561,7 +590,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                             </Link>
 
                             <Link
-                              href="/projects"
+                              href="/v2/projects"
                               onClick={() => setShowSearchDropdown(false)}
                               className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-zinc-800/80 transition-colors group text-zinc-200"
                             >
@@ -575,7 +604,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                             </Link>
 
                             <Link
-                              href="/tasks"
+                              href="/v2/tasks"
                               onClick={() => setShowSearchDropdown(false)}
                               className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-zinc-800/80 transition-colors group text-zinc-200"
                             >
@@ -589,7 +618,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                             </Link>
 
                             <Link
-                              href="/new/notes"
+                              href="/v2/notes"
                               onClick={() => setShowSearchDropdown(false)}
                               className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-zinc-800/80 transition-colors group text-zinc-200"
                             >
@@ -842,7 +871,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                         <p className="text-xs text-zinc-400 font-mono truncate">{user?.email || ""}</p>
                       </div>
                       <Link
-                        href="/profile"
+                        href="/v2/settings"
                         onClick={() => setShowUserMenu(false)}
                         className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-zinc-200 hover:bg-zinc-800 transition-colors"
                       >
@@ -850,7 +879,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                         <span>Profile & Account</span>
                       </Link>
                       <Link
-                        href="/activity-logs?scope=mine"
+                        href="/v2/activity-logs?scope=mine"
                         onClick={() => setShowUserMenu(false)}
                         className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-zinc-200 hover:bg-zinc-800 transition-colors"
                       >

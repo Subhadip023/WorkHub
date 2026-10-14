@@ -387,16 +387,19 @@ it('redirects new tasks route to main tasks', function () {
     $response->assertRedirect(route('tasks.index'));
 });
 
-it('loads coming soon placeholder page for unbuilt sidebar items', function () {
+it('redirects new settings route to v2 settings and loads modern settings page', function () {
     $user = User::factory()->create(['email_verified_at' => now()]);
     $this->actingAs($user);
 
     $response = $this->get(route('new.settings'));
-    $response->assertStatus(200);
-    $response->assertInertia(fn ($page) => $page
-        ->component('New/ComingSoon')
-        ->has('feature')
-        ->has('activeItem')
+    $response->assertRedirect(route('v2.settings.index'));
+
+    $v2Response = $this->get(route('v2.settings.index'));
+    $v2Response->assertStatus(200);
+    $v2Response->assertInertia(fn ($page) => $page
+        ->component('New/Settings')
+        ->has('user')
+        ->has('companies')
     );
 });
 

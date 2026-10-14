@@ -223,6 +223,7 @@ class RouteExplorerController extends Controller
             str_starts_with($uri, '/projects') ||
             $uri === '/tasks' ||
             str_starts_with($uri, '/tasks/') ||
+            str_starts_with($uri, '/v2/') ||
             str_starts_with($uri, '/new/') ||
             str_starts_with($uri, '/demo/') ||
             $uri === '/routes' ||

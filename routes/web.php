@@ -17,10 +17,17 @@ use App\Http\Controllers\RouteExplorerController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TrashController;
+use App\Http\Controllers\V2\ActivityLogController as V2ActivityLogController;
+use App\Http\Controllers\V2\CompanyController as V2CompanyController;
 use App\Http\Controllers\V2\DashboardController as V2DashboardController;
+use App\Http\Controllers\V2\IssueController as V2IssueController;
 use App\Http\Controllers\V2\NoteController as V2NoteController;
+use App\Http\Controllers\V2\PermissionController as V2PermissionController;
 use App\Http\Controllers\V2\ProjectController as V2ProjectController;
+use App\Http\Controllers\V2\SettingsController as V2SettingsController;
 use App\Http\Controllers\V2\TaskController as V2TaskController;
+use App\Http\Controllers\V2\TeamController as V2TeamController;
+use App\Http\Controllers\V2\TrashController as V2TrashController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -59,9 +66,57 @@ Route::middleware(['auth', 'verified'])->prefix('v2')->name('v2.')->group(functi
     Route::post('/notes', [V2NoteController::class, 'store'])->name('notes.store');
     Route::match(['put', 'patch'], '/notes/{note}', [V2NoteController::class, 'update'])->name('notes.update');
     Route::delete('/notes/{note}', [V2NoteController::class, 'destroy'])->name('notes.destroy');
+    Route::get('/companies', [V2CompanyController::class, 'index'])->name('companies.index');
+    Route::post('/companies', [V2CompanyController::class, 'store'])->name('companies.store');
+    Route::post('/companies/join', [V2CompanyController::class, 'join'])->name('companies.join');
+    Route::get('/companies/personal/switch', [V2CompanyController::class, 'switchToPersonal'])->name('companies.personal.switch');
+    Route::get('/companies/{company}', [V2CompanyController::class, 'show'])->name('companies.show');
+    Route::match(['put', 'patch'], '/companies/{company}', [V2CompanyController::class, 'update'])->name('companies.update');
+    Route::delete('/companies/{company}', [V2CompanyController::class, 'destroy'])->name('companies.destroy');
+    Route::get('/companies/{company}/switch', [V2CompanyController::class, 'switch'])->name('companies.switch');
+    Route::post('/companies/{company}/leave', [V2CompanyController::class, 'leave'])->name('companies.leave');
+    Route::post('/companies/{company}/invite', [V2CompanyController::class, 'invite'])->name('companies.invite');
+    Route::post('/companies/{company}/approve/{user}', [V2CompanyController::class, 'approveMember'])->name('companies.approve-member');
+    Route::post('/companies/{company}/reject-request/{user}', [V2CompanyController::class, 'rejectMemberRequest'])->name('companies.reject-member-request');
+    Route::delete('/companies/{company}/members/{user}', [V2CompanyController::class, 'removeMember'])->name('companies.members.destroy');
+    Route::get('/companies/{company}/members/{user}/activity', [V2CompanyController::class, 'memberActivity'])->name('companies.members.activity');
+
+    // Team Members
+    Route::get('/team', [V2TeamController::class, 'index'])->name('team.index');
+    Route::get('/users', [V2TeamController::class, 'index'])->name('users.index');
+
+    // Issues & Bug Tracker
+    Route::get('/issues', [V2IssueController::class, 'index'])->name('issues.index');
+    Route::post('/issues', [V2IssueController::class, 'store'])->name('issues.store');
+    Route::patch('/issues/{task}/toggle', [V2IssueController::class, 'toggle'])->name('issues.toggle');
+
+    // Activity Logs
+    Route::get('/activity-logs', [V2ActivityLogController::class, 'index'])->name('activity-logs.index');
+
+    // Recycle Bin / Trash
+    Route::get('/trash', [V2TrashController::class, 'index'])->name('trash.index');
+    Route::post('/trash/tasks/{id}/restore', [V2TrashController::class, 'restoreTask'])->name('trash.tasks.restore');
+    Route::delete('/trash/tasks/{id}/force', [V2TrashController::class, 'forceDeleteTask'])->name('trash.tasks.forceDelete');
+    Route::post('/trash/projects/{id}/restore', [V2TrashController::class, 'restoreProject'])->name('trash.projects.restore');
+    Route::delete('/trash/projects/{id}/force', [V2TrashController::class, 'forceDeleteProject'])->name('trash.projects.forceDelete');
+    Route::post('/trash/companies/{id}/restore', [V2TrashController::class, 'restoreCompany'])->name('trash.companies.restore');
+    Route::delete('/trash/companies/{id}/force', [V2TrashController::class, 'forceDeleteCompany'])->name('trash.companies.forceDelete');
+
+    // System Permissions
+    Route::get('/permissions', [V2PermissionController::class, 'index'])->name('permissions.index');
+
+    // Account Settings & Profile
+    Route::get('/settings', [V2SettingsController::class, 'index'])->name('settings.index');
+    Route::get('/profile', [V2SettingsController::class, 'index'])->name('profile.index');
+    Route::post('/settings/profile', [V2SettingsController::class, 'updateProfile'])->name('settings.profile');
+    Route::post('/settings/password', [V2SettingsController::class, 'updatePassword'])->name('settings.password');
+
     Route::get('/analytics', AnalyticsController::class)->name('analytics');
     Route::get('/routes', RouteExplorerController::class)->name('routes');
 });
+
+// Top-level aliases
+Route::redirect('/users', '/v2/team')->name('users.index');
 
 // Legacy /new aliases
 Route::redirect('/new/dashboard', '/dashboard')->name('new.dashboard');
@@ -98,25 +153,12 @@ Route::get('/new/tasks/{id}', function ($id) {
     return redirect()->route('new.task.show', ['id' => $id]);
 })->name('new.tasks.show');
 
-Route::get('/new/companies', function () {
-    return Inertia::render('New/ComingSoon', ['feature' => 'Companies Workspace', 'activeItem' => 'companies']);
-})->name('new.companies');
+Route::redirect('/new/companies', '/v2/companies')->name('new.companies');
 
-Route::get('/new/issues', function () {
-    return Inertia::render('New/ComingSoon', ['feature' => 'Issues & Bug Tracker', 'activeItem' => 'issues']);
-})->name('new.issues');
-
-Route::get('/new/team', function () {
-    return Inertia::render('New/ComingSoon', ['feature' => 'Team Members Directory', 'activeItem' => 'team']);
-})->name('new.team');
-
-Route::get('/new/permissions', function () {
-    return Inertia::render('New/ComingSoon', ['feature' => 'System Permissions', 'activeItem' => 'permissions']);
-})->name('new.permissions');
-
-Route::get('/new/settings', function () {
-    return Inertia::render('New/ComingSoon', ['feature' => 'Account Settings', 'activeItem' => 'settings']);
-})->name('new.settings');
+Route::redirect('/new/issues', '/v2/issues')->name('new.issues');
+Route::redirect('/new/team', '/v2/team')->name('new.team');
+Route::redirect('/new/permissions', '/v2/permissions')->name('new.permissions');
+Route::redirect('/new/settings', '/v2/settings')->name('new.settings');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
