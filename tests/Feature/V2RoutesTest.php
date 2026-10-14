@@ -5,10 +5,7 @@ namespace Tests\Feature;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
-
-uses(RefreshDatabase::class);
 
 test('v2 team index loads successfully with Inertia component and team members', function () {
     $user = User::factory()->create(['email_verified_at' => now()]);
@@ -157,12 +154,16 @@ test('v2 settings allows viewing, updating profile, and changing password', func
     $this->assertEquals('Subhadip Senior Dev', $user->fresh()->name);
     $this->assertEquals('subhadip.new@workhub.io', $user->fresh()->email);
 
+    // Re-verify after email change for verified middleware
+    $user->forceFill(['email_verified_at' => now()])->save();
+
     // Update password
     $passwordResponse = $this->actingAs($user)->post(route('v2.settings.password'), [
         'current_password' => 'old-password-123',
         'password' => 'new-secure-password-456',
         'password_confirmation' => 'new-secure-password-456',
     ]);
+    $passwordResponse->assertSessionHasNoErrors();
     $passwordResponse->assertRedirect();
     $this->assertTrue(Hash::check('new-secure-password-456', $user->fresh()->password));
 });

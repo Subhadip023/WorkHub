@@ -4,6 +4,7 @@ namespace App\Http\Controllers\V2;
 
 use App\Http\Controllers\Controller;
 use App\Models\Company;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Spatie\Activitylog\Models\Activity;
@@ -38,7 +39,7 @@ class ActivityLogController extends Controller
                         ->where('subject_id', $targetUserId);
                 });
             });
-        } elseif ($scope === 'all' && (method_exists($authUser, 'isAdmin') ? ($authUser->isAdmin() || $authUser->isSuperAdmin()) : true)) {
+        } elseif ($scope === 'all' && $authUser->isAdmin()) {
             // Viewing workspace/system activities
         } else {
             // Viewing own activities
@@ -76,12 +77,12 @@ class ActivityLogController extends Controller
                 'id' => $act->id,
                 'description' => $act->description,
                 'event' => $act->event ?: 'action',
-                'causer' => $causer ? [
+                'causer' => ($causer instanceof User) ? [
                     'id' => $causer->id,
                     'name' => $causer->name,
                     'email' => $causer->email,
                     'avatar' => strtoupper(substr($causer->name, 0, 2)),
-                    'profile_image' => $causer->profile_image_url ?? null,
+                    'profile_image' => $causer->profile_image_url,
                 ] : [
                     'name' => 'System',
                     'avatar' => 'SYS',

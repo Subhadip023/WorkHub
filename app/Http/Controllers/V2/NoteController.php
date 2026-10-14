@@ -160,8 +160,8 @@ class NoteController extends Controller
                 'noteable' => $noteableData,
                 'author' => [
                     'id' => $n->user?->id,
-                    'name' => $n->user?->name ?? 'Unknown',
-                    'avatar' => strtoupper(substr($n->user?->name ?? 'UN', 0, 2)),
+                    'name' => $n->user->name ?? 'Unknown',
+                    'avatar' => strtoupper(substr($n->user->name ?? 'UN', 0, 2)),
                     'profile_image' => $n->user?->profile_image_url,
                     'email' => $n->user?->email,
                 ],
