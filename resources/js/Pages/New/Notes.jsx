@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import { Link, router, usePage } from "@inertiajs/react";
 import {
@@ -45,6 +45,7 @@ export default function Notes({
   tasks = [],
   organizations = [],
   current_workspace_name = "",
+  selected_note_id = null,
 }) {
   const { flash = {}, auth = {} } = usePage().props;
   const currentUser = auth?.user;
@@ -57,7 +58,19 @@ export default function Notes({
   // Modals state
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingNote, setEditingNote] = useState(null);
-  const [readingNote, setReadingNote] = useState(null);
+  const [readingNote, setReadingNote] = useState(() => {
+    if (selected_note_id) {
+      return initial_notes.find((n) => n.id === selected_note_id) || null;
+    }
+    return null;
+  });
+
+  useEffect(() => {
+    if (selected_note_id) {
+      const match = initial_notes.find((n) => n.id === selected_note_id);
+      if (match) setReadingNote(match);
+    }
+  }, [selected_note_id, initial_notes]);
   const [deletingNote, setDeletingNote] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 

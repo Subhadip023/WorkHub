@@ -45,36 +45,52 @@ import {
   CartesianGrid,
 } from "recharts";
 
-// Fail-safe route helper preventing "route is not defined" error
+// Fail-safe route helper preferring V2 routes inside the modern suite
 const getRoute = (name, params) => {
+  const v2Name = name.startsWith("v2.") ? name : `v2.${name}`;
   if (typeof window !== "undefined" && typeof window.route === "function") {
     try {
-      return window.route(name, params);
-    } catch (e) {}
+      return window.route(v2Name, params);
+    } catch (e) {
+      try {
+        return window.route(name, params);
+      } catch (err) {}
+    }
   }
   if (typeof route === "function") {
     try {
-      return route(name, params);
-    } catch (e) {}
+      return route(v2Name, params);
+    } catch (e) {
+      try {
+        return route(name, params);
+      } catch (err) {}
+    }
   }
 
   switch (name) {
     case "dashboard":
-      return "/dashboard";
+    case "v2.dashboard":
+      return "/v2/dashboard";
     case "dashboard.org":
-      return `/dashboard/${params}`;
+    case "v2.dashboard.org":
+      return `/v2/dashboard/${params}`;
     case "tasks.index":
-      return "/tasks";
+    case "v2.tasks.index":
+      return "/v2/tasks";
     case "tasks.show":
-      return `/tasks/${params}`;
+    case "v2.tasks.show":
+      return `/v2/tasks/${params}`;
     case "tasks.toggle":
+    case "v2.tasks.toggle":
       return `/tasks/${params}/toggle`;
     case "projects.index":
-      return "/projects";
+    case "v2.projects.index":
+      return "/v2/projects";
     case "projects.show":
+    case "v2.projects.show":
       return `/projects/${params}`;
     default:
-      return "/dashboard";
+      return "/v2/dashboard";
   }
 };
 
@@ -233,7 +249,7 @@ export default function NewDashboard({
               Projects
             </Link>
             <Link
-              href="/analytics"
+              href="/v2/analytics"
               className="inline-flex items-center gap-2 px-3.5 h-9 bg-black hover:bg-neutral-900 text-neutral-200 hover:text-white font-semibold text-sm rounded-xl border border-neutral-800 transition-all cursor-pointer"
             >
               <BarChart3 className="w-4 h-4 text-neutral-400" />
@@ -837,7 +853,7 @@ export default function NewDashboard({
                   <Users className="w-4 h-4 text-emerald-400" /> Team Members
                 </CardTitle>
                 <Link
-                  href="/users"
+                  href="/v2/team"
                   className="text-xs sm:text-sm text-neutral-400 hover:text-emerald-400 font-mono transition-colors"
                 >
                   Manage →

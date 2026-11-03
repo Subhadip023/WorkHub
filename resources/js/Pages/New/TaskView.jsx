@@ -683,7 +683,7 @@ The Inertia page wrapper should hydrate seamlessly without layout reflows or con
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-zinc-800/80 bg-[#121215]/90 p-4 rounded-2xl shadow-xl">
           <div className="flex items-center gap-3">
             <Link
-              href="/tasks"
+              href="/v2/tasks"
               className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
               title="Back to Tasks"
             >
@@ -691,7 +691,7 @@ The Inertia page wrapper should hydrate seamlessly without layout reflows or con
             </Link>
 
             <div className="flex items-center gap-2 text-xs font-mono text-zinc-400 flex-wrap">
-              <Link href="/tasks" className="hover:text-zinc-200 transition-colors">
+              <Link href="/v2/tasks" className="hover:text-zinc-200 transition-colors">
                 Tasks
               </Link>
               <ChevronRight className="h-3.5 w-3.5 text-zinc-600" />
@@ -742,14 +742,14 @@ The Inertia page wrapper should hydrate seamlessly without layout reflows or con
               <Layers className="h-4 w-4 text-purple-400" />
               <span>Parent Task:</span>
               <Link
-                href={`/tasks/${currentTask.parentTask.db_id || currentTask.parentTask.id}`}
+                href={`/v2/tasks/${currentTask.parentTask.db_id || currentTask.parentTask.id}`}
                 className="font-bold text-white hover:underline"
               >
                 {currentTask.parentTask.title}
               </Link>
             </div>
             <Link
-              href={`/tasks/${currentTask.parentTask.db_id || currentTask.parentTask.id}`}
+              href={`/v2/tasks/${currentTask.parentTask.db_id || currentTask.parentTask.id}`}
               className="inline-flex items-center gap-1 text-purple-400 hover:text-purple-200"
             >
               <span>View Parent</span>
@@ -1119,7 +1119,7 @@ The Inertia page wrapper should hydrate seamlessly without layout reflows or con
                             )}
                           </button>
                           <Link
-                            href={`/tasks/${sub.db_id || sub.id}`}
+                            href={`/v2/tasks/${sub.db_id || sub.id}`}
                             className={`text-xs sm:text-sm font-medium hover:underline truncate ${
                               sub.done ? "line-through text-zinc-500" : "text-zinc-200 group-hover:text-white"
                             }`}
@@ -1139,7 +1139,7 @@ The Inertia page wrapper should hydrate seamlessly without layout reflows or con
                             </span>
                           )}
                           <Link
-                            href={`/tasks/${sub.db_id || sub.id}`}
+                            href={`/v2/tasks/${sub.db_id || sub.id}`}
                             className="p-1 rounded text-zinc-500 hover:text-zinc-300"
                             title="Open Subtask"
                           >

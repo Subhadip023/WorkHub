@@ -63,6 +63,7 @@ Route::middleware(['auth', 'verified'])->prefix('v2')->name('v2.')->group(functi
     Route::get('/tasks', [V2TaskController::class, 'index'])->name('tasks.index');
     Route::get('/tasks/{task}', [V2TaskController::class, 'show'])->name('tasks.show');
     Route::get('/notes', [V2NoteController::class, 'index'])->name('notes.index');
+    Route::get('/notes/{note}', [V2NoteController::class, 'show'])->name('notes.show');
     Route::post('/notes', [V2NoteController::class, 'store'])->name('notes.store');
     Route::match(['put', 'patch'], '/notes/{note}', [V2NoteController::class, 'update'])->name('notes.update');
     Route::delete('/notes/{note}', [V2NoteController::class, 'destroy'])->name('notes.destroy');

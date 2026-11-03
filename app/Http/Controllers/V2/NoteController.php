@@ -16,7 +16,7 @@ class NoteController extends Controller
     /**
      * Display the Notes & Documentation suite in V2 Inertia UI.
      */
-    public function index(Request $request)
+    public function index(Request $request, ?int $selectedNoteId = null)
     {
         $user = auth()->user();
         $companyId = session('current_company_id');
@@ -192,7 +192,18 @@ class NoteController extends Controller
             'tasks' => $tasks->map(fn ($t) => ['id' => $t->id, 'name' => $t->title, 'project_id' => $t->project_id])->values()->toArray(),
             'organizations' => $organizations->map(fn ($o) => ['id' => $o->id, 'name' => $o->name])->values()->toArray(),
             'current_workspace_name' => $currentWorkspaceName,
+            'selected_note_id' => $selectedNoteId,
         ]);
+    }
+
+    /**
+     * Display a specific note in the V2 Notes reader drawer.
+     */
+    public function show(Request $request, Note $note)
+    {
+        Gate::authorize('view', $note);
+
+        return $this->index($request, $note->id);
     }
 
     /**

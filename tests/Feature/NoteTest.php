@@ -242,6 +242,26 @@ it('loads v2 modern notes page via inertia', function () {
     );
 });
 
+it('loads v2 modern note detail via inertia drawer', function () {
+    $user = User::factory()->create(['email_verified_at' => now()]);
+
+    $note = Note::create([
+        'title' => 'V2 Single Note',
+        'description' => '# Single Note Markdown',
+        'note_type' => Note::TYPE_PERSONAL,
+        'note_type_id' => $user->id,
+        'user_id' => $user->id,
+    ]);
+
+    $response = $this->actingAs($user)->get(route('v2.notes.show', $note));
+
+    $response->assertStatus(200);
+    $response->assertInertia(fn ($page) => $page
+        ->component('New/Notes')
+        ->where('selected_note_id', $note->id)
+    );
+});
+
 it('allows creating a personal note in v2', function () {
     $user = User::factory()->create(['email_verified_at' => now()]);
 
