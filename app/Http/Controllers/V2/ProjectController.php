@@ -315,10 +315,10 @@ class ProjectController extends Controller
                 'content' => $comm->content,
                 'created_at' => $comm->created_at ? $comm->created_at->diffForHumans() : '',
                 'user' => [
-                    'id' => $comm->user?->id,
-                    'name' => $comm->user?->name ?? 'User',
-                    'avatar' => strtoupper(substr($comm->user?->name ?? 'U', 0, 2)),
-                    'profile_image' => $comm->user?->profile_image_url,
+                    'id' => $comm->user->id,
+                    'name' => $comm->user->name,
+                    'avatar' => strtoupper(substr($comm->user->name, 0, 2)),
+                    'profile_image' => $comm->user->profile_image_url,
                 ],
                 'can_delete' => auth()->id() === $comm->user_id,
             ];
