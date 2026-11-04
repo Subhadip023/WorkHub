@@ -28,7 +28,7 @@ class ProjectCredentialsController extends Controller
             'password_or_secret' => $request->input('password_or_secret'),
         ]);
 
-        if ($request->wantsJson() || $request->ajax()) {
+        if (! $request->header('X-Inertia') && ($request->wantsJson() || $request->ajax())) {
             return response()->json([
                 'success' => true,
                 'message' => 'Credential added successfully.',
@@ -43,7 +43,7 @@ class ProjectCredentialsController extends Controller
             ]);
         }
 
-        return redirect()->route('projects.credentials', $project)->with('success', 'Credential added successfully.');
+        return redirect()->back()->with('success', 'Credential added successfully.');
     }
 
     /**
@@ -59,13 +59,13 @@ class ProjectCredentialsController extends Controller
 
         $credential->delete();
 
-        if (request()->wantsJson() || request()->ajax()) {
+        if (! request()->header('X-Inertia') && (request()->wantsJson() || request()->ajax())) {
             return response()->json([
                 'success' => true,
                 'message' => 'Credential deleted successfully.',
             ]);
         }
 
-        return redirect()->route('projects.credentials', $project)->with('success', 'Credential deleted successfully.');
+        return redirect()->back()->with('success', 'Credential deleted successfully.');
     }
 }

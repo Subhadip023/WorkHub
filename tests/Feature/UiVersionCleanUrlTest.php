@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Project;
+use App\Models\Task;
 use App\Models\User;
 
 test('classic user with ui_version v1 receives blade view on clean dashboard url', function () {
@@ -139,4 +140,37 @@ test('classic user receives blade view on clean /projects/{id} url', function ()
 
     $response->assertStatus(200);
     $response->assertViewIs('projects.show');
+});
+
+test('inertia request to toggle task returns redirect instead of plain json response', function () {
+    $user = User::factory()->create(['email_verified_at' => now(), 'ui_version' => 'v2']);
+    $task = Task::factory()->create(['user_id' => $user->id, 'status' => 1]);
+
+    $response = $this->actingAs($user)
+        ->withHeaders([
+            'X-Inertia' => 'true',
+            'X-Requested-With' => 'XMLHttpRequest',
+        ])
+        ->patch(route('tasks.toggle', $task));
+
+    $response->assertRedirect();
+    $this->assertEquals(3, $task->fresh()->status);
+});
+
+test('ajax request without inertia header to toggle task returns json response', function () {
+    $user = User::factory()->create(['email_verified_at' => now()]);
+    $task = Task::factory()->create(['user_id' => $user->id, 'status' => 1]);
+
+    $response = $this->actingAs($user)
+        ->withHeaders([
+            'X-Requested-With' => 'XMLHttpRequest',
+        ])
+        ->patch(route('tasks.toggle', $task));
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'message' => 'Task status updated',
+        'status' => 3,
+    ]);
 });

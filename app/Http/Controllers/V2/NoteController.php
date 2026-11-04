@@ -243,6 +243,10 @@ class NoteController extends Controller
             'note_type_id' => $noteTypeId,
         ]);
 
+        if ($noteType === Note::TYPE_PROJECT && $project = Project::find($noteTypeId)) {
+            return redirect()->route('projects.show', $project)->with('success', 'Note created successfully.');
+        }
+
         return redirect()->route('v2.notes.index')->with('success', 'Note created successfully.');
     }
 

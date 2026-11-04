@@ -139,7 +139,7 @@ class TaskController extends Controller
 
         $task = $this->taskService->toggleTaskStatus($task);
 
-        if (request()->ajax() || request()->wantsJson()) {
+        if (! request()->header('X-Inertia') && (request()->ajax() || request()->wantsJson())) {
             return response()->json([
                 'success' => true,
                 'message' => 'Task status updated',
@@ -172,7 +172,7 @@ class TaskController extends Controller
 
         $task = $this->taskService->updateTask($task, $validated, auth()->user());
 
-        if ($request->ajax() || $request->wantsJson()) {
+        if (! $request->header('X-Inertia') && ($request->ajax() || $request->wantsJson())) {
             return response()->json([
                 'success' => true,
                 'message' => 'Task updated successfully',
@@ -216,7 +216,7 @@ class TaskController extends Controller
 
         $newTask = $this->taskService->copyTask($task, auth()->user());
 
-        if (request()->ajax() || request()->wantsJson()) {
+        if (! request()->header('X-Inertia') && (request()->ajax() || request()->wantsJson())) {
             return response()->json([
                 'success' => true,
                 'message' => 'Task copied successfully',
