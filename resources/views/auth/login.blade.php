@@ -1,87 +1,84 @@
-@extends('layouts.auth')
-
-@section('title', 'Login')
-
-@section('content')
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
-<div class="container" style="min-height: 100vh;">
-    <div class="row justify-content-center align-items-center" style="min-height: 100vh;">
-
-        <div class="col-xl-10 col-lg-12 col-md-9">
-
-            <div class="card o-hidden border-0 shadow-lg my-5">
-                <div class="card-body p-0">
-                    <!-- Nested Row within Card Body -->
-                    <div class="row">
-                        <div class="col-lg-6 d-none d-lg-block bg-login-image">
-                            <div class="card-body">
-                                <div class="text-center">
-                                    <img class="img-fluid px-3 px-sm-4 mt-3 mb-4" style="width: 25rem;"
-                                        src="{{ asset('asset/img/undraw_to-do-list_o3jf.svg') }}" alt="...">
-                                </div>
-                                
-                            </div>
-                        </div>
-                        <div class="col-lg-6">
-                            <div class="p-5">
-                                <div class="text-center">
-                                    <h1 class="h4 text-gray-900 mb-4">Welcome Back!</h1>
-                                </div>
-                                <form class="user" method="POST" action="{{ route('login') }}">
-                                    @csrf
-                                    <div class="form-group">
-                                        <input type="email" name="email" class="form-control form-control-user"
-                                            id="exampleInputEmail" aria-describedby="emailHelp"
-                                            placeholder="Enter Email Address..." value="{{ old('email') }}">
-                                    </div>
-                                    @error('email')
-                                        <span class="text-danger small">{{$message}}</span>
-                                    @enderror    
-                                    <div class="form-group">
-                                        <input type="password" name="password" class="form-control form-control-user"
-                                            id="exampleInputPassword" placeholder="Password">
-                                    </div>
-                                    @error('password')
-                                        <span class="text-danger small">{{$message}}</span>
-                                    @enderror 
-                                    <div class="form-group">
-                                        <div class="custom-control custom-checkbox small">
-                                            <input type="checkbox" name="remember" class="custom-control-input" id="customCheck">
-                                            <label class="custom-control-label" for="customCheck">Remember
-                                                Me</label>
-                                        </div>
-                                    </div>
-
-                                    @if(config('services.recaptcha.site_key') && !config('services.recaptcha.skip'))
-                                        <div class="form-group d-flex flex-column align-items-center mb-3">
-                                            <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
-                                            @error('g-recaptcha-response')
-                                                <span class="text-danger small mt-1">{{ $message }}</span>
-                                            @enderror
-                                        </div>
-                                    @endif
-
-                                    <button type="submit" class="btn btn-primary btn-user btn-block">
-                                        Login
-                                    </button>
-                                    <hr>
-                                    
-                                </form>
-                                <div class="text-center">
-                                    <a class="small" href="{{ route('password.request') }}">Forgot Password?</a>
-                                </div>
-                                <div class="text-center">
-                                    <a class="small" href="{{ route('register') }}">Create an Account!</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+<x-guest-layout>
+    <div class="bg-slate-900/70 backdrop-blur-xl border border-slate-800/80 shadow-2xl rounded-2xl p-6 sm:p-8">
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold tracking-tight text-white">Welcome Back</h1>
+            <p class="text-sm text-slate-400 mt-1">Sign in to access your projects and tasks in your preferred mode</p>
         </div>
 
+        <!-- Session Status -->
+        <x-auth-session-status class="mb-4 text-emerald-400 text-sm font-medium" :status="session('status')" />
+
+        <form method="POST" action="{{ route('login') }}" class="space-y-5">
+            @csrf
+
+            <!-- Email Address -->
+            <div>
+                <label for="email" class="block text-xs font-medium text-slate-300 mb-1.5">Email Address</label>
+                <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username"
+                    placeholder="developer@workhub.io"
+                    class="w-full px-3.5 py-2.5 rounded-lg bg-slate-950/60 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                @error('email')
+                    <p class="text-xs text-rose-400 mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Password -->
+            <div>
+                <div class="flex items-center justify-between mb-1.5">
+                    <label for="password" class="block text-xs font-medium text-slate-300">Password</label>
+                    @if (Route::has('password.request'))
+                        <a href="{{ route('password.request') }}" class="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
+                            Forgot password?
+                        </a>
+                    @endif
+                </div>
+                <input id="password" type="password" name="password" required autocomplete="current-password"
+                    placeholder="••••••••"
+                    class="w-full px-3.5 py-2.5 rounded-lg bg-slate-950/60 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                @error('password')
+                    <p class="text-xs text-rose-400 mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Remember Me -->
+            <div class="flex items-center justify-between">
+                <label for="remember_me" class="inline-flex items-center gap-2 cursor-pointer select-none">
+                    <input id="remember_me" type="checkbox" name="remember"
+                        class="rounded bg-slate-950 border-slate-800 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-slate-900 w-4 h-4 cursor-pointer">
+                    <span class="text-xs text-slate-300 font-medium">Remember my session</span>
+                </label>
+            </div>
+
+            <!-- Optional Google reCAPTCHA -->
+            @if(config('services.recaptcha.site_key') && !config('services.recaptcha.skip'))
+                <div class="flex flex-col items-center justify-center my-3">
+                    <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
+                    @error('g-recaptcha-response')
+                        <p class="text-xs text-rose-400 mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+            @endif
+
+            <!-- Submit Button -->
+            <button type="submit" class="w-full py-3 px-4 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer flex items-center justify-center gap-2">
+                <span>Sign In to Workspace</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </button>
+        </form>
+
+        <div class="mt-6 pt-5 border-t border-slate-800/80 text-center">
+            <p class="text-xs text-slate-400">
+                Don't have an account yet?
+                <a href="{{ route('register') }}" class="font-medium text-indigo-400 hover:text-indigo-300 transition-colors ml-1">
+                    Create an account
+                </a>
+            </p>
+        </div>
     </div>
 
-</div>
-@endsection
+    @if(config('services.recaptcha.site_key') && !config('services.recaptcha.skip'))
+        @push('scripts')
+            <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        @endpush
+    @endif
+</x-guest-layout>

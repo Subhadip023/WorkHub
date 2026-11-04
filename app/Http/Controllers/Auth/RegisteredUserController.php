@@ -35,12 +35,14 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'ui_version' => ['nullable', 'string', 'in:v1,v2'],
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'ui_version' => $request->input('ui_version', 'v2'),
         ]);
 
         CompanyInvitation::processPendingInvitations($user);
