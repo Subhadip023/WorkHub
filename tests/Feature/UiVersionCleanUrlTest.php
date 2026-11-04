@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Project;
 use App\Models\User;
 
 test('classic user with ui_version v1 receives blade view on clean dashboard url', function () {
@@ -107,4 +108,35 @@ test('user can update ui preference via post settings endpoint', function () {
 
     $response->assertRedirect();
     expect($user->fresh()->ui_version)->toBe('v2');
+});
+
+test('modern user receives inertia project view on clean /projects/{id} url', function () {
+    $user = User::factory()->create([
+        'email_verified_at' => now(),
+        'ui_version' => 'v2',
+    ]);
+    $project = Project::factory()->create(['user_id' => $user->id]);
+
+    $response = $this->actingAs($user)->get("/projects/{$project->id}");
+
+    $response->assertStatus(200);
+    $response->assertInertia(fn ($page) => $page
+        ->component('New/ProjectView')
+        ->has('project')
+        ->has('tasks')
+        ->has('stats')
+    );
+});
+
+test('classic user receives blade view on clean /projects/{id} url', function () {
+    $user = User::factory()->create([
+        'email_verified_at' => now(),
+        'ui_version' => 'v1',
+    ]);
+    $project = Project::factory()->create(['user_id' => $user->id]);
+
+    $response = $this->actingAs($user)->get("/projects/{$project->id}");
+
+    $response->assertStatus(200);
+    $response->assertViewIs('projects.show');
 });

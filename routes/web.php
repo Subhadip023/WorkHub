@@ -66,6 +66,7 @@ Route::middleware(['auth', 'verified'])->prefix('v2')->name('v2.')->group(functi
     Route::get('/dashboard', [V2DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/{company}', [V2DashboardController::class, 'index'])->name('dashboard.org');
     Route::get('/projects', [V2ProjectController::class, 'index'])->name('projects.index');
+    Route::get('/projects/{project}', [V2ProjectController::class, 'show'])->name('projects.show');
     Route::get('/tasks', [V2TaskController::class, 'index'])->name('tasks.index');
     Route::get('/tasks/{task}', [V2TaskController::class, 'show'])->name('tasks.show');
     Route::get('/notes', [V2NoteController::class, 'index'])->name('notes.index');

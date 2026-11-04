@@ -166,8 +166,56 @@
         </div>
     </div>
 
-    <!-- Right Column: Delete Account -->
+    <!-- Right Column: Settings & Danger Zone -->
     <div class="col-lg-4 mb-4">
+        <!-- Interface Version Card -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-desktop mr-1"></i> Interface Version
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">
+                    Choose between the Modern V2 (React SPA) interface and the Classic V1 (Blade) interface.
+                </p>
+
+                <div class="p-3 rounded mb-3 border {{ $user->ui_version === 'v2' ? 'border-primary bg-primary-subtle' : 'bg-light' }}">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="font-weight-bold text-gray-800">
+                            <i class="fas fa-sparkles text-warning mr-1"></i> Modern V2 Suite
+                        </span>
+                        @if($user->ui_version === 'v2')
+                            <span class="badge badge-success px-2 py-1">Active</span>
+                        @endif
+                    </div>
+                    <p class="text-muted small mb-2">Fast, interactive single-page application experience with dark mode and drawers.</p>
+                    @if($user->ui_version !== 'v2')
+                        <a href="{{ route('ui.switch', 'v2') }}" class="btn btn-sm btn-primary btn-block font-weight-bold">
+                            Switch to Modern V2
+                        </a>
+                    @endif
+                </div>
+
+                <div class="p-3 rounded border {{ $user->ui_version !== 'v2' ? 'border-primary bg-primary-subtle' : 'bg-light' }}">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="font-weight-bold text-gray-800">
+                            <i class="fas fa-th-large text-primary mr-1"></i> Classic V1 View
+                        </span>
+                        @if($user->ui_version !== 'v2')
+                            <span class="badge badge-primary px-2 py-1">Active</span>
+                        @endif
+                    </div>
+                    <p class="text-muted small mb-2">Traditional server-rendered Blade interface with Bootstrap/SB Admin.</p>
+                    @if($user->ui_version === 'v2')
+                        <a href="{{ route('ui.switch', 'v1') }}" class="btn btn-sm btn-outline-secondary btn-block font-weight-bold">
+                            Switch to Classic V1
+                        </a>
+                    @endif
+                </div>
+            </div>
+        </div>
+
         <div class="card shadow mb-4 border-left-danger">
             <div class="card-header py-3 bg-danger-subtle">
                 <h6 class="m-0 font-weight-bold text-danger">Danger Zone</h6>

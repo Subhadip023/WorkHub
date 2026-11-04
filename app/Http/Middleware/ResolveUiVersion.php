@@ -29,6 +29,7 @@ class ResolveUiVersion
         'dashboard' => [V2DashboardController::class, 'index'],
         'dashboard.org' => [V2DashboardController::class, 'index'],
         'projects.index' => [V2ProjectController::class, 'index'],
+        'projects.show' => [V2ProjectController::class, 'show'],
         'tasks.index' => [V2TaskController::class, 'index'],
         'tasks.show' => [V2TaskController::class, 'show'],
         'notes.index' => [V2NoteController::class, 'index'],
