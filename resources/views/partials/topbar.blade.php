@@ -134,8 +134,8 @@
             </a>
         <!-- Nav Item - Switch to WorkHub v2 -->
         <li class="nav-item mx-2 d-flex align-items-center">
-            <a href="{{ route('v2.dashboard') }}" class="btn btn-sm btn-outline-primary font-weight-bold shadow-sm d-inline-flex align-items-center" style="border-radius: 20px; font-size: 0.78rem; padding: 0.25rem 0.75rem;">
-                <i class="fas fa-sparkles mr-1 text-warning"></i> Try v2 UI
+            <a href="{{ route('ui.switch', 'v2') }}" class="btn btn-sm btn-outline-primary font-weight-bold shadow-sm d-inline-flex align-items-center" style="border-radius: 20px; font-size: 0.78rem; padding: 0.25rem 0.75rem;">
+                <i class="fas fa-sparkles mr-1 text-warning"></i> Switch to Modern V2
             </a>
         </li>
 

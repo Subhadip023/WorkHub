@@ -17,6 +17,7 @@ use App\Http\Controllers\RouteExplorerController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TrashController;
+use App\Http\Controllers\UiSwitchController;
 use App\Http\Controllers\V2\ActivityLogController as V2ActivityLogController;
 use App\Http\Controllers\V2\CompanyController as V2CompanyController;
 use App\Http\Controllers\V2\DashboardController as V2DashboardController;
@@ -40,6 +41,11 @@ use Inertia\Inertia;
 Route::get('/', function () {
     return view('home');
 });
+
+Route::match(['get', 'post'], '/ui/switch/{version}', UiSwitchController::class)->middleware('auth')->name('ui.switch');
+Route::get('/team', [V2TeamController::class, 'index'])->middleware(['auth', 'verified'])->name('team.index');
+Route::get('/settings', [V2SettingsController::class, 'index'])->middleware(['auth', 'verified'])->name('settings.index');
+Route::post('/settings/ui-preference', [V2SettingsController::class, 'updateUiPreference'])->middleware('auth')->name('settings.ui-preference.clean');
 
 Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
 Route::get('/dashboard/{company}', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard.org');
@@ -111,6 +117,7 @@ Route::middleware(['auth', 'verified'])->prefix('v2')->name('v2.')->group(functi
     Route::get('/profile', [V2SettingsController::class, 'index'])->name('profile.index');
     Route::post('/settings/profile', [V2SettingsController::class, 'updateProfile'])->name('settings.profile');
     Route::post('/settings/password', [V2SettingsController::class, 'updatePassword'])->name('settings.password');
+    Route::post('/settings/ui-preference', [V2SettingsController::class, 'updateUiPreference'])->name('settings.ui-preference');
 
     Route::get('/analytics', AnalyticsController::class)->name('analytics');
     Route::get('/routes', RouteExplorerController::class)->name('routes');

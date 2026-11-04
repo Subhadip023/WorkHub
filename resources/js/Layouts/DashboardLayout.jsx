@@ -264,7 +264,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       isActive={currentActive === "dashboard"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
-                      <Link href="/v2/dashboard">
+                      <Link href="/dashboard">
                         <LayoutDashboard className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
                         <span>Dashboard</span>
                       </Link>
@@ -277,7 +277,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       isActive={currentActive === "analytics"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
-                      <Link href="/v2/analytics">
+                      <Link href="/analytics">
                         <BarChart3 className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
                         <span>Analytics</span>
                       </Link>
@@ -290,7 +290,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       isActive={currentActive === "projects"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
-                      <Link href="/v2/projects">
+                      <Link href="/projects">
                         <FolderKanban className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
                         <span>Projects</span>
                       </Link>
@@ -303,7 +303,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       isActive={currentActive === "tasks" || currentActive === "my tasks"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
-                      <Link href="/v2/tasks">
+                      <Link href="/tasks">
                         <CheckSquare className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
                         <span>My Tasks</span>
                       </Link>
@@ -316,7 +316,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       isActive={currentActive === "notes"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
-                      <Link href="/v2/notes">
+                      <Link href="/notes">
                         <FileText className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
                         <span>Notes & Docs</span>
                       </Link>
@@ -326,7 +326,6 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
               </SidebarGroupContent>
             </SidebarGroup>
 
-            {/* Group 2: Workspaces & Team */}
             {/* Group 2: Workspaces & Team */}
             <SidebarGroup>
               <SidebarGroupLabel className="text-xs font-semibold text-zinc-400 uppercase tracking-wider px-3 mb-2 font-mono">
@@ -340,7 +339,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       isActive={currentActive === "companies"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
-                      <Link href="/v2/companies">
+                      <Link href="/companies">
                         <Briefcase className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
                         <span>Companies</span>
                       </Link>
@@ -353,7 +352,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       isActive={currentActive === "team" || currentActive === "users" || currentActive === "team members"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
-                      <Link href="/v2/team">
+                      <Link href="/team">
                         <Users className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
                         <span>Team Members</span>
                       </Link>
@@ -366,7 +365,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       isActive={currentActive === "issues"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
-                      <Link href="/v2/issues">
+                      <Link href="/issues">
                         <Bug className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
                         <span>Issues & Bugs</span>
                       </Link>
@@ -379,7 +378,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       isActive={currentActive === "permissions"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
-                      <Link href="/v2/permissions">
+                      <Link href="/permissions">
                         <KeyRound className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
                         <span>Permissions</span>
                       </Link>
@@ -415,7 +414,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       isActive={currentActive === "activity-logs" || currentActive === "activity logs"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
-                      <Link href="/v2/activity-logs">
+                      <Link href="/activity-logs">
                         <ShieldCheck className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
                         <span>Activity Logs</span>
                       </Link>
@@ -428,7 +427,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       isActive={currentActive === "trash"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
-                      <Link href="/v2/trash">
+                      <Link href="/trash">
                         <AlertCircle className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
                         <span>Recycle Bin</span>
                       </Link>
@@ -441,7 +440,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       isActive={currentActive === "settings" || currentActive === "profile" || currentActive === "account settings"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
-                      <Link href="/v2/settings">
+                      <Link href="/settings">
                         <Settings className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
                         <span>Account Settings</span>
                       </Link>
@@ -455,7 +454,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
           {/* User Profile Footer */}
           <SidebarFooter className="p-3 border-t border-zinc-800 bg-zinc-950 space-y-2">
             <a
-              href="/dashboard"
+              href="/ui/switch/v1"
               className="w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg bg-zinc-900/90 border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800 text-xs font-medium text-zinc-300 hover:text-white transition-all shadow-sm group"
               title="Return to Classic Blade WorkHub interface"
             >
@@ -467,7 +466,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
             </a>
 
             <div className="flex items-center justify-between gap-3 p-1.5 rounded-lg bg-zinc-900/60 border border-zinc-800/80">
-              <Link href="/v2/settings" className="flex items-center gap-2.5 min-w-0 hover:opacity-85 transition-opacity group flex-1">
+              <Link href="/settings" className="flex items-center gap-2.5 min-w-0 hover:opacity-85 transition-opacity group flex-1">
                 <Avatar className="h-8 w-8 border border-zinc-700 shrink-0">
                   {user?.profile_image && (
                     <AvatarImage src={user.profile_image} alt={user?.name || "Avatar"} className="object-cover" />

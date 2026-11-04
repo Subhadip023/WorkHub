@@ -28,7 +28,7 @@ class DashboardController extends Controller
         $authUser = auth()->user();
         $companyIds = $authUser ? $authUser->companies()->pluck('company_id')->toArray() : [];
 
-        if ($company) {
+        if ($company && $company->exists) {
             if (! in_array($company->id, $companyIds)) {
                 abort(403, 'You are not a member of this organization.');
             }

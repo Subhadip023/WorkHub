@@ -43,6 +43,7 @@ class SettingsController extends Controller
             'avatar' => strtoupper(substr($authUser->name, 0, 2)),
             'created_at' => $authUser->created_at ? $authUser->created_at->format('M d, Y') : '',
             'last_login_at' => $authUser->last_login_at ? $authUser->last_login_at->format('M d, Y h:i A') : 'Never',
+            'ui_version' => $authUser->ui_version ?? 'v1',
         ];
 
         return Inertia::render('New/Settings', [
@@ -94,5 +95,24 @@ class SettingsController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Password updated successfully.');
+    }
+
+    /**
+     * Update user interface version preference.
+     */
+    public function updateUiPreference(Request $request)
+    {
+        $request->validate([
+            'ui_version' => 'required|string|in:v1,v2',
+        ]);
+
+        $version = $request->input('ui_version');
+        $user = auth()->user();
+        $user->forceFill(['ui_version' => $version])->save();
+        session(['ui_version' => $version]);
+
+        $label = $version === 'v2' ? 'Modern V2' : 'Classic V1';
+
+        return redirect()->back()->with('success', "Interface preference updated to {$label}.");
     }
 }

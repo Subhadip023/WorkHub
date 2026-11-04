@@ -49,7 +49,17 @@ class User extends Authenticatable implements MustVerifyEmail
         'profile_image',
         'last_login_at',
         'email_verified_at',
+        'ui_version',
     ];
+
+    public function isV2(): bool
+    {
+        if (session()->has('ui_version')) {
+            return session('ui_version') === 'v2';
+        }
+
+        return ($this->ui_version ?? 'v1') === 'v2';
+    }
 
     /**
      * The accessors to append to the model's array form.

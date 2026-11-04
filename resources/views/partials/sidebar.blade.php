@@ -88,9 +88,9 @@
         </a>
     <hr class="sidebar-divider my-2">
     <li class="nav-item">
-        <a class="nav-link py-2" href="{{ route('v2.dashboard') }}" style="background: rgba(255,255,255,0.08); border-radius: 8px; margin: 0 1rem;">
+        <a class="nav-link py-2" href="{{ route('ui.switch', 'v2') }}" style="background: rgba(255,255,255,0.08); border-radius: 8px; margin: 0 1rem;">
             <i class="fas fa-sparkles text-warning"></i>
-            <span class="font-weight-bold text-white">WorkHub v2 UI</span>
+            <span class="font-weight-bold text-white">Switch to Modern V2</span>
         </a>
     </li>
 

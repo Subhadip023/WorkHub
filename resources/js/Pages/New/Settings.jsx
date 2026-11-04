@@ -12,6 +12,7 @@ import {
   Mail,
   ShieldCheck,
   ArrowRight,
+  Sparkles,
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/Components/ui/card";
@@ -124,6 +125,7 @@ export default function Settings({
           {[
             { id: "profile", label: "Profile Information", icon: User },
             { id: "security", label: "Security & Password", icon: Lock },
+            { id: "interface", label: "UI Version", icon: Sparkles },
             { id: "workspaces", label: "My Workspaces", icon: Building2 },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -298,6 +300,109 @@ export default function Settings({
                     </Button>
                   </div>
                 </form>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* INTERFACE TAB */}
+        {activeTab === "interface" && (
+          <div className="space-y-6">
+            <Card className="bg-zinc-900/80 border-zinc-800 shadow-sm">
+              <CardHeader className="p-6 pb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg font-bold text-zinc-100 flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-emerald-400" /> Interface & Theme Version
+                    </CardTitle>
+                    <CardDescription className="text-xs text-zinc-400 font-mono mt-1">
+                      Choose between the Next-Gen Modern React SPA or the Classic Blade layout. Both use clean URLs and the same database.
+                    </CardDescription>
+                  </div>
+                  <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-500/10 font-mono text-xs">
+                    Current: {user.ui_version === "v2" ? "Modern V2" : "Classic V1"}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6 pt-2 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Modern V2 Option */}
+                  <div
+                    className={`p-5 rounded-2xl border transition-all ${
+                      user.ui_version === "v2"
+                        ? "bg-emerald-500/5 border-emerald-500/40 ring-1 ring-emerald-500/20"
+                        : "bg-zinc-950/60 border-zinc-800 hover:border-zinc-700"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
+                          <Sparkles className="w-4 h-4" />
+                        </span>
+                        <h4 className="font-bold text-zinc-100 text-sm">Modern V2 Suite</h4>
+                      </div>
+                      {user.ui_version === "v2" && (
+                        <span className="text-xs font-mono text-emerald-400 flex items-center gap-1 font-semibold">
+                          <Check className="w-3.5 h-3.5" /> Active
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-zinc-400 leading-relaxed mb-4">
+                      Single-Page React 18 interface with instant page transitions, interactive drawers, dark mode aesthetics, and clean URLs without any <code className="text-emerald-400 bg-zinc-900 px-1 py-0.5 rounded">/v2/</code> prefix.
+                    </p>
+                    <Button
+                      asChild={user.ui_version !== "v2"}
+                      disabled={user.ui_version === "v2"}
+                      size="sm"
+                      className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-xl h-9"
+                    >
+                      {user.ui_version === "v2" ? (
+                        <span>Currently Active</span>
+                      ) : (
+                        <a href="/ui/switch/v2">Switch to Modern V2</a>
+                      )}
+                    </Button>
+                  </div>
+
+                  {/* Classic V1 Option */}
+                  <div
+                    className={`p-5 rounded-2xl border transition-all ${
+                      user.ui_version === "v1"
+                        ? "bg-indigo-500/5 border-indigo-500/40 ring-1 ring-indigo-500/20"
+                        : "bg-zinc-950/60 border-zinc-800 hover:border-zinc-700"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="p-2 rounded-lg bg-zinc-800 text-zinc-300">
+                          <ShieldCheck className="w-4 h-4" />
+                        </span>
+                        <h4 className="font-bold text-zinc-100 text-sm">Classic V1 View</h4>
+                      </div>
+                      {user.ui_version === "v1" && (
+                        <span className="text-xs font-mono text-indigo-400 flex items-center gap-1 font-semibold">
+                          <Check className="w-3.5 h-3.5" /> Active
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-zinc-400 leading-relaxed mb-4">
+                      Traditional server-rendered Laravel Blade interface with Bootstrap and SB Admin. Full backward compatibility on the exact same clean URLs.
+                    </p>
+                    <Button
+                      asChild={user.ui_version !== "v1"}
+                      disabled={user.ui_version === "v1"}
+                      variant="outline"
+                      size="sm"
+                      className="w-full border-zinc-700 hover:bg-zinc-800 text-zinc-200 font-semibold text-xs rounded-xl h-9"
+                    >
+                      {user.ui_version === "v1" ? (
+                        <span>Currently Active</span>
+                      ) : (
+                        <a href="/ui/switch/v1">Switch to Classic V1</a>
+                      )}
+                    </Button>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
