@@ -209,7 +209,10 @@ class ProjectController extends Controller
 
             $teamMembers = $companyUsers->map(function ($cu) {
                 $u = $cu->user;
-                if (! $u) return null;
+                if (! $u) {
+                    return null;
+                }
+
                 return [
                     'id' => $u->id,
                     'name' => $u->name,
