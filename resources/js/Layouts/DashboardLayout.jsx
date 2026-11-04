@@ -18,7 +18,6 @@ import {
   FileText,
   ShieldCheck,
   Settings,
-  ArrowLeft,
   Check,
   CheckCheck,
   Building2,
@@ -452,19 +451,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
           </SidebarContent>
 
           {/* User Profile Footer */}
-          <SidebarFooter className="p-3 border-t border-zinc-800 bg-zinc-950 space-y-2">
-            <a
-              href="/ui/switch/v1"
-              className="w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg bg-zinc-900/90 border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800 text-xs font-medium text-zinc-300 hover:text-white transition-all shadow-sm group"
-              title="Return to Classic Blade WorkHub interface"
-            >
-              <div className="flex items-center gap-2">
-                <ArrowLeft className="w-3.5 h-3.5 text-emerald-400 group-hover:-translate-x-0.5 transition-transform" />
-                <span>Switch to Classic View</span>
-              </div>
-              <span className="font-mono text-[10px] text-zinc-500 bg-zinc-950 px-1.5 py-0.5 rounded border border-zinc-800">v1</span>
-            </a>
-
+          <SidebarFooter className="p-3 border-t border-zinc-800 bg-zinc-950">
             <div className="flex items-center justify-between gap-3 p-1.5 rounded-lg bg-zinc-900/60 border border-zinc-800/80">
               <Link href="/settings" className="flex items-center gap-2.5 min-w-0 hover:opacity-85 transition-opacity group flex-1">
                 <Avatar className="h-8 w-8 border border-zinc-700 shrink-0">
