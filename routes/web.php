@@ -47,6 +47,7 @@ Route::match(['get', 'post'], '/ui/switch/{version}', UiSwitchController::class)
 Route::get('/team', [V2TeamController::class, 'index'])->middleware(['auth', 'verified'])->name('team.index');
 Route::get('/settings', [ProfileController::class, 'edit'])->middleware(['auth', 'verified'])->name('settings.index');
 Route::post('/settings/ui-preference', [V2SettingsController::class, 'updateUiPreference'])->middleware('auth')->name('settings.ui-preference.clean');
+Route::post('/settings/notifications', [V2SettingsController::class, 'updateNotificationPreference'])->middleware('auth')->name('settings.notifications.clean');
 
 Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
 Route::get('/dashboard/{company}', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard.org');
@@ -120,6 +121,7 @@ Route::middleware(['auth', 'verified'])->prefix('v2')->name('v2.')->group(functi
     Route::post('/settings/profile', [V2SettingsController::class, 'updateProfile'])->name('settings.profile');
     Route::post('/settings/password', [V2SettingsController::class, 'updatePassword'])->name('settings.password');
     Route::post('/settings/ui-preference', [V2SettingsController::class, 'updateUiPreference'])->name('settings.ui-preference');
+    Route::post('/settings/notifications', [V2SettingsController::class, 'updateNotificationPreference'])->name('settings.notifications');
 
     Route::get('/analytics', AnalyticsController::class)->name('analytics');
     Route::get('/routes', V2RouteExplorerController::class)->name('routes');

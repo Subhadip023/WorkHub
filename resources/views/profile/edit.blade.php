@@ -94,6 +94,20 @@
                         @endif
                     </div>
 
+                    <!-- Email Notification Settings -->
+                    <div class="form-group mb-4 p-3 bg-light rounded border">
+                        <div class="custom-control custom-switch">
+                            <input type="hidden" name="email_notifications" value="0">
+                            <input type="checkbox" name="email_notifications" value="1" class="custom-control-input" id="emailNotificationsSwitch" {{ old('email_notifications', $user->email_notifications ?? true) ? 'checked' : '' }}>
+                            <label class="custom-control-label font-weight-bold text-gray-800" for="emailNotificationsSwitch">
+                                <i class="fas fa-envelope text-primary mr-1"></i> Email Notifications
+                            </label>
+                        </div>
+                        <small class="text-muted d-block mt-1 pl-4">
+                            Send instant email alerts for task assignments, deadline updates, status changes, and workspace activity.
+                        </small>
+                    </div>
+
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save mr-1"></i> Save Changes
                     </button>

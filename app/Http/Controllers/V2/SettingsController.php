@@ -44,6 +44,7 @@ class SettingsController extends Controller
             'created_at' => $authUser->created_at ? $authUser->created_at->format('M d, Y') : '',
             'last_login_at' => $authUser->last_login_at ? $authUser->last_login_at->format('M d, Y h:i A') : 'Never',
             'ui_version' => $authUser->ui_version ?? 'v1',
+            'email_notifications' => (bool) ($authUser->email_notifications ?? true),
         ];
 
         return Inertia::render('New/Settings', [
@@ -63,12 +64,17 @@ class SettingsController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
+            'email_notifications' => 'nullable|boolean',
         ]);
 
         $user->fill([
             'name' => trim($request->input('name')),
             'email' => trim($request->input('email')),
         ]);
+
+        if ($request->has('email_notifications')) {
+            $user->email_notifications = $request->boolean('email_notifications');
+        }
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
@@ -114,5 +120,23 @@ class SettingsController extends Controller
         $label = $version === 'v2' ? 'Modern V2' : 'Classic V1';
 
         return redirect()->back()->with('success', "Interface preference updated to {$label}.");
+    }
+
+    /**
+     * Update user email notification preference.
+     */
+    public function updateNotificationPreference(Request $request)
+    {
+        $request->validate([
+            'email_notifications' => 'required|boolean',
+        ]);
+
+        $enabled = $request->boolean('email_notifications');
+        $user = auth()->user();
+        $user->forceFill(['email_notifications' => $enabled])->save();
+
+        $status = $enabled ? 'enabled' : 'disabled';
+
+        return redirect()->back()->with('success', "Email notifications {$status} successfully.");
     }
 }

@@ -50,6 +50,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'last_login_at',
         'email_verified_at',
         'ui_version',
+        'email_notifications',
     ];
 
     public function isV2(): bool
@@ -107,6 +108,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
             'password' => 'hashed',
+            'email_notifications' => 'boolean',
         ];
     }
 

@@ -28,6 +28,7 @@ class ProfileUpdateRequest extends FormRequest
             ],
             'profile_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
             'cropped_image' => ['nullable', 'string'],
+            'email_notifications' => ['nullable', 'boolean'],
         ];
     }
 }

@@ -125,6 +125,7 @@ export default function Settings({
           {[
             { id: "profile", label: "Profile Information", icon: User },
             { id: "security", label: "Security & Password", icon: Lock },
+            { id: "notifications", label: "Email Notifications", icon: Mail },
             { id: "interface", label: "UI Version", icon: Sparkles },
             { id: "workspaces", label: "My Workspaces", icon: Building2 },
           ].map((tab) => {
@@ -300,6 +301,71 @@ export default function Settings({
                     </Button>
                   </div>
                 </form>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* NOTIFICATIONS TAB */}
+        {activeTab === "notifications" && (
+          <div className="space-y-6">
+            <Card className="bg-zinc-900/80 border-zinc-800 shadow-sm">
+              <CardHeader className="p-6 pb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <CardTitle className="text-base font-bold text-zinc-100 flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-emerald-400" /> Email Notifications Engine
+                    </CardTitle>
+                    <CardDescription className="text-xs text-zinc-400 mt-1">
+                      Control whether you receive instant email updates for all workspace activity.
+                    </CardDescription>
+                  </div>
+                  <Badge variant="outline" className={user.email_notifications !== false ? "border-emerald-500/30 text-emerald-400 bg-emerald-500/10 font-mono text-xs" : "border-zinc-700 text-zinc-400 bg-zinc-800 font-mono text-xs"}>
+                    {user.email_notifications !== false ? "Active / Enabled" : "Disabled"}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6 pt-2 space-y-6">
+                <div className="p-5 rounded-2xl border border-zinc-800 bg-zinc-950/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <h4 className="font-bold text-sm text-zinc-100">Send Email Alerts for All Events</h4>
+                    <p className="text-xs text-zinc-400 max-w-xl">
+                      When enabled, WorkHub sends automated emails to <strong className="text-zinc-200 font-mono">{user.email}</strong> whenever tasks are assigned to you, statuses change, deadlines are updated, projects are created, or membership requests arrive.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      router.post("/settings/notifications", {
+                        email_notifications: user.email_notifications === false,
+                      }, { preserveScroll: true });
+                    }}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                      user.email_notifications !== false ? "bg-emerald-500" : "bg-zinc-700"
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        user.email_notifications !== false ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono text-xs text-zinc-400">
+                  <div className="p-3.5 rounded-xl bg-zinc-900 border border-zinc-800 space-y-1">
+                    <span className="text-emerald-400 font-semibold">✓ Tasks & Assignments</span>
+                    <p className="text-[11px] text-zinc-500">Creation, assignments, status changes & deadlines</p>
+                  </div>
+                  <div className="p-3.5 rounded-xl bg-zinc-900 border border-zinc-800 space-y-1">
+                    <span className="text-cyan-400 font-semibold">✓ Projects</span>
+                    <p className="text-[11px] text-zinc-500">New team projects & organization updates</p>
+                  </div>
+                  <div className="p-3.5 rounded-xl bg-zinc-900 border border-zinc-800 space-y-1">
+                    <span className="text-indigo-400 font-semibold">✓ Team & Workspaces</span>
+                    <p className="text-[11px] text-zinc-500">Join requests, approvals & invitations</p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
