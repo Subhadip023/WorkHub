@@ -112,7 +112,7 @@ Both V1 and V2 operate on **clean, identical URLs** (`/dashboard`, `/tasks`, `/p
 | `/team` | `team.index` | Redirects to `/users` | `V2\TeamController@index` -> `New/Team.jsx` | Completed |
 | `/settings` | `settings.index` | `profile.edit` (Blade) | `V2\SettingsController@index` -> `New/Settings.jsx` | Completed |
 | `/analytics` | `analytics` | N/A (Redirect) | `V2\AnalyticsController` -> `New/Analytics.jsx` | Completed |
-| `/routes` | `routes.index` | N/A (Redirect) | `RouteExplorerController` -> `New/Routes.jsx` | Completed |
+| `/routes` | `routes.index` | `routes/index.blade.php` (Blade) | `V2\RouteExplorerController` -> `New/Routes.jsx` | Completed |
 | `/trash` | `v2.trash.index` | `TrashController@index` -> `trash/index.blade.php` | `V2\TrashController@index` -> `New/Trash.jsx` | Completed |
 | `/issues` | `v2.issues.index`| Classic Modal / `IssueController` | `V2\IssueController@index` -> `New/Issues.jsx` | Completed |
 | `/permissions` | `v2.permissions.index` | N/A | `V2\PermissionsController@index` -> `New/Permissions.jsx` | Completed |

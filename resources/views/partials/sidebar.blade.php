@@ -86,6 +86,13 @@
             <i class="fas fa-route"></i>
             <span>All Routes</span>
         </a>
+    </li>
+    <li class="nav-item {{ request()->routeIs('settings.*') || request()->routeIs('profile.*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('settings.index') }}">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+        </a>
+    </li>
 
     @can('manage-features')
         <hr class="sidebar-divider my-2">

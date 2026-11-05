@@ -25,6 +25,7 @@ use App\Http\Controllers\V2\IssueController as V2IssueController;
 use App\Http\Controllers\V2\NoteController as V2NoteController;
 use App\Http\Controllers\V2\PermissionController as V2PermissionController;
 use App\Http\Controllers\V2\ProjectController as V2ProjectController;
+use App\Http\Controllers\V2\RouteExplorerController as V2RouteExplorerController;
 use App\Http\Controllers\V2\SettingsController as V2SettingsController;
 use App\Http\Controllers\V2\TaskController as V2TaskController;
 use App\Http\Controllers\V2\TeamController as V2TeamController;
@@ -44,7 +45,7 @@ Route::get('/', function () {
 
 Route::match(['get', 'post'], '/ui/switch/{version}', UiSwitchController::class)->middleware('auth')->name('ui.switch');
 Route::get('/team', [V2TeamController::class, 'index'])->middleware(['auth', 'verified'])->name('team.index');
-Route::get('/settings', [V2SettingsController::class, 'index'])->middleware(['auth', 'verified'])->name('settings.index');
+Route::get('/settings', [ProfileController::class, 'edit'])->middleware(['auth', 'verified'])->name('settings.index');
 Route::post('/settings/ui-preference', [V2SettingsController::class, 'updateUiPreference'])->middleware('auth')->name('settings.ui-preference.clean');
 
 Route::get('/dashboard', DashboardController::class)->middleware(['auth', 'verified'])->name('dashboard');
@@ -121,7 +122,7 @@ Route::middleware(['auth', 'verified'])->prefix('v2')->name('v2.')->group(functi
     Route::post('/settings/ui-preference', [V2SettingsController::class, 'updateUiPreference'])->name('settings.ui-preference');
 
     Route::get('/analytics', AnalyticsController::class)->name('analytics');
-    Route::get('/routes', RouteExplorerController::class)->name('routes');
+    Route::get('/routes', V2RouteExplorerController::class)->name('routes');
 });
 
 // Top-level aliases

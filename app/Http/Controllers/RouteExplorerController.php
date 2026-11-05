@@ -6,14 +6,24 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Route as LaravelRoute;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
-use Inertia\Inertia;
+use Illuminate\View\View;
 
 class RouteExplorerController extends Controller
 {
     /**
-     * Display the all routes explorer page in the modern New Design layout.
+     * Display the all routes explorer page in the classic Blade layout.
      */
     public function __invoke(Request $request)
+    {
+        return view('routes.index', $this->buildRouteData());
+    }
+
+    /**
+     * Build the structured routes registry data and statistics.
+     *
+     * @return array<string, mixed>
+     */
+    public function buildRouteData(): array
     {
         $user = auth()->user() ?? [
             'id' => 1,
@@ -130,12 +140,12 @@ class RouteExplorerController extends Controller
             ];
         })->values()->sortByDesc('count')->values()->all();
 
-        return Inertia::render('New/Routes', [
+        return [
             'user' => $user,
             'routes' => $routes,
             'stats' => $stats,
             'categories' => $categories,
-        ]);
+        ];
     }
 
     /**

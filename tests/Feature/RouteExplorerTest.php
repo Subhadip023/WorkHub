@@ -7,8 +7,8 @@ it('redirects unauthenticated guest users accessing routes explorer to login', f
     $response->assertRedirect(route('login'));
 });
 
-it('loads routes explorer page successfully for authenticated user', function () {
-    $user = User::factory()->create(['email_verified_at' => now()]);
+it('loads routes explorer page successfully for modern v2 authenticated user', function () {
+    $user = User::factory()->create(['email_verified_at' => now(), 'ui_version' => 'v2']);
     $this->actingAs($user);
 
     $response = $this->get(route('routes.index'));
@@ -25,6 +25,19 @@ it('loads routes explorer page successfully for authenticated user', function ()
     );
 });
 
+it('loads routes explorer page successfully for classic v1 authenticated user', function () {
+    $user = User::factory()->create(['email_verified_at' => now(), 'ui_version' => 'v1']);
+    $this->actingAs($user);
+
+    $response = $this->get(route('routes.index'));
+    $response->assertStatus(200);
+
+    $response->assertViewIs('routes.index');
+    $response->assertViewHas('routes');
+    $response->assertViewHas('stats');
+    $response->assertViewHas('categories');
+});
+
 it('redirects all-routes and new-routes aliases to routes index', function () {
     $user = User::factory()->create(['email_verified_at' => now()]);
     $this->actingAs($user);
@@ -34,7 +47,7 @@ it('redirects all-routes and new-routes aliases to routes index', function () {
 });
 
 it('includes core application endpoints in routes registry', function () {
-    $user = User::factory()->create(['email_verified_at' => now()]);
+    $user = User::factory()->create(['email_verified_at' => now(), 'ui_version' => 'v2']);
     $this->actingAs($user);
 
     $response = $this->get(route('routes.index'));
