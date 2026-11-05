@@ -222,19 +222,15 @@ php artisan test
 
 ---
 
-## 7. Upcoming Roadmap (Home & Public Auth Redesign)
+## 7. Dual-Engine Public UI & Topbar Controls
 
-1. **Home Page (`resources/views/home.blade.php`)**:
-   - Modern Tailwind dark-mode SaaS redesign.
-   - Interactive UI mode toggle: **Developer Mode (V2)** vs **Classic Mode (V1)** showing feature comparisons and mockups.
-   - Feature Bento grid highlighting multi-workspace switching, velocity analytics, rich notes, and REST APIs.
-2. **Registration Page (`resources/views/auth/register.blade.php`)**:
-   - Modern Tailwind card matching the landing page.
-   - **Mode Selection Cards**: Allows new signups to choose their default experience:
-     - ⚡ **Developer Mode (V2)** *(Recommended - Modern SPA)*
-     - ⚡ **Classic Mode (V1)** *(Minimalist Blade)*
-   - Saves selection directly into `users.ui_version`.
-3. **Login Page (`resources/views/auth/login.blade.php`)**:
-   - Matching modern Tailwind styling replacing legacy SB Admin 2 / Bootstrap cards.
-   - Universal authentication seamlessly redirecting users into their preferred mode.
+1. **Theme Controls in Every Mode**:
+   - **Classic Mode (V1)** Topbar ([`partials/topbar.blade.php`](file:///home/subhadip/Herd/WorkHub/resources/views/partials/topbar.blade.php)): Dedicated Theme button (`#classicThemeToggleBtn`) toggling Light and Dark theme with persistent `localStorage` and full CSS coverage in [`admin-custom.css`](file:///home/subhadip/Herd/WorkHub/public/asset/css/admin-custom.css).
+   - **Developer Mode (V2)** Header ([`DashboardLayout.jsx`](file:///home/subhadip/Herd/WorkHub/resources/js/Layouts/DashboardLayout.jsx)): Interactive Sun/Moon theme button toggling Tailwind `.dark` / `.light` modes.
+   - **Public Landing Page** ([`home.blade.php`](file:///home/subhadip/Herd/WorkHub/resources/views/home.blade.php)): Topbar theme button toggling Light and Dark visual styles.
+
+2. **Public Experience & Registration**:
+   - Landing page features interactive workflow previews for both Developer (V2 React) and Classic (V1 Blade).
+   - Register view lets users choose their engine preference upfront (`users.ui_version`).
+   - Clean URLs (`/dashboard`, `/tasks`, `/projects`, `/settings`, `/routes`) resolve dynamically based on the active mode. Mode switching is managed through account Settings (`/settings`).
 

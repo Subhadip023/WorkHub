@@ -29,6 +29,19 @@
     <!-- Custom styling for modern responsive sidebar -->
     <link href="{{ asset('asset/css/admin-custom.css') }}?v={{ filemtime(public_path('asset/css/admin-custom.css')) }}" rel="stylesheet">
 
+    <!-- Pre-render Theme Initialization -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('workhub_theme') || 'light';
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark-theme');
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.body.classList.add('dark-theme');
+                });
+            }
+        })();
+    </script>
+
     <!-- Global App Routes and variables for JavaScript -->
     <script>
         window.AppRoutes = {

@@ -134,6 +134,13 @@
             </a>
         </li>
 
+        <!-- Nav Item - Theme Toggle Button (Light / Dark) -->
+        <li class="nav-item mx-1 d-flex align-items-center">
+            <button type="button" id="classicThemeToggleBtn" class="btn btn-link nav-link p-2" title="Toggle Theme (Light / Dark)" style="font-size: 1.1rem; border: none; outline: none; box-shadow: none; cursor: pointer;">
+                <i class="fas fa-moon text-gray-600" id="classicThemeIcon"></i>
+            </button>
+        </li>
+
         <div class="topbar-divider d-none d-sm-block"></div>
 
         <!-- Nav Item - User Information -->
@@ -167,6 +174,43 @@
         </li>
 
     </ul>
+
+    <!-- Theme Toggle Handler Script -->
+    <script>
+        (function() {
+            function updateClassicThemeIcon(isDark) {
+                var icon = document.getElementById('classicThemeIcon');
+                if (!icon) return;
+                if (isDark) {
+                    icon.className = 'fas fa-sun text-warning';
+                } else {
+                    icon.className = 'fas fa-moon text-gray-600';
+                }
+            }
+
+            function toggleClassicTheme() {
+                var isDark = document.body.classList.toggle('dark-theme');
+                document.documentElement.classList.toggle('dark-theme', isDark);
+                localStorage.setItem('workhub_theme', isDark ? 'dark' : 'light');
+                updateClassicThemeIcon(isDark);
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                var currentTheme = localStorage.getItem('workhub_theme') || 'light';
+                var isDark = (currentTheme === 'dark');
+                if (isDark) {
+                    document.body.classList.add('dark-theme');
+                    document.documentElement.classList.add('dark-theme');
+                }
+                updateClassicThemeIcon(isDark);
+
+                var btn = document.getElementById('classicThemeToggleBtn');
+                if (btn) {
+                    btn.addEventListener('click', toggleClassicTheme);
+                }
+            });
+        })();
+    </script>
 
 </nav>
 

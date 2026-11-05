@@ -194,39 +194,39 @@ export default function NewDashboard({
     <DashboardLayout title="Dashboard" activeItem="dashboard">
       <div className="space-y-6">
         {/* Header Hero Bar matching Tasks/Projects/Analytics */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-neutral-800 bg-neutral-900/90 p-6 rounded-xl shadow-xl w-full">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/90 p-6 rounded-xl shadow-sm dark:shadow-xl w-full">
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
                 {current_workspace_name}
               </span>
-              <span className="text-xs text-neutral-400 font-mono flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-neutral-500" />
+              <span className="text-xs text-slate-500 dark:text-neutral-400 font-mono flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-slate-400 dark:text-neutral-500" />
                 {todayDateFormatted}
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
               {greeting},{" "}
-              <span className="text-white">
+              <span className="text-slate-900 dark:text-white">
                 {user?.name ? user.name.split(" ")[0] : "Commander"}
               </span>
-              <Sparkles className="w-5 h-5 text-emerald-400 shrink-0" />
+              <Sparkles className="w-5 h-5 text-emerald-500 dark:text-emerald-400 shrink-0" />
             </h1>
 
-            <p className="text-sm sm:text-base text-neutral-400 font-mono mt-1">
+            <p className="text-sm sm:text-base text-slate-500 dark:text-neutral-400 font-mono mt-1">
               Workspace overview & velocity. You have{" "}
-              <strong className="text-emerald-400 font-semibold">{allPendingCount} pending tasks</strong>
+              <strong className="text-emerald-600 dark:text-emerald-400 font-semibold">{allPendingCount} pending tasks</strong>
               {overdueCount > 0 ? (
                 <>
                   {" "}and{" "}
-                  <span className="text-rose-400 font-semibold underline decoration-rose-500/50 underline-offset-2">
+                  <span className="text-rose-500 dark:text-rose-400 font-semibold underline decoration-rose-500/50 underline-offset-2">
                     {overdueCount} overdue
                   </span>
                 </>
               ) : (
-                <> and <span className="text-emerald-300 font-medium">zero overdue items</span></>
+                <> and <span className="text-emerald-600 dark:text-emerald-300 font-medium">zero overdue items</span></>
               )}
               .
             </p>
@@ -236,23 +236,23 @@ export default function NewDashboard({
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <Link
               href={getRoute("tasks.index")}
-              className="inline-flex items-center gap-2 px-3.5 h-9 bg-white hover:bg-neutral-200 text-black font-semibold text-sm rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer"
+              className="inline-flex items-center gap-2 px-3.5 h-9 bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-white dark:hover:bg-neutral-200 dark:text-black font-semibold text-sm rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer"
             >
-              <Plus className="w-4 h-4 text-black" />
+              <Plus className="w-4 h-4 text-white dark:text-black" />
               New Task
             </Link>
             <Link
               href={getRoute("projects.index")}
-              className="inline-flex items-center gap-2 px-3.5 h-9 bg-black hover:bg-neutral-900 text-neutral-200 hover:text-white font-semibold text-sm rounded-xl border border-neutral-800 transition-all shadow-sm active:scale-95 cursor-pointer"
+              className="inline-flex items-center gap-2 px-3.5 h-9 bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-black dark:hover:bg-neutral-900 dark:text-neutral-200 dark:hover:text-white font-semibold text-sm rounded-xl border border-slate-200 dark:border-neutral-800 transition-all shadow-sm active:scale-95 cursor-pointer"
             >
-              <FolderKanban className="w-4 h-4 text-neutral-400" />
+              <FolderKanban className="w-4 h-4 text-slate-500 dark:text-neutral-400" />
               Projects
             </Link>
             <Link
               href="/v2/analytics"
-              className="inline-flex items-center gap-2 px-3.5 h-9 bg-black hover:bg-neutral-900 text-neutral-200 hover:text-white font-semibold text-sm rounded-xl border border-neutral-800 transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-3.5 h-9 bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-black dark:hover:bg-neutral-900 dark:text-neutral-200 dark:hover:text-white font-semibold text-sm rounded-xl border border-slate-200 dark:border-neutral-800 transition-all cursor-pointer"
             >
-              <BarChart3 className="w-4 h-4 text-neutral-400" />
+              <BarChart3 className="w-4 h-4 text-slate-500 dark:text-neutral-400" />
               Analytics
             </Link>
           </div>
@@ -261,51 +261,51 @@ export default function NewDashboard({
         {/* 4-KPI Metric Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Card 1: Total Projects */}
-          <Card className="bg-neutral-900/90 border-neutral-800 text-zinc-100 shadow-xl rounded-xl relative overflow-hidden group hover:border-neutral-700 transition-all">
+          <Card className="bg-white dark:bg-neutral-900/90 border-slate-200 dark:border-neutral-800 text-slate-900 dark:text-zinc-100 shadow-sm dark:shadow-xl rounded-xl relative overflow-hidden group hover:border-slate-300 dark:hover:border-neutral-700 transition-all">
             <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition-colors" />
             <CardContent className="p-5 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-400">
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-400">
                   Total Projects
                 </span>
-                <div className="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-emerald-400">
+                <div className="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-emerald-500 dark:text-emerald-400">
                   <FolderKanban className="w-4 h-4" />
                 </div>
               </div>
               <div className="space-y-1">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl sm:text-3xl font-bold font-mono text-white tracking-tight">
+                  <span className="text-2xl sm:text-3xl font-bold font-mono text-slate-900 dark:text-white tracking-tight">
                     {totalProjectsCount}
                   </span>
-                  <span className="text-xs sm:text-sm text-emerald-400 font-mono font-medium">Active</span>
+                  <span className="text-xs sm:text-sm text-emerald-600 dark:text-emerald-400 font-mono font-medium">Active</span>
                 </div>
-                <p className="text-xs text-neutral-400 font-mono">Tracked in this workspace</p>
+                <p className="text-xs text-slate-500 dark:text-neutral-400 font-mono">Tracked in this workspace</p>
               </div>
             </CardContent>
           </Card>
 
           {/* Card 2: Task Completion */}
-          <Card className="bg-neutral-900/90 border-neutral-800 text-zinc-100 shadow-xl rounded-xl relative overflow-hidden group hover:border-neutral-700 transition-all">
+          <Card className="bg-white dark:bg-neutral-900/90 border-slate-200 dark:border-neutral-800 text-slate-900 dark:text-zinc-100 shadow-sm dark:shadow-xl rounded-xl relative overflow-hidden group hover:border-slate-300 dark:hover:border-neutral-700 transition-all">
             <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 rounded-full blur-2xl group-hover:bg-cyan-500/10 transition-colors" />
             <CardContent className="p-5 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-400">
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-400">
                   Task Velocity
                 </span>
-                <div className="p-2.5 bg-cyan-500/10 rounded-xl border border-cyan-500/20 text-cyan-400">
+                <div className="p-2.5 bg-cyan-500/10 rounded-xl border border-cyan-500/20 text-cyan-500 dark:text-cyan-400">
                   <CheckCircle2 className="w-4 h-4" />
                 </div>
               </div>
               <div className="space-y-1">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl sm:text-3xl font-bold font-mono text-white tracking-tight">
+                  <span className="text-2xl sm:text-3xl font-bold font-mono text-slate-900 dark:text-white tracking-tight">
                     {taskPercentage}%
                   </span>
-                  <span className="text-xs sm:text-sm text-cyan-400 font-mono font-medium">
+                  <span className="text-xs sm:text-sm text-cyan-600 dark:text-cyan-400 font-mono font-medium">
                     {completedTasksCount}/{totalTasksCount} done
                   </span>
                 </div>
-                <div className="w-full bg-zinc-800/80 rounded-full h-1.5 overflow-hidden mt-2">
+                <div className="w-full bg-slate-100 dark:bg-zinc-800/80 rounded-full h-1.5 overflow-hidden mt-2">
                   <div
                     className="bg-gradient-to-r from-cyan-500 to-emerald-400 h-full rounded-full transition-all duration-700"
                     style={{ width: `${taskPercentage}%` }}
@@ -316,76 +316,76 @@ export default function NewDashboard({
           </Card>
 
           {/* Card 3: Attention Needed */}
-          <Card className="bg-neutral-900/90 border-neutral-800 text-zinc-100 shadow-xl rounded-xl relative overflow-hidden group hover:border-neutral-700 transition-all">
+          <Card className="bg-white dark:bg-neutral-900/90 border-slate-200 dark:border-neutral-800 text-slate-900 dark:text-zinc-100 shadow-sm dark:shadow-xl rounded-xl relative overflow-hidden group hover:border-slate-300 dark:hover:border-neutral-700 transition-all">
             <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-full blur-2xl group-hover:bg-rose-500/10 transition-colors" />
             <CardContent className="p-5 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-400">
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-400">
                   Attention Needed
                 </span>
-                <div className="p-2.5 bg-rose-500/10 rounded-xl border border-rose-500/20 text-rose-400">
+                <div className="p-2.5 bg-rose-500/10 rounded-xl border border-rose-500/20 text-rose-500 dark:text-rose-400">
                   <AlertTriangle className="w-4 h-4" />
                 </div>
               </div>
               <div className="space-y-1">
                 <div className="flex items-baseline gap-2">
-                  <span className={`text-2xl sm:text-3xl font-bold font-mono tracking-tight ${overdueCount > 0 ? "text-rose-400" : "text-white"}`}>
+                  <span className={`text-2xl sm:text-3xl font-bold font-mono tracking-tight ${overdueCount > 0 ? "text-rose-500 dark:text-rose-400" : "text-slate-900 dark:text-white"}`}>
                     {overdueCount}
                   </span>
-                  <span className="text-xs sm:text-sm text-rose-400 font-mono font-medium">Overdue</span>
-                  <span className="text-zinc-600 font-mono">|</span>
-                  <span className="text-xs sm:text-sm text-amber-400 font-mono font-medium">{todayCount} Today</span>
+                  <span className="text-xs sm:text-sm text-rose-500 dark:text-rose-400 font-mono font-medium">Overdue</span>
+                  <span className="text-slate-400 dark:text-zinc-600 font-mono">|</span>
+                  <span className="text-xs sm:text-sm text-amber-500 dark:text-amber-400 font-mono font-medium">{todayCount} Today</span>
                 </div>
-                <p className="text-xs text-neutral-400 font-mono">Requires priority action</p>
+                <p className="text-xs text-slate-500 dark:text-neutral-400 font-mono">Requires priority action</p>
               </div>
             </CardContent>
           </Card>
 
           {/* Card 4: Team Members */}
-          <Card className="bg-neutral-900/90 border-neutral-800 text-zinc-100 shadow-xl rounded-xl relative overflow-hidden group hover:border-neutral-700 transition-all">
+          <Card className="bg-white dark:bg-neutral-900/90 border-slate-200 dark:border-neutral-800 text-slate-900 dark:text-zinc-100 shadow-sm dark:shadow-xl rounded-xl relative overflow-hidden group hover:border-slate-300 dark:hover:border-neutral-700 transition-all">
             <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl group-hover:bg-indigo-500/10 transition-colors" />
             <CardContent className="p-5 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-400">
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-neutral-400">
                   Team Members
                 </span>
-                <div className="p-2.5 bg-indigo-500/10 rounded-xl border border-indigo-500/20 text-indigo-400">
+                <div className="p-2.5 bg-indigo-500/10 rounded-xl border border-indigo-500/20 text-indigo-500 dark:text-indigo-400">
                   <Users className="w-4 h-4" />
                 </div>
               </div>
               <div className="space-y-1">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl sm:text-3xl font-bold font-mono text-white tracking-tight">
+                  <span className="text-2xl sm:text-3xl font-bold font-mono text-slate-900 dark:text-white tracking-tight">
                     {teamMembersCount}
                   </span>
-                  <span className="text-xs sm:text-sm text-indigo-400 font-mono font-medium">Contributors</span>
+                  <span className="text-xs sm:text-sm text-indigo-500 dark:text-indigo-400 font-mono font-medium">Contributors</span>
                 </div>
-                <p className="text-xs text-neutral-400 font-mono">Active collaborators</p>
+                <p className="text-xs text-slate-500 dark:text-neutral-400 font-mono">Active collaborators</p>
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* 7-Day Velocity & Throughput Area Chart */}
-        <Card className="bg-neutral-900/90 border-neutral-800 text-zinc-100 shadow-xl rounded-xl overflow-hidden">
-          <CardHeader className="p-5 pb-2 border-b border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-black/40">
+        <Card className="bg-white dark:bg-neutral-900/90 border-slate-200 dark:border-neutral-800 text-slate-900 dark:text-zinc-100 shadow-sm dark:shadow-xl rounded-xl overflow-hidden">
+          <CardHeader className="p-5 pb-2 border-b border-slate-200 dark:border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/70 dark:bg-black/40">
             <div className="space-y-0.5">
-              <CardTitle className="text-base font-bold tracking-tight text-white flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-emerald-400" />
+              <CardTitle className="text-base font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                 7-Day Task Velocity & Throughput
               </CardTitle>
-              <p className="text-xs sm:text-sm text-neutral-400 font-mono">
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 font-mono">
                 Daily created tasks vs completed tasks shipped in this workspace
               </p>
             </div>
             <div className="flex items-center gap-4 text-xs sm:text-sm font-mono">
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-cyan-400" />
-                <span className="text-neutral-400">Created</span>
+                <span className="text-slate-500 dark:text-neutral-400">Created</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-                <span className="text-neutral-400">Completed</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 dark:bg-emerald-400" />
+                <span className="text-slate-500 dark:text-neutral-400">Completed</span>
               </div>
             </div>
           </CardHeader>
@@ -410,12 +410,12 @@ export default function NewDashboard({
                     content={({ active, payload, label }) => {
                       if (active && payload && payload.length) {
                         return (
-                          <div className="bg-zinc-950 border border-zinc-800 p-2.5 rounded-xl shadow-2xl font-mono text-xs space-y-1">
-                            <p className="font-bold text-zinc-200 mb-1">{label}</p>
-                            <p className="text-cyan-400 flex items-center justify-between gap-4">
+                          <div className="bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 p-2.5 rounded-xl shadow-xl dark:shadow-2xl font-mono text-xs space-y-1">
+                            <p className="font-bold text-slate-800 dark:text-zinc-200 mb-1">{label}</p>
+                            <p className="text-cyan-600 dark:text-cyan-400 flex items-center justify-between gap-4">
                               <span>Created:</span> <span className="font-bold">{payload[0]?.value ?? 0}</span>
                             </p>
-                            <p className="text-emerald-400 flex items-center justify-between gap-4">
+                            <p className="text-emerald-600 dark:text-emerald-400 flex items-center justify-between gap-4">
                               <span>Completed:</span> <span className="font-bold">{payload[1]?.value ?? 0}</span>
                             </p>
                           </div>
@@ -447,35 +447,34 @@ export default function NewDashboard({
             </div>
           </CardContent>
         </Card>
-
         {/* Main Content Grid: 2/3 Left (Tasks Hub) & 1/3 Right (Projects & Live Stream) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left 2/3 Column: Linear-Grade Task Hub */}
           <div className="lg:col-span-2 space-y-6">
-            <Card className="bg-neutral-900/90 border-neutral-800 text-zinc-100 shadow-xl rounded-xl overflow-hidden">
+            <Card className="bg-white dark:bg-neutral-900/90 border-slate-200 dark:border-neutral-800 text-slate-900 dark:text-zinc-100 shadow-sm dark:shadow-xl rounded-xl overflow-hidden">
               {/* Task Hub Header */}
-              <div className="p-4 sm:p-5 border-b border-neutral-800 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-black/40">
+              <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-neutral-800 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50/70 dark:bg-black/40">
                 <div className="space-y-0.5">
-                  <h2 className="text-base font-bold text-white flex items-center gap-2">
-                    <CheckSquare className="w-4 h-4 text-emerald-400" />
+                  <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <CheckSquare className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                     My Priority Tasks
                   </h2>
-                  <p className="text-xs sm:text-sm text-neutral-400 font-mono">Assigned items ordered by urgency</p>
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 font-mono">Assigned items ordered by urgency</p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
                   {/* Segmented Filter Control */}
-                  <div className="flex items-center bg-black p-1 rounded-lg border border-neutral-800 text-xs sm:text-sm font-mono">
+                  <div className="flex items-center bg-slate-100 dark:bg-black p-1 rounded-lg border border-slate-200 dark:border-neutral-800 text-xs sm:text-sm font-mono">
                     <button
                       onClick={() => handleFilterChange("today_past")}
                       className={`px-3 sm:px-4 py-1.5 rounded-md transition-all flex items-center gap-2 font-medium cursor-pointer ${
                         active_task_filter === "today_past"
-                          ? "bg-neutral-800 text-white shadow-sm font-semibold"
-                          : "text-neutral-400 hover:text-neutral-200"
+                          ? "bg-white text-slate-900 dark:bg-neutral-800 dark:text-white shadow-sm font-semibold"
+                          : "text-slate-500 hover:text-slate-800 dark:text-neutral-400 dark:hover:text-neutral-200"
                       }`}
                     >
                       Today & Past
-                      <span className="bg-neutral-900 text-neutral-300 text-xs px-2 py-0.5 rounded-full font-mono">
+                      <span className="bg-slate-200 dark:bg-neutral-900 text-slate-700 dark:text-neutral-300 text-xs px-2 py-0.5 rounded-full font-mono">
                         {todayPastCount}
                       </span>
                     </button>
@@ -484,12 +483,12 @@ export default function NewDashboard({
                       onClick={() => handleFilterChange("due_today")}
                       className={`px-3 sm:px-4 py-1.5 rounded-md transition-all flex items-center gap-2 font-medium cursor-pointer ${
                         active_task_filter === "due_today"
-                          ? "bg-neutral-800 text-white shadow-sm font-semibold"
-                          : "text-neutral-400 hover:text-neutral-200"
+                          ? "bg-white text-slate-900 dark:bg-neutral-800 dark:text-white shadow-sm font-semibold"
+                          : "text-slate-500 hover:text-slate-800 dark:text-neutral-400 dark:hover:text-neutral-200"
                       }`}
                     >
                       Due Today
-                      <span className="bg-neutral-900 text-amber-400 text-xs px-2 py-0.5 rounded-full font-mono">
+                      <span className="bg-slate-200 dark:bg-neutral-900 text-amber-600 dark:text-amber-400 text-xs px-2 py-0.5 rounded-full font-mono font-medium">
                         {todayCount}
                       </span>
                     </button>
@@ -498,12 +497,12 @@ export default function NewDashboard({
                       onClick={() => handleFilterChange("overdue")}
                       className={`px-3 sm:px-4 py-1.5 rounded-md transition-all flex items-center gap-2 font-medium cursor-pointer ${
                         active_task_filter === "overdue"
-                          ? "bg-neutral-800 text-white shadow-sm font-semibold"
-                          : "text-neutral-400 hover:text-neutral-200"
+                          ? "bg-white text-slate-900 dark:bg-neutral-800 dark:text-white shadow-sm font-semibold"
+                          : "text-slate-500 hover:text-slate-800 dark:text-neutral-400 dark:hover:text-neutral-200"
                       }`}
                     >
                       Overdue
-                      <span className="bg-rose-950/80 text-rose-400 text-xs px-2 py-0.5 rounded-full font-mono font-bold">
+                      <span className="bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 text-xs px-2 py-0.5 rounded-full font-mono font-bold">
                         {overdueCount}
                       </span>
                     </button>
@@ -512,23 +511,23 @@ export default function NewDashboard({
                       onClick={() => handleFilterChange("all_pending")}
                       className={`px-3 sm:px-4 py-1.5 rounded-md transition-all flex items-center gap-2 font-medium cursor-pointer ${
                         active_task_filter === "all_pending"
-                          ? "bg-neutral-800 text-white shadow-sm font-semibold"
-                          : "text-neutral-400 hover:text-neutral-200"
+                          ? "bg-white text-slate-900 dark:bg-neutral-800 dark:text-white shadow-sm font-semibold"
+                          : "text-slate-500 hover:text-slate-800 dark:text-neutral-400 dark:hover:text-neutral-200"
                       }`}
                     >
                       All Pending
-                      <span className="bg-neutral-900 text-neutral-300 text-xs px-2 py-0.5 rounded-full font-mono">
+                      <span className="bg-slate-200 dark:bg-neutral-900 text-slate-700 dark:text-neutral-300 text-xs px-2 py-0.5 rounded-full font-mono">
                         {allPendingCount}
                       </span>
                     </button>
                   </div>
 
                   {/* Per Page Select */}
-                  <div className="flex items-center gap-1.5 text-xs sm:text-sm text-neutral-400 font-mono">
+                  <div className="flex items-center gap-1.5 text-xs sm:text-sm text-slate-500 dark:text-neutral-400 font-mono">
                     <select
                       value={per_page}
                       onChange={(e) => handlePerPageChange(Number(e.target.value))}
-                      className="bg-black border border-neutral-800 text-neutral-200 text-xs sm:text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-neutral-700 cursor-pointer font-mono"
+                      className="bg-white dark:bg-black border border-slate-200 dark:border-neutral-800 text-slate-800 dark:text-neutral-200 text-xs sm:text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-slate-400 dark:focus:border-neutral-700 cursor-pointer font-mono"
                     >
                       <option value={5}>5 / page</option>
                       <option value={10}>10 / page</option>
@@ -542,63 +541,63 @@ export default function NewDashboard({
               <CardContent className="p-0">
                 {tasksToDisplay.length === 0 ? (
                   <div className="text-center py-14 px-4 space-y-3">
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 dark:text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
                       <CheckCircle2 className="w-6 h-6" />
                     </div>
                     <div className="space-y-1">
-                      <h3 className="text-base font-bold text-neutral-200">All caught up!</h3>
-                      <p className="text-xs sm:text-sm text-neutral-400 max-w-sm mx-auto font-mono">
+                      <h3 className="text-base font-bold text-slate-800 dark:text-neutral-200">All caught up!</h3>
+                      <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 max-w-sm mx-auto font-mono">
                         No tasks pending for this filter. Great job keeping your queue clear!
                       </p>
                     </div>
                     <Link
                       href={getRoute("tasks.index")}
-                      className="inline-flex items-center gap-2 mt-2 px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs sm:text-sm font-semibold rounded-xl border border-neutral-700 transition-all shadow-sm"
+                      className="inline-flex items-center gap-2 mt-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-neutral-200 text-xs sm:text-sm font-semibold rounded-xl border border-slate-200 dark:border-neutral-700 transition-all shadow-sm"
                     >
                       <Plus className="w-4 h-4" /> View All Tasks / Create New
                     </Link>
                   </div>
                 ) : (
-                  <div className="divide-y divide-neutral-800/80">
+                  <div className="divide-y divide-slate-100 dark:divide-neutral-800/80">
                     {tasksToDisplay.map((task) => {
                       const priorityNum = Number(task.priority);
                       return (
                         <div
                           key={task.id}
-                          className={`p-3.5 sm:p-4 hover:bg-neutral-800/50 transition-colors flex items-center justify-between gap-3 group ${
-                            priorityNum === 4 ? "bg-rose-950/10 hover:bg-rose-950/20" : ""
+                          className={`p-3.5 sm:p-4 hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors flex items-center justify-between gap-3 group ${
+                            priorityNum === 4 ? "bg-rose-50/50 dark:bg-rose-950/10 hover:bg-rose-50 dark:hover:bg-rose-950/20" : ""
                           }`}
                         >
                           <div className="flex items-center gap-3 min-w-0 flex-1">
                             {/* Done Checkbox */}
                             <button
                               onClick={() => handleToggleTask(task.id)}
-                              className="text-neutral-500 hover:text-emerald-400 transition-colors shrink-0 cursor-pointer"
+                              className="text-slate-400 dark:text-neutral-500 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors shrink-0 cursor-pointer"
                               title="Toggle completed state"
                             >
                               {task.completed ? (
-                                <CheckSquare className="w-4 h-4 text-emerald-400" />
+                                <CheckSquare className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                               ) : (
-                                <Square className="w-4 h-4 hover:border-emerald-400" />
+                                <Square className="w-4 h-4 hover:border-emerald-500" />
                               )}
                             </button>
 
                             {/* Priority Badge */}
                             <div className="shrink-0">
                               {priorityNum === 4 ? (
-                                <Badge className="bg-rose-500/15 text-rose-300 border border-rose-500/30 px-2.5 py-0.5 text-xs font-bold flex items-center gap-1">
-                                  <Flame className="w-3.5 h-3.5 text-rose-400 fill-rose-400" /> Urgent
+                                <Badge className="bg-rose-500/15 text-rose-600 dark:text-rose-300 border border-rose-500/30 px-2.5 py-0.5 text-xs font-bold flex items-center gap-1">
+                                  <Flame className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400 fill-rose-500 dark:fill-rose-400" /> Urgent
                                 </Badge>
                               ) : priorityNum === 3 ? (
-                                <Badge className="bg-amber-500/15 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 text-xs font-bold flex items-center gap-1">
-                                  <ArrowUp className="w-3.5 h-3.5 text-amber-400" /> High
+                                <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-300 border border-amber-500/30 px-2.5 py-0.5 text-xs font-bold flex items-center gap-1">
+                                  <ArrowUp className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" /> High
                                 </Badge>
                               ) : priorityNum === 2 ? (
-                                <Badge className="bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 px-2.5 py-0.5 text-xs font-bold flex items-center gap-1">
-                                  <Minus className="w-3.5 h-3.5 text-cyan-400" /> Med
+                                <Badge className="bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30 px-2.5 py-0.5 text-xs font-bold flex items-center gap-1">
+                                  <Minus className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" /> Med
                                 </Badge>
                               ) : (
-                                <Badge className="bg-neutral-800 text-neutral-300 border border-neutral-700 px-2.5 py-0.5 text-xs font-medium flex items-center gap-1">
+                                <Badge className="bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-neutral-300 border border-slate-200 dark:border-neutral-700 px-2.5 py-0.5 text-xs font-medium flex items-center gap-1">
                                   <ArrowDown className="w-3.5 h-3.5" /> Low
                                 </Badge>
                               )}
@@ -609,20 +608,20 @@ export default function NewDashboard({
                               <div className="flex items-center gap-2">
                                 <Link
                                   href={getRoute("tasks.show", task.id)}
-                                  className={`text-sm font-semibold text-neutral-200 hover:text-emerald-400 transition-colors truncate block ${
-                                    task.completed ? "line-through text-neutral-500" : ""
+                                  className={`text-sm font-semibold text-slate-800 dark:text-neutral-200 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors truncate block ${
+                                    task.completed ? "line-through text-slate-400 dark:text-neutral-500" : ""
                                   }`}
                                 >
                                   {task.title}
                                 </Link>
                                 {task.external_source && (
-                                  <Badge className="bg-neutral-800 text-neutral-300 text-xs px-1.5 py-0 border border-neutral-700 shrink-0 font-mono">
+                                  <Badge className="bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-neutral-300 text-xs px-1.5 py-0 border border-slate-200 dark:border-neutral-700 shrink-0 font-mono">
                                     API
                                   </Badge>
                                 )}
                               </div>
 
-                              <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-400 font-mono">
+                              <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-neutral-400 font-mono">
                                 {/* Project Tag */}
                                 {task.project ? (
                                   <Link
@@ -636,23 +635,23 @@ export default function NewDashboard({
                                     {typeof task.project === "object" ? task.project.name : task.project}
                                   </Link>
                                 ) : (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs bg-neutral-800 text-neutral-400 border border-neutral-700">
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-400 border border-slate-200 dark:border-neutral-700">
                                     <Lock className="w-3 h-3" /> Personal
                                   </span>
                                 )}
 
                                 {/* Due Date Tag */}
                                 {task.is_overdue ? (
-                                  <span className="inline-flex items-center gap-1 text-rose-400 font-mono text-xs">
+                                  <span className="inline-flex items-center gap-1 text-rose-500 dark:text-rose-400 font-mono text-xs">
                                     <AlertTriangle className="w-3.5 h-3.5" /> Overdue ({task.due_date})
                                   </span>
                                 ) : task.is_due_today ? (
-                                  <span className="inline-flex items-center gap-1 text-amber-400 font-mono text-xs">
+                                  <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-mono text-xs">
                                     <Clock className="w-3.5 h-3.5" /> Due Today
                                   </span>
                                 ) : task.due_date ? (
-                                  <span className="inline-flex items-center gap-1 text-neutral-400 font-mono text-xs">
-                                    <Calendar className="w-3.5 h-3.5 text-neutral-500" /> {task.due_date}
+                                  <span className="inline-flex items-center gap-1 text-slate-500 dark:text-neutral-400 font-mono text-xs">
+                                    <Calendar className="w-3.5 h-3.5 text-slate-400 dark:text-neutral-500" /> {task.due_date}
                                   </span>
                                 ) : null}
                               </div>
@@ -663,7 +662,7 @@ export default function NewDashboard({
                           <div className="shrink-0">
                             <Link
                               href={getRoute("tasks.show", task.id)}
-                              className="inline-flex items-center justify-center w-8 h-8 bg-neutral-800 hover:bg-emerald-500/20 hover:text-emerald-400 text-neutral-400 rounded-lg border border-neutral-700 transition-all shadow-sm cursor-pointer"
+                              className="inline-flex items-center justify-center w-8 h-8 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-600 dark:bg-neutral-800 dark:hover:bg-emerald-500/20 dark:hover:text-emerald-400 text-slate-500 dark:text-neutral-400 rounded-lg border border-slate-200 dark:border-neutral-700 transition-all shadow-sm cursor-pointer"
                               title="View Details"
                             >
                               <ArrowRight className="w-4 h-4" />
@@ -678,7 +677,7 @@ export default function NewDashboard({
 
               {/* Pagination Controls */}
               {pagination_meta && pagination_meta.last_page > 1 && (
-                <div className="p-3.5 bg-black/60 border-t border-neutral-800 flex items-center justify-between text-xs sm:text-sm text-neutral-400 font-mono">
+                <div className="p-3.5 bg-slate-50/70 dark:bg-black/60 border-t border-slate-200 dark:border-neutral-800 flex items-center justify-between text-xs sm:text-sm text-slate-500 dark:text-neutral-400 font-mono">
                   <span>
                     Showing {((pagination_meta.current_page - 1) * pagination_meta.per_page) + 1} -{" "}
                     {Math.min(pagination_meta.current_page * pagination_meta.per_page, pagination_meta.total)} of{" "}
@@ -691,11 +690,11 @@ export default function NewDashboard({
                         const routeName = company ? getRoute("dashboard.org", company.id) : getRoute("dashboard");
                         router.get(routeName, { task_filter: active_task_filter, per_page, page: pagination_meta.current_page - 1 });
                       }}
-                      className="p-1.5 rounded-lg bg-neutral-900 border border-neutral-800 disabled:opacity-30 hover:bg-neutral-800 transition-colors cursor-pointer disabled:cursor-not-allowed"
+                      className="p-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 disabled:opacity-30 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer disabled:cursor-not-allowed text-slate-700 dark:text-neutral-200"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
-                    <span className="px-2 font-semibold text-neutral-200">
+                    <span className="px-2 font-semibold text-slate-800 dark:text-neutral-200">
                       {pagination_meta.current_page} / {pagination_meta.last_page}
                     </span>
                     <button
@@ -704,7 +703,7 @@ export default function NewDashboard({
                         const routeName = company ? getRoute("dashboard.org", company.id) : getRoute("dashboard");
                         router.get(routeName, { task_filter: active_task_filter, per_page, page: pagination_meta.current_page + 1 });
                       }}
-                      className="p-1.5 rounded-lg bg-neutral-900 border border-neutral-800 disabled:opacity-30 hover:bg-neutral-800 transition-colors cursor-pointer disabled:cursor-not-allowed"
+                      className="p-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 disabled:opacity-30 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer disabled:cursor-not-allowed text-slate-700 dark:text-neutral-200"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
@@ -715,18 +714,18 @@ export default function NewDashboard({
 
             {/* Quick Guide Card (Shown if user has 0 projects) */}
             {totalProjectsCount === 0 && (
-              <Card className="bg-neutral-900/90 border-neutral-800 text-zinc-100 shadow-xl rounded-xl">
+              <Card className="bg-white dark:bg-neutral-900/90 border-slate-200 dark:border-neutral-800 text-slate-900 dark:text-zinc-100 shadow-sm dark:shadow-xl rounded-xl">
                 <CardHeader>
-                  <CardTitle className="text-base font-bold text-white flex items-center gap-2">
-                    <Rocket className="w-4 h-4 text-emerald-400" /> Get Started with WorkHub
+                  <CardTitle className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Rocket className="w-4 h-4 text-emerald-500 dark:text-emerald-400" /> Get Started with WorkHub
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3 text-sm text-neutral-300">
+                <CardContent className="space-y-3 text-sm text-slate-600 dark:text-neutral-300">
                   <p>Welcome to WorkHub! Streamline your projects, task classifications, and documentation.</p>
-                  <ul className="space-y-2 list-disc pl-4 text-neutral-400 font-mono text-xs sm:text-sm">
-                    <li><strong className="text-neutral-200">Context Switching:</strong> Toggle between Personal Space and Organizations using the filter in the sidebar.</li>
-                    <li><strong className="text-neutral-200">Projects & Tasks:</strong> Create projects and classify tasks with priorities and due dates.</li>
-                    <li><strong className="text-neutral-200">Documentation:</strong> Keep rich notes under projects, tasks, or personal workspace.</li>
+                  <ul className="space-y-2 list-disc pl-4 text-slate-500 dark:text-neutral-400 font-mono text-xs sm:text-sm">
+                    <li><strong className="text-slate-800 dark:text-neutral-200">Context Switching:</strong> Toggle between Personal Space and Organizations using the filter in the sidebar.</li>
+                    <li><strong className="text-slate-800 dark:text-neutral-200">Projects & Tasks:</strong> Create projects and classify tasks with priorities and due dates.</li>
+                    <li><strong className="text-slate-800 dark:text-neutral-200">Documentation:</strong> Keep rich notes under projects, tasks, or personal workspace.</li>
                   </ul>
                   <Link
                     href={getRoute("projects.index")}
@@ -742,21 +741,21 @@ export default function NewDashboard({
           {/* Right 1/3 Column: Projects Progress & Live Activity Stream & Team */}
           <div className="space-y-6">
             {/* Projects Progress Card */}
-            <Card className="bg-neutral-900/90 border-neutral-800 text-zinc-100 shadow-xl rounded-xl">
-              <CardHeader className="p-4 sm:p-5 border-b border-neutral-800 bg-black/40 flex flex-row items-center justify-between">
-                <CardTitle className="text-base font-bold text-white flex items-center gap-2">
-                  <FolderKanban className="w-4 h-4 text-emerald-400" /> Projects Progress
+            <Card className="bg-white dark:bg-neutral-900/90 border-slate-200 dark:border-neutral-800 text-slate-900 dark:text-zinc-100 shadow-sm dark:shadow-xl rounded-xl">
+              <CardHeader className="p-4 sm:p-5 border-b border-slate-200 dark:border-neutral-800 bg-slate-50/70 dark:bg-black/40 flex flex-row items-center justify-between">
+                <CardTitle className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <FolderKanban className="w-4 h-4 text-emerald-500 dark:text-emerald-400" /> Projects Progress
                 </CardTitle>
                 <Link
                   href={getRoute("projects.index")}
-                  className="text-xs sm:text-sm text-neutral-400 hover:text-emerald-400 font-mono transition-colors"
+                  className="text-xs sm:text-sm text-slate-500 hover:text-emerald-600 dark:text-neutral-400 dark:hover:text-emerald-400 font-mono transition-colors"
                 >
                   View all →
                 </Link>
               </CardHeader>
               <CardContent className="p-4 sm:p-5 space-y-4">
                 {projectsList.length === 0 ? (
-                  <p className="text-xs sm:text-sm text-neutral-400 text-center py-4 font-mono">No active projects in this workspace.</p>
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 text-center py-4 font-mono">No active projects in this workspace.</p>
                 ) : (
                   projectsList.slice(0, 5).map((p) => {
                     const pTotal = p.total_tasks ?? 0;
@@ -768,7 +767,7 @@ export default function NewDashboard({
                         <div className="flex items-center justify-between text-sm">
                           <Link
                             href={getRoute("projects.show", p.id)}
-                            className="font-semibold text-neutral-200 hover:text-emerald-400 transition-colors line-clamp-1 flex items-center gap-2"
+                            className="font-semibold text-slate-800 dark:text-neutral-200 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors line-clamp-1 flex items-center gap-2"
                           >
                             <span
                               className="w-2.5 h-2.5 rounded-full shrink-0"
@@ -776,15 +775,15 @@ export default function NewDashboard({
                             />
                             {p.name}
                           </Link>
-                          <span className="text-neutral-400 font-mono text-xs">
+                          <span className="text-slate-500 dark:text-neutral-400 font-mono text-xs">
                             {pct === 100 ? (
-                              <span className="text-emerald-400 font-bold">100%</span>
+                              <span className="text-emerald-600 dark:text-emerald-400 font-bold">100%</span>
                             ) : (
                               `${pct}% (${pCompleted}/${pTotal})`
                             )}
                           </span>
                         </div>
-                        <div className="w-full bg-zinc-800/80 rounded-full h-1.5 overflow-hidden">
+                        <div className="w-full bg-slate-100 dark:bg-zinc-800/80 rounded-full h-1.5 overflow-hidden">
                           <div
                             className={`h-full rounded-full transition-all duration-500 ${
                               pct < 30
@@ -809,33 +808,33 @@ export default function NewDashboard({
             </Card>
 
             {/* Live Workspace Activity Feed */}
-            <Card className="bg-neutral-900/90 border-neutral-800 text-zinc-100 shadow-xl rounded-xl">
-              <CardHeader className="p-4 sm:p-5 border-b border-neutral-800 bg-black/40 flex flex-row items-center justify-between">
-                <CardTitle className="text-base font-bold text-white flex items-center gap-2">
-                  <ActivityIcon className="w-4 h-4 text-emerald-400" />
+            <Card className="bg-white dark:bg-neutral-900/90 border-slate-200 dark:border-neutral-800 text-slate-900 dark:text-zinc-100 shadow-sm dark:shadow-xl rounded-xl">
+              <CardHeader className="p-4 sm:p-5 border-b border-slate-200 dark:border-neutral-800 bg-slate-50/70 dark:bg-black/40 flex flex-row items-center justify-between">
+                <CardTitle className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <ActivityIcon className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                   Recent Activity
                 </CardTitle>
-                <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-mono font-medium">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                <span className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-mono font-medium">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-ping" />
                   Live
                 </span>
               </CardHeader>
               <CardContent className="p-4 sm:p-5">
                 {activities.length === 0 ? (
-                  <p className="text-xs sm:text-sm text-neutral-400 text-center py-4 font-mono">No recent activity recorded.</p>
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 text-center py-4 font-mono">No recent activity recorded.</p>
                 ) : (
                   <div className="space-y-4">
                     {activities.slice(0, 5).map((act, idx) => (
                       <div key={act.id || idx} className="flex items-start gap-3 text-xs sm:text-sm">
-                        <div className="w-7 h-7 rounded-lg bg-neutral-800 border border-neutral-700 flex items-center justify-center font-bold text-xs text-neutral-200 shrink-0 mt-0.5 font-mono">
+                        <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 flex items-center justify-center font-bold text-xs text-slate-700 dark:text-neutral-200 shrink-0 mt-0.5 font-mono">
                           {act.source ? act.source.substring(0, 1).toUpperCase() : "S"}
                         </div>
                         <div className="min-w-0 flex-1 space-y-0.5">
-                          <p className="text-neutral-200 leading-snug line-clamp-2">
-                            <span className="font-semibold text-white">{act.source}:</span>{" "}
+                          <p className="text-slate-700 dark:text-neutral-200 leading-snug line-clamp-2">
+                            <span className="font-semibold text-slate-900 dark:text-white">{act.source}:</span>{" "}
                             {act.event}
                           </p>
-                          <span className="text-xs text-neutral-400 font-mono block">
+                          <span className="text-xs text-slate-400 dark:text-neutral-400 font-mono block">
                             {act.relTime || act.time}
                           </span>
                         </div>
@@ -847,37 +846,37 @@ export default function NewDashboard({
             </Card>
 
             {/* Team Members Card */}
-            <Card className="bg-neutral-900/90 border-neutral-800 text-zinc-100 shadow-xl rounded-xl">
-              <CardHeader className="p-4 sm:p-5 border-b border-neutral-800 bg-black/40 flex flex-row items-center justify-between">
-                <CardTitle className="text-base font-bold text-white flex items-center gap-2">
-                  <Users className="w-4 h-4 text-emerald-400" /> Team Members
+            <Card className="bg-white dark:bg-neutral-900/90 border-slate-200 dark:border-neutral-800 text-slate-900 dark:text-zinc-100 shadow-sm dark:shadow-xl rounded-xl">
+              <CardHeader className="p-4 sm:p-5 border-b border-slate-200 dark:border-neutral-800 bg-slate-50/70 dark:bg-black/40 flex flex-row items-center justify-between">
+                <CardTitle className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Users className="w-4 h-4 text-emerald-500 dark:text-emerald-400" /> Team Members
                 </CardTitle>
                 <Link
                   href="/v2/team"
-                  className="text-xs sm:text-sm text-neutral-400 hover:text-emerald-400 font-mono transition-colors"
+                  className="text-xs sm:text-sm text-slate-500 hover:text-emerald-600 dark:text-neutral-400 dark:hover:text-emerald-400 font-mono transition-colors"
                 >
                   Manage →
                 </Link>
               </CardHeader>
               <CardContent className="p-4 sm:p-5">
                 {team_members_list.length === 0 ? (
-                  <p className="text-xs sm:text-sm text-neutral-400 text-center py-4 font-mono">No collaborators found.</p>
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 text-center py-4 font-mono">No collaborators found.</p>
                 ) : (
-                  <div className="divide-y divide-neutral-800/80">
+                  <div className="divide-y divide-slate-100 dark:divide-neutral-800/80">
                     {team_members_list.slice(0, 5).map((m, idx) => (
                       <div key={m.id || idx} className="py-2.5 flex items-center justify-between gap-2">
                         <div className="flex items-center gap-3 min-w-0">
-                          <Avatar className="h-8 w-8 border border-neutral-700 shrink-0">
+                          <Avatar className="h-8 w-8 border border-slate-200 dark:border-neutral-700 shrink-0">
                             {m.profile_image && (
                               <AvatarImage src={m.profile_image} alt={m.name} className="object-cover" />
                             )}
-                            <AvatarFallback className="bg-neutral-800 text-emerald-400 text-xs font-bold font-mono">
+                            <AvatarFallback className="bg-slate-100 dark:bg-neutral-800 text-emerald-600 dark:text-emerald-400 text-xs font-bold font-mono">
                               {m.name ? m.name.substring(0, 2).toUpperCase() : "TM"}
                             </AvatarFallback>
                           </Avatar>
                           <div className="min-w-0">
-                            <p className="text-sm font-semibold text-neutral-200 truncate">{m.name}</p>
-                            <p className="text-xs text-neutral-400 truncate font-mono">
+                            <p className="text-sm font-semibold text-slate-800 dark:text-neutral-200 truncate">{m.name}</p>
+                            <p className="text-xs text-slate-500 dark:text-neutral-400 truncate font-mono">
                               {m.email}
                             </p>
                           </div>
@@ -885,8 +884,8 @@ export default function NewDashboard({
                         <Badge
                           className={`text-xs px-2 py-0.5 shrink-0 font-mono ${
                             m.role === "Admin"
-                              ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold"
-                              : "bg-neutral-800 text-neutral-300 border border-neutral-700"
+                              ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30 font-bold"
+                              : "bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-neutral-300 border border-slate-200 dark:border-neutral-700"
                           }`}
                         >
                           {m.role}

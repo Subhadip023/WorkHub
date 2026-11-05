@@ -26,6 +26,8 @@ import {
   Route as RouteIcon,
   Bug,
   KeyRound,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 import ApplicationLogo from "@/Components/ApplicationLogo";
@@ -64,6 +66,26 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [loadingNotifs, setLoadingNotifs] = useState(false);
+
+  // Theme State (Dark / Light)
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('workhub_theme') || 'dark';
+  });
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
+    }
+    localStorage.setItem('workhub_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
 
   // Search State
   const [searchQuery, setSearchQuery] = useState("");
@@ -749,6 +771,21 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
 
               <div className="flex items-center gap-2">
                 {actions}
+
+                {/* Theme Toggle Button (Dark / Light) */}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={toggleTheme}
+                  className="h-8 w-8 bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300 rounded-lg cursor-pointer"
+                  title={theme === 'dark' ? "Switch to Light Theme" : "Switch to Dark Theme"}
+                >
+                  {theme === 'dark' ? (
+                    <Sun className="h-4 w-4 text-amber-400" />
+                  ) : (
+                    <Moon className="h-4 w-4 text-zinc-400" />
+                  )}
+                </Button>
 
                 {/* Interactive Notification Popover */}
                 <div className="relative">

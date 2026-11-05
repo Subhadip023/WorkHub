@@ -769,5 +769,166 @@ html, body {
 .notion-date-dropdown .notion-date-input { border-color: #d1d3e2; border-radius: 6px; }
 .notion-date-dropdown .notion-date-clear { width: 100%; padding: 5px 0 !important; border-top: 1px solid #eaecf4; text-align: left; }
 
+/* ============================================================
+   Dark Theme for Classic Mode (SB Admin 2)
+   ============================================================ */
+body.dark-theme,
+html.dark-theme body {
+    background-color: #0b132b !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-theme #content-wrapper {
+    background-color: #0b132b !important;
+}
+
+body.dark-theme #content {
+    background-color: #0b132b !important;
+}
+
+body.dark-theme .topbar {
+    background-color: #111c44 !important;
+    border-bottom: 1px solid #1e293b !important;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(0, 0, 0, 0.35) !important;
+}
+
+body.dark-theme .topbar .navbar-search .form-control {
+    background-color: #0b132b !important;
+    color: #f1f5f9 !important;
+    border: 1px solid #1e293b !important;
+}
+
+body.dark-theme .topbar .nav-link {
+    color: #cbd5e1 !important;
+}
+
+body.dark-theme .topbar .nav-link:hover {
+    color: #ffffff !important;
+}
+
+body.dark-theme .card {
+    background-color: #111c44 !important;
+    border: 1px solid #1e293b !important;
+    color: #e2e8f0 !important;
+    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.25) !important;
+}
+
+body.dark-theme .card-header {
+    background-color: #162254 !important;
+    border-bottom: 1px solid #1e293b !important;
+    color: #f8fafc !important;
+}
+
+body.dark-theme .text-gray-800,
+body.dark-theme .text-gray-900,
+body.dark-theme h1, body.dark-theme h2, body.dark-theme h3, 
+body.dark-theme h4, body.dark-theme h5, body.dark-theme h6 {
+    color: #f8fafc !important;
+}
+
+body.dark-theme .text-gray-600,
+body.dark-theme .text-gray-700 {
+    color: #cbd5e1 !important;
+}
+
+body.dark-theme .text-gray-500,
+body.dark-theme .text-gray-400 {
+    color: #94a3b8 !important;
+}
+
+body.dark-theme .bg-white {
+    background-color: #111c44 !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-theme .bg-light {
+    background-color: #0b132b !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-theme .border {
+    border-color: #1e293b !important;
+}
+
+body.dark-theme .border-bottom {
+    border-bottom-color: #1e293b !important;
+}
+
+body.dark-theme .border-top {
+    border-top-color: #1e293b !important;
+}
+
+body.dark-theme .table {
+    color: #e2e8f0 !important;
+}
+
+body.dark-theme .table-bordered th,
+body.dark-theme .table-bordered td,
+body.dark-theme .table th,
+body.dark-theme .table td {
+    border-color: #1e293b !important;
+}
+
+body.dark-theme .table thead th {
+    background-color: #162254 !important;
+    border-bottom-color: #1e293b !important;
+    color: #f8fafc !important;
+}
+
+body.dark-theme .table-hover tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+body.dark-theme .dropdown-menu {
+    background-color: #111c44 !important;
+    border: 1px solid #1e293b !important;
+    color: #e2e8f0 !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.dark-theme .dropdown-item {
+    color: #cbd5e1 !important;
+}
+
+body.dark-theme .dropdown-item:hover,
+body.dark-theme .dropdown-item:focus {
+    background-color: #1e293b !important;
+    color: #ffffff !important;
+}
+
+body.dark-theme .dropdown-divider {
+    border-top-color: #1e293b !important;
+}
+
+body.dark-theme .modal-content {
+    background-color: #111c44 !important;
+    border: 1px solid #1e293b !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-theme .modal-header,
+body.dark-theme .modal-footer {
+    border-color: #1e293b !important;
+}
+
+body.dark-theme .form-control {
+    background-color: #0b132b !important;
+    border-color: #1e293b !important;
+    color: #f8fafc !important;
+}
+
+body.dark-theme .form-control:focus {
+    background-color: #0b132b !important;
+    border-color: #4e73df !important;
+    color: #f8fafc !important;
+}
+
+body.dark-theme footer.sticky-footer {
+    background-color: #0b132b !important;
+    border-top: 1px solid #1e293b !important;
+    color: #94a3b8 !important;
+}
+
+
 
 
