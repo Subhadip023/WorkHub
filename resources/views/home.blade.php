@@ -77,6 +77,10 @@
             <!-- Nav Links -->
             <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-400">
                 <a href="#dual-engine" class="hover:text-white transition-colors">Dual Modes</a>
+                <a href="#demo-gallery" class="hover:text-white transition-colors flex items-center gap-1.5">
+                    <span>Live Demos</span>
+                    <span class="text-[10px] uppercase font-bold bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded border border-indigo-500/30">New</span>
+                </a>
                 <a href="#bento" class="hover:text-white transition-colors">Features</a>
                 <a href="#workflow" class="hover:text-white transition-colors">Workflow</a>
                 <a href="{{ route('routes.index') }}" class="hover:text-white transition-colors">Routes Parity</a>
@@ -128,20 +132,6 @@
             <p class="mt-6 text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed">
                 Whether you prefer the interactive cockpit of <strong class="text-indigo-400 font-semibold">Developer Mode</strong> (Inertia React) or the distraction-free speed of <strong class="text-slate-200 font-semibold">Classic Mode</strong> (Blade SSR), WorkHub serves both seamlessly from the exact same database.
             </p>
-
-            <!-- Hero Interactive Mode Selector Pill -->
-            <div class="mt-8 inline-flex items-center p-1.5 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl">
-                <button type="button" id="hero-btn-v2" onclick="setLandingPreview('v2')"
-                    class="px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition-all cursor-pointer bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/25">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                    <span>Developer Mode (V2 React)</span>
-                </button>
-                <button type="button" id="hero-btn-v1" onclick="setLandingPreview('v1')"
-                    class="px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm text-slate-400 hover:text-white flex items-center gap-2 transition-all cursor-pointer">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                    <span>Classic Mode (V1 Blade)</span>
-                </button>
-            </div>
 
             <!-- Hero Action Buttons -->
             <div class="mt-8 flex flex-wrap items-center justify-center gap-4">
@@ -207,8 +197,23 @@
 
             <!-- Dynamic Live Hero Mockup Frame -->
             <div class="mt-14 max-w-5xl mx-auto">
+                <!-- Hero Interactive Mode Selector Pill (Directly above page mockup) -->
+                <div class="mb-8 flex items-center justify-center">
+                    <div class="inline-flex items-center p-1.5 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl">
+                        <button type="button" id="hero-btn-v2" onclick="setLandingPreview('v2')"
+                            class="px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition-all cursor-pointer bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/25">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            <span>Developer Mode (V2 React)</span>
+                        </button>
+                        <button type="button" id="hero-btn-v1" onclick="setLandingPreview('v1')"
+                            class="px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm text-slate-400 hover:text-white flex items-center gap-2 transition-all cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                            <span>Classic Mode (V1 Blade)</span>
+                        </button>
+                    </div>
+                </div>
                 <!-- V2 Mockup Canvas (Developer Cockpit) -->
-                <div id="hero-mockup-v2" class="rounded-2xl border border-slate-800 bg-slate-900/90 shadow-2xl shadow-indigo-500/10 overflow-hidden text-left transition-all duration-300">
+                <div id="hero-mockup-v2" class="rounded-2xl border border-slate-800 bg-slate-900/90 shadow-2xl shadow-indigo-500/20 overflow-hidden text-left transition-all duration-300 group">
                     <div class="px-4 py-3 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
                         <div class="flex items-center gap-2">
                             <span class="w-3 h-3 rounded-full bg-rose-500/80"></span>
@@ -216,66 +221,26 @@
                             <span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
                         </div>
                         <div class="px-3 py-1 rounded-md bg-slate-900 border border-slate-800/80 font-mono text-[11px] text-slate-300">
-                            workhub.io/projects/10 • Developer React Cockpit
+                            workhub.io/dashboard • Developer React Cockpit
                         </div>
-                        <span class="text-[10px] uppercase font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">V2 Developer</span>
+                        <div class="flex items-center gap-2">
+                            <span class="hidden sm:inline-block text-[11px] text-slate-400 font-mono">1440 × 900</span>
+                            <span class="text-[10px] uppercase font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">V2 Developer</span>
+                        </div>
                     </div>
 
-                    <div class="p-6 bg-[#0b0f19] space-y-4">
-                        <div class="flex items-center justify-between flex-wrap gap-2">
-                            <div>
-                                <div class="text-xs text-indigo-400 font-semibold uppercase tracking-wider">Project Hub • Active Sprint</div>
-                                <h4 class="text-xl font-bold text-white">E-Commerce Mobile API Platform</h4>
-                            </div>
-                            <span class="px-3 py-1 text-xs rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">85% Velocity Complete</span>
-                        </div>
-
-                        <!-- Mini KPI Cards -->
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <div class="p-3.5 rounded-lg bg-slate-900/80 border border-slate-800">
-                                <div class="text-[11px] text-slate-400">Tasks Completed</div>
-                                <div class="text-xl font-bold text-white font-mono mt-1">24 / 28</div>
-                            </div>
-                            <div class="p-3.5 rounded-lg bg-slate-900/80 border border-slate-800">
-                                <div class="text-[11px] text-slate-400">Burndown Velocity</div>
-                                <div class="text-xl font-bold text-indigo-400 font-mono mt-1">+18.4%</div>
-                            </div>
-                            <div class="p-3.5 rounded-lg bg-slate-900/80 border border-slate-800">
-                                <div class="text-[11px] text-slate-400">Credential Vault</div>
-                                <div class="text-xl font-bold text-purple-400 font-mono mt-1">4 Vaulted Keys</div>
-                            </div>
-                        </div>
-
-                        <!-- Kanban Columns Simulation -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                            <div class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-2">
-                                <div class="text-xs font-semibold text-slate-400 flex items-center justify-between">
-                                    <span>IN PROGRESS (2)</span>
-                                    <span class="w-2 h-2 rounded-full bg-amber-400"></span>
-                                </div>
-                                <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs">
-                                    <div class="font-medium text-white">Auth Token Refresh Endpoint</div>
-                                    <div class="text-[10px] text-indigo-400 mt-1 flex items-center gap-1.5">
-                                        <span>#BE-102</span> • <span class="text-rose-400 font-semibold">Urgent</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-2">
-                                <div class="text-xs font-semibold text-slate-400 flex items-center justify-between">
-                                    <span>COMPLETED (24)</span>
-                                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                                </div>
-                                <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs opacity-80">
-                                    <div class="font-medium text-slate-300 line-through">Stripe Webhook Gateway</div>
-                                    <div class="text-[10px] text-emerald-400 mt-1">Verified &amp; Deployed</div>
-                                </div>
-                            </div>
+                    <div class="relative bg-slate-950 cursor-pointer overflow-hidden" onclick="openScreenshotModal('{{ asset('demo-images/v2/dark/dashboard.png') }}', 'Developer Mode (V2) - Executive Cockpit Dashboard')">
+                        <img src="{{ asset('demo-images/v2/dark/dashboard.png') }}" alt="WorkHub V2 Developer Dashboard" class="w-full h-auto block rounded-b-2xl object-cover transition-transform duration-500 group-hover:scale-[1.01]" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent pointer-events-none rounded-b-2xl"></div>
+                        <div class="absolute bottom-4 right-4 px-3 py-1.5 rounded-lg bg-slate-900/90 border border-slate-700/80 text-xs font-medium text-slate-200 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 shadow-lg">
+                            <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            <span>Click to Zoom</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- V1 Mockup Canvas (Classic Blade Workflow) -->
-                <div id="hero-mockup-v1" class="hidden rounded-2xl border border-slate-800 bg-slate-900/90 shadow-2xl shadow-blue-500/10 overflow-hidden text-left transition-all duration-300">
+                <div id="hero-mockup-v1" class="hidden rounded-2xl border border-slate-800 bg-slate-900/90 shadow-2xl shadow-blue-500/20 overflow-hidden text-left transition-all duration-300 group">
                     <div class="px-4 py-3 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
                         <div class="flex items-center gap-2">
                             <span class="w-3 h-3 rounded-full bg-blue-500/80"></span>
@@ -283,60 +248,20 @@
                             <span class="w-3 h-3 rounded-full bg-slate-600"></span>
                         </div>
                         <div class="px-3 py-1 rounded-md bg-slate-900 border border-slate-800/80 font-mono text-[11px] text-slate-300">
-                            workhub.io/tasks • Classic Blade SSR Grid
+                            workhub.io/dashboard • Classic Blade SSR
                         </div>
-                        <span class="text-[10px] uppercase font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">V1 Classic</span>
+                        <div class="flex items-center gap-2">
+                            <span class="hidden sm:inline-block text-[11px] text-slate-400 font-mono">1440 × 900</span>
+                            <span class="text-[10px] uppercase font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">V1 Classic</span>
+                        </div>
                     </div>
 
-                    <div class="p-6 bg-[#0b0f19] space-y-4">
-                        <div class="flex items-center justify-between flex-wrap gap-2">
-                            <div>
-                                <div class="text-xs text-blue-400 font-semibold uppercase tracking-wider">Enterprise Workspace • Dokan Sathi</div>
-                                <h4 class="text-xl font-bold text-white">Task Management Spreadsheet</h4>
-                            </div>
-                            <span class="px-3 py-1 text-xs rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium">⚡ Zero Hydration Lag • Instant SSR</span>
-                        </div>
-
-                        <!-- KPI Summary Cards -->
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <div class="p-3.5 rounded-lg bg-slate-900/80 border border-slate-800 border-l-4 border-l-emerald-500">
-                                <div class="text-[11px] font-semibold text-slate-400 uppercase">Active Projects</div>
-                                <div class="text-xl font-bold text-white mt-1">12 Projects</div>
-                            </div>
-                            <div class="p-3.5 rounded-lg bg-slate-900/80 border border-slate-800 border-l-4 border-l-blue-500">
-                                <div class="text-[11px] font-semibold text-slate-400 uppercase">Completion Rate</div>
-                                <div class="text-xl font-bold text-white mt-1">84% Finished</div>
-                            </div>
-                            <div class="p-3.5 rounded-lg bg-slate-900/80 border border-slate-800 border-l-4 border-l-amber-500">
-                                <div class="text-[11px] font-semibold text-slate-400 uppercase">Pending Review</div>
-                                <div class="text-xl font-bold text-white mt-1">4 High Priority</div>
-                            </div>
-                        </div>
-
-                        <!-- Classic Inline Spreadsheet Table -->
-                        <div class="rounded-lg border border-slate-800 overflow-hidden text-xs">
-                            <div class="grid grid-cols-12 bg-slate-950/80 p-2.5 font-semibold text-slate-400 border-b border-slate-800">
-                                <div class="col-span-2">Status</div>
-                                <div class="col-span-5">Task Title</div>
-                                <div class="col-span-3">Priority</div>
-                                <div class="col-span-2 text-right">Assignee</div>
-                            </div>
-                            <div class="grid grid-cols-12 p-2.5 bg-slate-900/60 border-b border-slate-800/50 items-center">
-                                <div class="col-span-2 text-emerald-400 font-semibold flex items-center gap-1.5">
-                                    <span>☑</span> <span>Done</span>
-                                </div>
-                                <div class="col-span-5 text-slate-400 line-through">Database Migration &amp; Model Seeders</div>
-                                <div class="col-span-3"><span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-300 text-[10px] font-semibold border border-blue-500/20">Normal</span></div>
-                                <div class="col-span-2 text-right text-slate-400">Alex M.</div>
-                            </div>
-                            <div class="grid grid-cols-12 p-2.5 bg-slate-900/40 items-center">
-                                <div class="col-span-2 text-amber-400 font-semibold flex items-center gap-1.5">
-                                    <span>☐</span> <span>Pending</span>
-                                </div>
-                                <div class="col-span-5 text-white font-medium">OAuth2 GitHub Token API Integration</div>
-                                <div class="col-span-3"><span class="px-2 py-0.5 rounded bg-rose-500/10 text-rose-300 text-[10px] font-semibold border border-rose-500/20">Urgent</span></div>
-                                <div class="col-span-2 text-right text-indigo-300 font-semibold">Subhadip</div>
-                            </div>
+                    <div class="relative bg-slate-950 cursor-pointer overflow-hidden" onclick="openScreenshotModal('{{ asset('demo-images/v1/light/dashboard.png') }}', 'Classic Mode (V1) - High Speed Blade Dashboard')">
+                        <img src="{{ asset('demo-images/v1/light/dashboard.png') }}" alt="WorkHub V1 Classic Dashboard" class="w-full h-auto block rounded-b-2xl object-cover transition-transform duration-500 group-hover:scale-[1.01]" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent pointer-events-none rounded-b-2xl"></div>
+                        <div class="absolute bottom-4 right-4 px-3 py-1.5 rounded-lg bg-slate-900/90 border border-slate-700/80 text-xs font-medium text-slate-200 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 shadow-lg">
+                            <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            <span>Click to Zoom</span>
                         </div>
                     </div>
                 </div>
@@ -411,7 +336,7 @@
 
                 <!-- Developer Mode Mockup Frame -->
                 <div class="lg:col-span-7">
-                    <div class="rounded-2xl border border-slate-800 bg-slate-900/90 shadow-2xl shadow-indigo-500/10 overflow-hidden">
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/90 shadow-2xl shadow-indigo-500/20 overflow-hidden group">
                         <div class="px-4 py-3 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
                             <div class="flex items-center gap-2">
                                 <span class="w-3 h-3 rounded-full bg-rose-500/80"></span>
@@ -419,57 +344,16 @@
                                 <span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
                             </div>
                             <div class="px-3 py-1 rounded-md bg-slate-900 border border-slate-800/80 font-mono text-[11px] text-slate-300">
-                                workhub.io/projects/10
+                                workhub.io/tasks • Interactive Kanban Board
                             </div>
-                            <span class="text-[10px] uppercase font-bold text-indigo-400">V2 Developer</span>
+                            <span class="text-[10px] uppercase font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">V2 Developer</span>
                         </div>
-                        <div class="p-6 bg-[#0b0f19] space-y-4">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <div class="text-xs text-indigo-400 font-semibold uppercase tracking-wider">Project Hub • Active</div>
-                                    <h4 class="text-xl font-bold text-white">E-Commerce Mobile API</h4>
-                                </div>
-                                <span class="px-2.5 py-1 text-xs rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">85% Complete</span>
-                            </div>
-
-                            <div class="grid grid-cols-3 gap-3">
-                                <div class="p-3 rounded-lg bg-slate-900/80 border border-slate-800">
-                                    <div class="text-[11px] text-slate-400">Tasks Completed</div>
-                                    <div class="text-lg font-bold text-white font-mono mt-1">24/28</div>
-                                </div>
-                                <div class="p-3 rounded-lg bg-slate-900/80 border border-slate-800">
-                                    <div class="text-[11px] text-slate-400">Velocity</div>
-                                    <div class="text-lg font-bold text-indigo-400 font-mono mt-1">+18.4%</div>
-                                </div>
-                                <div class="p-3 rounded-lg bg-slate-900/80 border border-slate-800">
-                                    <div class="text-[11px] text-slate-400">Credentials</div>
-                                    <div class="text-lg font-bold text-purple-400 font-mono mt-1">4 Vaulted</div>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-3 pt-2">
-                                <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-2">
-                                    <div class="text-xs font-semibold text-slate-400 flex items-center justify-between">
-                                        <span>IN PROGRESS (2)</span>
-                                        <span class="w-2 h-2 rounded-full bg-amber-400"></span>
-                                    </div>
-                                    <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs">
-                                        <div class="font-medium text-white">Auth Token Refresh Endpoint</div>
-                                        <div class="text-[10px] text-indigo-400 mt-1 flex items-center gap-1.5">
-                                            <span>#BE-102</span> • <span class="text-rose-400 font-semibold">Urgent</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-2">
-                                    <div class="text-xs font-semibold text-slate-400 flex items-center justify-between">
-                                        <span>DONE (24)</span>
-                                        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                                    </div>
-                                    <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs opacity-80">
-                                        <div class="font-medium text-slate-300 line-through">Stripe Webhook Gateway</div>
-                                        <div class="text-[10px] text-emerald-400 mt-1">Resolved</div>
-                                    </div>
-                                </div>
+                        <div class="relative bg-slate-950 cursor-pointer overflow-hidden" onclick="openScreenshotModal('{{ asset('demo-images/v2/dark/tasks.png') }}', 'Developer Mode (V2) - Multi-Column Kanban Board')">
+                            <img src="{{ asset('demo-images/v2/dark/tasks.png') }}" alt="WorkHub V2 Kanban Board" class="w-full h-auto block rounded-b-2xl object-cover transition-transform duration-500 group-hover:scale-[1.01]" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent pointer-events-none rounded-b-2xl"></div>
+                            <div class="absolute bottom-4 right-4 px-3 py-1.5 rounded-lg bg-slate-900/90 border border-slate-700/80 text-xs font-medium text-slate-200 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 shadow-lg">
+                                <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                                <span>Click to Zoom</span>
                             </div>
                         </div>
                     </div>
@@ -518,7 +402,7 @@
 
                 <!-- Classic Mode Mockup Frame -->
                 <div class="lg:col-span-7">
-                    <div class="rounded-2xl border border-slate-800 bg-slate-900/90 shadow-2xl overflow-hidden">
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/90 shadow-2xl shadow-blue-500/20 overflow-hidden group">
                         <div class="px-4 py-3 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
                             <div class="flex items-center gap-2">
                                 <span class="w-3 h-3 rounded-full bg-blue-500/80"></span>
@@ -526,41 +410,602 @@
                                 <span class="w-3 h-3 rounded-full bg-slate-600"></span>
                             </div>
                             <div class="px-3 py-1 rounded-md bg-slate-900 border border-slate-800/80 font-mono text-[11px] text-slate-300">
-                                workhub.io/tasks
+                                workhub.io/tasks • Classic Blade Spreadsheet Grid
                             </div>
-                            <span class="text-[10px] uppercase font-bold text-blue-400">V1 Classic</span>
+                            <span class="text-[10px] uppercase font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">V1 Classic</span>
                         </div>
-                        <div class="p-6 bg-[#0b0f19] space-y-4">
-                            <div class="flex items-center justify-between">
-                                <h4 class="text-lg font-bold text-white">Tasks Spreadsheet Grid</h4>
-                                <span class="text-xs px-2.5 py-1 rounded bg-blue-500/10 text-blue-300 border border-blue-500/20 font-medium">Live AJAX Autosave</span>
+                        <div class="relative bg-slate-950 cursor-pointer overflow-hidden" onclick="openScreenshotModal('{{ asset('demo-images/v1/light/tasks.png') }}', 'Classic Mode (V1) - Notion-Style Spreadsheet Grid')">
+                            <img src="{{ asset('demo-images/v1/light/tasks.png') }}" alt="WorkHub V1 Tasks Grid" class="w-full h-auto block rounded-b-2xl object-cover transition-transform duration-500 group-hover:scale-[1.01]" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent pointer-events-none rounded-b-2xl"></div>
+                            <div class="absolute bottom-4 right-4 px-3 py-1.5 rounded-lg bg-slate-900/90 border border-slate-700/80 text-xs font-medium text-slate-200 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 shadow-lg">
+                                <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                                <span>Click to Zoom</span>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-                            <!-- Table Simulation -->
-                            <div class="rounded-lg border border-slate-800 overflow-hidden text-xs">
-                                <div class="grid grid-cols-12 bg-slate-950/80 p-2.5 font-semibold text-slate-400 border-b border-slate-800">
-                                    <div class="col-span-2">Status</div>
-                                    <div class="col-span-5">Task Title</div>
-                                    <div class="col-span-3">Priority</div>
-                                    <div class="col-span-2 text-right">Assignee</div>
-                                </div>
-                                <div class="grid grid-cols-12 p-2.5 bg-slate-900/60 border-b border-slate-800/50 items-center">
-                                    <div class="col-span-2 text-emerald-400 font-semibold flex items-center gap-1.5">
-                                        <span>☑</span> <span>Done</span>
-                                    </div>
-                                    <div class="col-span-5 text-slate-400 line-through">Database Migration + Seeders</div>
-                                    <div class="col-span-3"><span class="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 text-[10px]">Normal</span></div>
-                                    <div class="col-span-2 text-right text-slate-400">Alex M.</div>
-                                </div>
-                                <div class="grid grid-cols-12 p-2.5 bg-slate-900/40 items-center">
-                                    <div class="col-span-2 text-amber-400 font-semibold flex items-center gap-1.5">
-                                        <span>☐</span> <span>Pending</span>
-                                    </div>
-                                    <div class="col-span-5 text-white font-medium">Setup OAuth2 GitHub Token API</div>
-                                    <div class="col-span-3"><span class="px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 text-[10px]">Urgent</span></div>
-                                    <div class="col-span-2 text-right text-indigo-300">Subhadip</div>
-                                </div>
+        <!-- Live Demo Screenshots Gallery Section -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-slate-800/80" id="demo-gallery">
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 mb-3">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>High-Resolution Live Previews</span>
+                </div>
+                <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+                    Explore Every Screen in Real Life
+                </h2>
+                <p class="text-base sm:text-lg text-slate-400 mt-4 leading-relaxed">
+                    Inspect actual application captures across both interfaces in dark and light modes. Click any screenshot for a full-screen high-resolution view.
+                </p>
+
+                <!-- Interactive Filter Tabs -->
+                <div class="mt-8 flex flex-wrap items-center justify-center gap-2 p-1.5 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-2xl max-w-2xl mx-auto">
+                    <button type="button" id="gallery-tab-v2-dark" onclick="switchGalleryTab('v2-dark')"
+                        class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/25">
+                        <span>Developer (Dark)</span>
+                    </button>
+                    <button type="button" id="gallery-tab-v2-light" onclick="switchGalleryTab('v2-light')"
+                        class="px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer text-slate-400 hover:text-white hover:bg-slate-800/50">
+                        <span>Developer (Light)</span>
+                    </button>
+                    <button type="button" id="gallery-tab-v1-light" onclick="switchGalleryTab('v1-light')"
+                        class="px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer text-slate-400 hover:text-white hover:bg-slate-800/50">
+                        <span>Classic (Light)</span>
+                    </button>
+                    <button type="button" id="gallery-tab-v1-dark" onclick="switchGalleryTab('v1-dark')"
+                        class="px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer text-slate-400 hover:text-white hover:bg-slate-800/50">
+                        <span>Classic (Dark)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Panels for Each Mode -->
+            <!-- Panel: V2 Developer Dark -->
+            <div id="gallery-panel-v2-dark" class="space-y-8 transition-all duration-300">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Dashboard Card -->
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 hover:border-indigo-500/50 transition-all duration-300 overflow-hidden flex flex-col group shadow-xl hover:shadow-indigo-500/10">
+                        <div class="px-4 py-2.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+                                <span class="ml-2 font-mono text-[11px] text-slate-400 truncate">/dashboard</span>
                             </div>
+                            <span class="text-[10px] uppercase font-bold text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded">V2 Dark</span>
+                        </div>
+                        <div class="relative bg-slate-950 overflow-hidden cursor-pointer flex-1" onclick="openScreenshotModal('{{ asset('demo-images/v2/dark/dashboard.png') }}', 'Developer Mode (V2 Dark) - Cockpit Dashboard')">
+                            <img src="{{ asset('demo-images/v2/dark/dashboard.png') }}" alt="V2 Dark Dashboard" class="w-full h-48 sm:h-52 object-cover object-top transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            <div class="absolute bottom-2.5 right-2.5 p-1.5 rounded-lg bg-slate-900/90 text-indigo-400 border border-slate-700/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-900/90 border-t border-slate-800">
+                            <h4 class="font-bold text-white text-base">Cockpit Dashboard</h4>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Executive KPIs, sprint throughput, quick action hubs, and company workspace selector.</p>
+                        </div>
+                    </div>
+
+                    <!-- Tasks Kanban Card -->
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 hover:border-indigo-500/50 transition-all duration-300 overflow-hidden flex flex-col group shadow-xl hover:shadow-indigo-500/10">
+                        <div class="px-4 py-2.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+                                <span class="ml-2 font-mono text-[11px] text-slate-400 truncate">/tasks</span>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded">V2 Dark</span>
+                        </div>
+                        <div class="relative bg-slate-950 overflow-hidden cursor-pointer flex-1" onclick="openScreenshotModal('{{ asset('demo-images/v2/dark/tasks.png') }}', 'Developer Mode (V2 Dark) - Kanban Board')">
+                            <img src="{{ asset('demo-images/v2/dark/tasks.png') }}" alt="V2 Dark Kanban" class="w-full h-48 sm:h-52 object-cover object-top transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            <div class="absolute bottom-2.5 right-2.5 p-1.5 rounded-lg bg-slate-900/90 text-indigo-400 border border-slate-700/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-900/90 border-t border-slate-800">
+                            <h4 class="font-bold text-white text-base">Multi-Column Kanban Board</h4>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Interactive cards with subtasks, priority chips, assignment badges, and swift drag-and-drop.</p>
+                        </div>
+                    </div>
+
+                    <!-- Projects Hub Card -->
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 hover:border-indigo-500/50 transition-all duration-300 overflow-hidden flex flex-col group shadow-xl hover:shadow-indigo-500/10">
+                        <div class="px-4 py-2.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+                                <span class="ml-2 font-mono text-[11px] text-slate-400 truncate">/projects</span>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded">V2 Dark</span>
+                        </div>
+                        <div class="relative bg-slate-950 overflow-hidden cursor-pointer flex-1" onclick="openScreenshotModal('{{ asset('demo-images/v2/dark/projects.png') }}', 'Developer Mode (V2 Dark) - Multi-Tab Project Hub')">
+                            <img src="{{ asset('demo-images/v2/dark/projects.png') }}" alt="V2 Dark Projects" class="w-full h-48 sm:h-52 object-cover object-top transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            <div class="absolute bottom-2.5 right-2.5 p-1.5 rounded-lg bg-slate-900/90 text-indigo-400 border border-slate-700/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-900/90 border-t border-slate-800">
+                            <h4 class="font-bold text-white text-base">Project Command Hub</h4>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Central workspace with project overview, credential vault, markdown notes, and discussions.</p>
+                        </div>
+                    </div>
+
+                    <!-- Velocity Analytics Card -->
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 hover:border-indigo-500/50 transition-all duration-300 overflow-hidden flex flex-col group shadow-xl hover:shadow-indigo-500/10">
+                        <div class="px-4 py-2.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+                                <span class="ml-2 font-mono text-[11px] text-slate-400 truncate">/analytics</span>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded">V2 Dark</span>
+                        </div>
+                        <div class="relative bg-slate-950 overflow-hidden cursor-pointer flex-1" onclick="openScreenshotModal('{{ asset('demo-images/v2/dark/analytics.png') }}', 'Developer Mode (V2 Dark) - Velocity & Burndown Analytics')">
+                            <img src="{{ asset('demo-images/v2/dark/analytics.png') }}" alt="V2 Dark Analytics" class="w-full h-48 sm:h-52 object-cover object-top transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            <div class="absolute bottom-2.5 right-2.5 p-1.5 rounded-lg bg-slate-900/90 text-indigo-400 border border-slate-700/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-900/90 border-t border-slate-800">
+                            <h4 class="font-bold text-white text-base">Velocity &amp; Burndown</h4>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Dynamic charts plotting weekly velocity, task throughput rates, and backlog turnaround time.</p>
+                        </div>
+                    </div>
+
+                    <!-- Settings & Notifications Card -->
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 hover:border-indigo-500/50 transition-all duration-300 overflow-hidden flex flex-col group shadow-xl hover:shadow-indigo-500/10">
+                        <div class="px-4 py-2.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+                                <span class="ml-2 font-mono text-[11px] text-slate-400 truncate">/settings</span>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded">V2 Dark</span>
+                        </div>
+                        <div class="relative bg-slate-950 overflow-hidden cursor-pointer flex-1" onclick="openScreenshotModal('{{ asset('demo-images/v2/dark/settings.png') }}', 'Developer Mode (V2 Dark) - Settings & Notification Controls')">
+                            <img src="{{ asset('demo-images/v2/dark/settings.png') }}" alt="V2 Dark Settings" class="w-full h-48 sm:h-52 object-cover object-top transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            <div class="absolute bottom-2.5 right-2.5 p-1.5 rounded-lg bg-slate-900/90 text-indigo-400 border border-slate-700/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-900/90 border-t border-slate-800">
+                            <h4 class="font-bold text-white text-base">Settings &amp; Email Engine</h4>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Instant UI mode switching, email notification matrix, and developer profile controls.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel: V2 Developer Light -->
+            <div id="gallery-panel-v2-light" class="space-y-8 hidden transition-all duration-300">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Dashboard Light Card -->
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 hover:border-indigo-500/50 transition-all duration-300 overflow-hidden flex flex-col group shadow-xl hover:shadow-indigo-500/10">
+                        <div class="px-4 py-2.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+                                <span class="ml-2 font-mono text-[11px] text-slate-400 truncate">/dashboard</span>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded">V2 Light</span>
+                        </div>
+                        <div class="relative bg-slate-950 overflow-hidden cursor-pointer flex-1" onclick="openScreenshotModal('{{ asset('demo-images/v2/light/dashboard.png') }}', 'Developer Mode (V2 Light) - Cockpit Dashboard')">
+                            <img src="{{ asset('demo-images/v2/light/dashboard.png') }}" alt="V2 Light Dashboard" class="w-full h-48 sm:h-52 object-cover object-top transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            <div class="absolute bottom-2.5 right-2.5 p-1.5 rounded-lg bg-slate-900/90 text-indigo-400 border border-slate-700/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-900/90 border-t border-slate-800">
+                            <h4 class="font-bold text-white text-base">Cockpit Dashboard (Light)</h4>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Crisp high-contrast light theme with executive project KPI cards and metrics.</p>
+                        </div>
+                    </div>
+
+                    <!-- Tasks Light Card -->
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 hover:border-indigo-500/50 transition-all duration-300 overflow-hidden flex flex-col group shadow-xl hover:shadow-indigo-500/10">
+                        <div class="px-4 py-2.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+                                <span class="ml-2 font-mono text-[11px] text-slate-400 truncate">/tasks</span>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded">V2 Light</span>
+                        </div>
+                        <div class="relative bg-slate-950 overflow-hidden cursor-pointer flex-1" onclick="openScreenshotModal('{{ asset('demo-images/v2/light/tasks.png') }}', 'Developer Mode (V2 Light) - Kanban Board')">
+                            <img src="{{ asset('demo-images/v2/light/tasks.png') }}" alt="V2 Light Kanban" class="w-full h-48 sm:h-52 object-cover object-top transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            <div class="absolute bottom-2.5 right-2.5 p-1.5 rounded-lg bg-slate-900/90 text-indigo-400 border border-slate-700/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-900/90 border-t border-slate-800">
+                            <h4 class="font-bold text-white text-base">Kanban Board (Light)</h4>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Clean white cards on slate columns with high-contrast priority tags and badges.</p>
+                        </div>
+                    </div>
+
+                    <!-- Projects Light Card -->
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 hover:border-indigo-500/50 transition-all duration-300 overflow-hidden flex flex-col group shadow-xl hover:shadow-indigo-500/10">
+                        <div class="px-4 py-2.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+                                <span class="ml-2 font-mono text-[11px] text-slate-400 truncate">/projects</span>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded">V2 Light</span>
+                        </div>
+                        <div class="relative bg-slate-950 overflow-hidden cursor-pointer flex-1" onclick="openScreenshotModal('{{ asset('demo-images/v2/light/projects.png') }}', 'Developer Mode (V2 Light) - Project Hub')">
+                            <img src="{{ asset('demo-images/v2/light/projects.png') }}" alt="V2 Light Projects" class="w-full h-48 sm:h-52 object-cover object-top transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            <div class="absolute bottom-2.5 right-2.5 p-1.5 rounded-lg bg-slate-900/90 text-indigo-400 border border-slate-700/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-900/90 border-t border-slate-800">
+                            <h4 class="font-bold text-white text-base">Project Command Hub (Light)</h4>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Crisp project tabs, credential eye-masks, notes preview, and issue discussions.</p>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Light Card -->
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 hover:border-indigo-500/50 transition-all duration-300 overflow-hidden flex flex-col group shadow-xl hover:shadow-indigo-500/10">
+                        <div class="px-4 py-2.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+                                <span class="ml-2 font-mono text-[11px] text-slate-400 truncate">/analytics</span>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded">V2 Light</span>
+                        </div>
+                        <div class="relative bg-slate-950 overflow-hidden cursor-pointer flex-1" onclick="openScreenshotModal('{{ asset('demo-images/v2/light/analytics.png') }}', 'Developer Mode (V2 Light) - Velocity Analytics')">
+                            <img src="{{ asset('demo-images/v2/light/analytics.png') }}" alt="V2 Light Analytics" class="w-full h-48 sm:h-52 object-cover object-top transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            <div class="absolute bottom-2.5 right-2.5 p-1.5 rounded-lg bg-slate-900/90 text-indigo-400 border border-slate-700/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-900/90 border-t border-slate-800">
+                            <h4 class="font-bold text-white text-base">Velocity Analytics (Light)</h4>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Vibrant Recharts area graphs displaying weekly throughput and velocity.</p>
+                        </div>
+                    </div>
+
+                    <!-- Settings Light Card -->
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 hover:border-indigo-500/50 transition-all duration-300 overflow-hidden flex flex-col group shadow-xl hover:shadow-indigo-500/10">
+                        <div class="px-4 py-2.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+                                <span class="ml-2 font-mono text-[11px] text-slate-400 truncate">/settings</span>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded">V2 Light</span>
+                        </div>
+                        <div class="relative bg-slate-950 overflow-hidden cursor-pointer flex-1" onclick="openScreenshotModal('{{ asset('demo-images/v2/light/settings.png') }}', 'Developer Mode (V2 Light) - Settings & Notification Controls')">
+                            <img src="{{ asset('demo-images/v2/light/settings.png') }}" alt="V2 Light Settings" class="w-full h-48 sm:h-52 object-cover object-top transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            <div class="absolute bottom-2.5 right-2.5 p-1.5 rounded-lg bg-slate-900/90 text-indigo-400 border border-slate-700/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-900/90 border-t border-slate-800">
+                            <h4 class="font-bold text-white text-base">Settings &amp; Email Engine (Light)</h4>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Clean light view to configure notifications and switch interface modes instantly.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel: V1 Classic Light -->
+            <div id="gallery-panel-v1-light" class="space-y-8 hidden transition-all duration-300">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Dashboard Card -->
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 hover:border-blue-500/50 transition-all duration-300 overflow-hidden flex flex-col group shadow-xl hover:shadow-blue-500/10">
+                        <div class="px-4 py-2.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-blue-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                <span class="ml-2 font-mono text-[11px] text-slate-400 truncate">/dashboard</span>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">V1 Light</span>
+                        </div>
+                        <div class="relative bg-slate-950 overflow-hidden cursor-pointer flex-1" onclick="openScreenshotModal('{{ asset('demo-images/v1/light/dashboard.png') }}', 'Classic Mode (V1 Light) - Executive Blade Dashboard')">
+                            <img src="{{ asset('demo-images/v1/light/dashboard.png') }}" alt="V1 Light Dashboard" class="w-full h-48 sm:h-52 object-cover object-top transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            <div class="absolute bottom-2.5 right-2.5 p-1.5 rounded-lg bg-slate-900/90 text-blue-400 border border-slate-700/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-900/90 border-t border-slate-800">
+                            <h4 class="font-bold text-white text-base">Classic Dashboard</h4>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Multi-workspace filter, instant server-rendered KPI cards, and quick task summary.</p>
+                        </div>
+                    </div>
+
+                    <!-- Tasks Spreadsheet Card -->
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 hover:border-blue-500/50 transition-all duration-300 overflow-hidden flex flex-col group shadow-xl hover:shadow-blue-500/10">
+                        <div class="px-4 py-2.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-blue-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                <span class="ml-2 font-mono text-[11px] text-slate-400 truncate">/tasks</span>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">V1 Light</span>
+                        </div>
+                        <div class="relative bg-slate-950 overflow-hidden cursor-pointer flex-1" onclick="openScreenshotModal('{{ asset('demo-images/v1/light/tasks.png') }}', 'Classic Mode (V1 Light) - Inline Notion Spreadsheet')">
+                            <img src="{{ asset('demo-images/v1/light/tasks.png') }}" alt="V1 Light Tasks" class="w-full h-48 sm:h-52 object-cover object-top transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            <div class="absolute bottom-2.5 right-2.5 p-1.5 rounded-lg bg-slate-900/90 text-blue-400 border border-slate-700/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-900/90 border-t border-slate-800">
+                            <h4 class="font-bold text-white text-base">Notion-Style Task Spreadsheet</h4>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Inline editable spreadsheet with status checkmarks, due date badges, and instant AJAX autosave.</p>
+                        </div>
+                    </div>
+
+                    <!-- Projects Card -->
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 hover:border-blue-500/50 transition-all duration-300 overflow-hidden flex flex-col group shadow-xl hover:shadow-blue-500/10">
+                        <div class="px-4 py-2.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-blue-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                <span class="ml-2 font-mono text-[11px] text-slate-400 truncate">/projects</span>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">V1 Light</span>
+                        </div>
+                        <div class="relative bg-slate-950 overflow-hidden cursor-pointer flex-1" onclick="openScreenshotModal('{{ asset('demo-images/v1/light/projects.png') }}', 'Classic Mode (V1 Light) - Projects Workspace')">
+                            <img src="{{ asset('demo-images/v1/light/projects.png') }}" alt="V1 Light Projects" class="w-full h-48 sm:h-52 object-cover object-top transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            <div class="absolute bottom-2.5 right-2.5 p-1.5 rounded-lg bg-slate-900/90 text-blue-400 border border-slate-700/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-900/90 border-t border-slate-800">
+                            <h4 class="font-bold text-white text-base">Projects Portfolio</h4>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Multi-company projects view with progress bars, task counts, and company filtering.</p>
+                        </div>
+                    </div>
+
+                    <!-- Documentation Notes Card -->
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 hover:border-blue-500/50 transition-all duration-300 overflow-hidden flex flex-col group shadow-xl hover:shadow-blue-500/10">
+                        <div class="px-4 py-2.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-blue-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                <span class="ml-2 font-mono text-[11px] text-slate-400 truncate">/notes</span>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">V1 Light</span>
+                        </div>
+                        <div class="relative bg-slate-950 overflow-hidden cursor-pointer flex-1" onclick="openScreenshotModal('{{ asset('demo-images/v1/light/notes.png') }}', 'Classic Mode (V1 Light) - Documentation Notes & PDF Export')">
+                            <img src="{{ asset('demo-images/v1/light/notes.png') }}" alt="V1 Light Notes" class="w-full h-48 sm:h-52 object-cover object-top transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            <div class="absolute bottom-2.5 right-2.5 p-1.5 rounded-lg bg-slate-900/90 text-blue-400 border border-slate-700/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-900/90 border-t border-slate-800">
+                            <h4 class="font-bold text-white text-base">Markdown Notes &amp; PDF Export</h4>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Centralized engineering wiki with markdown formatting and 1-click printable PDF generator.</p>
+                        </div>
+                    </div>
+
+                    <!-- Profile & Settings Card -->
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 hover:border-blue-500/50 transition-all duration-300 overflow-hidden flex flex-col group shadow-xl hover:shadow-blue-500/10">
+                        <div class="px-4 py-2.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-blue-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                <span class="ml-2 font-mono text-[11px] text-slate-400 truncate">/settings</span>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">V1 Light</span>
+                        </div>
+                        <div class="relative bg-slate-950 overflow-hidden cursor-pointer flex-1" onclick="openScreenshotModal('{{ asset('demo-images/v1/light/profile.png') }}', 'Classic Mode (V1 Light) - Profile & Preferences')">
+                            <img src="{{ asset('demo-images/v1/light/profile.png') }}" alt="V1 Light Profile" class="w-full h-48 sm:h-52 object-cover object-top transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            <div class="absolute bottom-2.5 right-2.5 p-1.5 rounded-lg bg-slate-900/90 text-blue-400 border border-slate-700/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-900/90 border-t border-slate-800">
+                            <h4 class="font-bold text-white text-base">Account Security &amp; Mode Switcher</h4>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Instant interface switching toggle, password updates, and email notifications setup.</p>
+                        </div>
+                    </div>
+
+                    <!-- Soft Delete Trash Card -->
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 hover:border-blue-500/50 transition-all duration-300 overflow-hidden flex flex-col group shadow-xl hover:shadow-blue-500/10">
+                        <div class="px-4 py-2.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-blue-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                <span class="ml-2 font-mono text-[11px] text-slate-400 truncate">/trash</span>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">V1 Light</span>
+                        </div>
+                        <div class="relative bg-slate-950 overflow-hidden cursor-pointer flex-1" onclick="openScreenshotModal('{{ asset('demo-images/v1/light/trash.png') }}', 'Classic Mode (V1 Light) - Trash Recovery & Audit')">
+                            <img src="{{ asset('demo-images/v1/light/trash.png') }}" alt="V1 Light Trash" class="w-full h-48 sm:h-52 object-cover object-top transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            <div class="absolute bottom-2.5 right-2.5 p-1.5 rounded-lg bg-slate-900/90 text-blue-400 border border-slate-700/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-900/90 border-t border-slate-800">
+                            <h4 class="font-bold text-white text-base">Trash Bin &amp; Soft-Delete Recovery</h4>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Full audit trail of deleted tasks with instant 1-click restoration and 30-day auto-purge.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel: V1 Classic Dark -->
+            <div id="gallery-panel-v1-dark" class="space-y-8 hidden transition-all duration-300">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Dashboard Dark Card -->
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 hover:border-slate-700 transition-all duration-300 overflow-hidden flex flex-col group shadow-xl">
+                        <div class="px-4 py-2.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-blue-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                <span class="ml-2 font-mono text-[11px] text-slate-400 truncate">/dashboard</span>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-slate-300 bg-slate-800 px-1.5 py-0.5 rounded">V1 Dark</span>
+                        </div>
+                        <div class="relative bg-slate-950 overflow-hidden cursor-pointer flex-1" onclick="openScreenshotModal('{{ asset('demo-images/v1/dark/dashboard.png') }}', 'Classic Mode (V1 Dark) - Dashboard')">
+                            <img src="{{ asset('demo-images/v1/dark/dashboard.png') }}" alt="V1 Dark Dashboard" class="w-full h-48 sm:h-52 object-cover object-top transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            <div class="absolute bottom-2.5 right-2.5 p-1.5 rounded-lg bg-slate-900/90 text-blue-400 border border-slate-700/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-900/90 border-t border-slate-800">
+                            <h4 class="font-bold text-white text-base">Classic Dashboard (Dark)</h4>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">High-contrast SB Admin 2 dark theme with instant SSR rendering and workspace navigation.</p>
+                        </div>
+                    </div>
+
+                    <!-- Tasks Dark Card -->
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 hover:border-slate-700 transition-all duration-300 overflow-hidden flex flex-col group shadow-xl">
+                        <div class="px-4 py-2.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-blue-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                <span class="ml-2 font-mono text-[11px] text-slate-400 truncate">/tasks</span>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-slate-300 bg-slate-800 px-1.5 py-0.5 rounded">V1 Dark</span>
+                        </div>
+                        <div class="relative bg-slate-950 overflow-hidden cursor-pointer flex-1" onclick="openScreenshotModal('{{ asset('demo-images/v1/dark/tasks.png') }}', 'Classic Mode (V1 Dark) - Tasks Spreadsheet')">
+                            <img src="{{ asset('demo-images/v1/dark/tasks.png') }}" alt="V1 Dark Tasks" class="w-full h-48 sm:h-52 object-cover object-top transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            <div class="absolute bottom-2.5 right-2.5 p-1.5 rounded-lg bg-slate-900/90 text-blue-400 border border-slate-700/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-900/90 border-t border-slate-800">
+                            <h4 class="font-bold text-white text-base">Tasks Spreadsheet (Dark)</h4>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Inline task editing with dark rows, priority pills, and real-time status toggling.</p>
+                        </div>
+                    </div>
+
+                    <!-- Projects Dark Card -->
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 hover:border-slate-700 transition-all duration-300 overflow-hidden flex flex-col group shadow-xl">
+                        <div class="px-4 py-2.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-blue-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                <span class="ml-2 font-mono text-[11px] text-slate-400 truncate">/projects</span>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-slate-300 bg-slate-800 px-1.5 py-0.5 rounded">V1 Dark</span>
+                        </div>
+                        <div class="relative bg-slate-950 overflow-hidden cursor-pointer flex-1" onclick="openScreenshotModal('{{ asset('demo-images/v1/dark/projects.png') }}', 'Classic Mode (V1 Dark) - Projects Portfolio')">
+                            <img src="{{ asset('demo-images/v1/dark/projects.png') }}" alt="V1 Dark Projects" class="w-full h-48 sm:h-52 object-cover object-top transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            <div class="absolute bottom-2.5 right-2.5 p-1.5 rounded-lg bg-slate-900/90 text-blue-400 border border-slate-700/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-900/90 border-t border-slate-800">
+                            <h4 class="font-bold text-white text-base">Projects Portfolio (Dark)</h4>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Multi-company projects list with completion percentages and access code sharing.</p>
+                        </div>
+                    </div>
+
+                    <!-- Notes Dark Card -->
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 hover:border-slate-700 transition-all duration-300 overflow-hidden flex flex-col group shadow-xl">
+                        <div class="px-4 py-2.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-blue-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                <span class="ml-2 font-mono text-[11px] text-slate-400 truncate">/notes</span>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-slate-300 bg-slate-800 px-1.5 py-0.5 rounded">V1 Dark</span>
+                        </div>
+                        <div class="relative bg-slate-950 overflow-hidden cursor-pointer flex-1" onclick="openScreenshotModal('{{ asset('demo-images/v1/dark/notes.png') }}', 'Classic Mode (V1 Dark) - Markdown Notes')">
+                            <img src="{{ asset('demo-images/v1/dark/notes.png') }}" alt="V1 Dark Notes" class="w-full h-48 sm:h-52 object-cover object-top transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            <div class="absolute bottom-2.5 right-2.5 p-1.5 rounded-lg bg-slate-900/90 text-blue-400 border border-slate-700/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-900/90 border-t border-slate-800">
+                            <h4 class="font-bold text-white text-base">Documentation Notes (Dark)</h4>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Dark theme documentation editor with instantaneous HTML and PDF exporting.</p>
+                        </div>
+                    </div>
+
+                    <!-- Profile Dark Card -->
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 hover:border-slate-700 transition-all duration-300 overflow-hidden flex flex-col group shadow-xl">
+                        <div class="px-4 py-2.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-blue-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                <span class="ml-2 font-mono text-[11px] text-slate-400 truncate">/settings</span>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-slate-300 bg-slate-800 px-1.5 py-0.5 rounded">V1 Dark</span>
+                        </div>
+                        <div class="relative bg-slate-950 overflow-hidden cursor-pointer flex-1" onclick="openScreenshotModal('{{ asset('demo-images/v1/dark/profile.png') }}', 'Classic Mode (V1 Dark) - Account & Security')">
+                            <img src="{{ asset('demo-images/v1/dark/profile.png') }}" alt="V1 Dark Profile" class="w-full h-48 sm:h-52 object-cover object-top transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            <div class="absolute bottom-2.5 right-2.5 p-1.5 rounded-lg bg-slate-900/90 text-blue-400 border border-slate-700/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-900/90 border-t border-slate-800">
+                            <h4 class="font-bold text-white text-base">Account Security &amp; Settings (Dark)</h4>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Profile management, credential resets, and UI mode switching.</p>
+                        </div>
+                    </div>
+
+                    <!-- Trash Dark Card -->
+                    <div class="rounded-2xl border border-slate-800 bg-slate-900/70 hover:border-slate-700 transition-all duration-300 overflow-hidden flex flex-col group shadow-xl">
+                        <div class="px-4 py-2.5 bg-slate-950 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-blue-500/80"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
+                                <span class="ml-2 font-mono text-[11px] text-slate-400 truncate">/trash</span>
+                            </div>
+                            <span class="text-[10px] uppercase font-bold text-slate-300 bg-slate-800 px-1.5 py-0.5 rounded">V1 Dark</span>
+                        </div>
+                        <div class="relative bg-slate-950 overflow-hidden cursor-pointer flex-1" onclick="openScreenshotModal('{{ asset('demo-images/v1/dark/trash.png') }}', 'Classic Mode (V1 Dark) - Trash Bin')">
+                            <img src="{{ asset('demo-images/v1/dark/trash.png') }}" alt="V1 Dark Trash" class="w-full h-48 sm:h-52 object-cover object-top transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            <div class="absolute bottom-2.5 right-2.5 p-1.5 rounded-lg bg-slate-900/90 text-blue-400 border border-slate-700/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-slate-900/90 border-t border-slate-800">
+                            <h4 class="font-bold text-white text-base">Trash Recovery &amp; Audit (Dark)</h4>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Soft-deleted items archive with safety restoration and permanent prune safeguards.</p>
                         </div>
                     </div>
                 </div>
@@ -722,6 +1167,7 @@
 
             <div class="flex items-center gap-6">
                 <a href="#dual-engine" class="hover:text-white transition-colors">Modes</a>
+                <a href="#demo-gallery" class="hover:text-white transition-colors">Live Demos</a>
                 <a href="#bento" class="hover:text-white transition-colors">Features</a>
                 <a href="{{ route('routes.index') }}" class="hover:text-white transition-colors">Routes</a>
                 <a href="{{ route('login') }}" class="hover:text-white transition-colors">Sign In</a>
@@ -733,6 +1179,32 @@
             </div>
         </div>
     </footer>
+
+    <!-- Screenshot Lightbox Modal -->
+    <div id="screenshotModal" class="fixed inset-0 z-50 hidden bg-black/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-8" onclick="closeScreenshotModal()">
+        <div class="relative max-w-6xl w-full max-h-[92vh] flex flex-col bg-slate-900 border border-slate-700 rounded-2xl overflow-hidden shadow-2xl" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between px-5 py-3.5 bg-slate-950 border-b border-slate-800 text-xs text-slate-300">
+                <div class="flex items-center gap-2 truncate pr-2">
+                    <span class="w-3 h-3 rounded-full bg-rose-500 shrink-0"></span>
+                    <span class="w-3 h-3 rounded-full bg-amber-500 shrink-0"></span>
+                    <span class="w-3 h-3 rounded-full bg-emerald-500 shrink-0"></span>
+                    <span id="modalCaption" class="ml-2 font-semibold text-white text-sm truncate">Screenshot Preview</span>
+                </div>
+                <div class="flex items-center gap-3 shrink-0">
+                    <a id="modalDownloadLink" href="#" target="_blank" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors flex items-center gap-1.5 font-mono text-[11px]">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        <span>Full Res</span>
+                    </a>
+                    <button type="button" onclick="closeScreenshotModal()" class="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer" title="Close (Esc)">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="overflow-auto p-3 bg-slate-950/80 flex items-center justify-center">
+                <img id="modalImage" src="" alt="WorkHub Preview" class="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl" />
+            </div>
+        </div>
+    </div>
 
     <!-- Interactive Mode Preview Switcher & Theme Handler -->
     <script>
@@ -751,6 +1223,51 @@
                 moon.classList.toggle('hidden', isDark);
             }
         }
+
+        function switchGalleryTab(tabKey) {
+            const tabs = ['v2-dark', 'v2-light', 'v1-light', 'v1-dark'];
+            tabs.forEach(t => {
+                const panel = document.getElementById('gallery-panel-' + t);
+                const btn = document.getElementById('gallery-tab-' + t);
+                if (panel && btn) {
+                    if (t === tabKey) {
+                        panel.classList.remove('hidden');
+                        btn.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/25';
+                    } else {
+                        panel.classList.add('hidden');
+                        btn.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer text-slate-400 hover:text-white hover:bg-slate-800/50';
+                    }
+                }
+            });
+        }
+
+        function openScreenshotModal(src, title) {
+            const modal = document.getElementById('screenshotModal');
+            const img = document.getElementById('modalImage');
+            const caption = document.getElementById('modalCaption');
+            const download = document.getElementById('modalDownloadLink');
+            if (modal && img) {
+                img.src = src;
+                if (caption) caption.textContent = title || 'WorkHub Screenshot';
+                if (download) download.href = src;
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeScreenshotModal() {
+            const modal = document.getElementById('screenshotModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeScreenshotModal();
+            }
+        });
 
         function setLandingPreview(mode) {
             const isV1 = (mode === 'v1');
