@@ -349,7 +349,7 @@
                     </td>
                     <td class="text-center align-middle" style="white-space: nowrap;">
                         @can('update', $task)
-                            <div class="d-inline-flex align-items-center" style="gap: 4px;">
+                            <div class="task-action-btn-group">
                                 <x-edit-button 
                                     :href="route('tasks.show', $task)" 
                                     class="edit-task-btn" 

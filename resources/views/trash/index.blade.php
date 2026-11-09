@@ -62,12 +62,17 @@
             <!-- Tasks Tab -->
             <div class="tab-pane fade show active" id="tasks" role="tabpanel" aria-labelledby="tasks-tab">
                 @if($tasks->isEmpty())
-                    <div class="text-center py-5">
-                        <div class="text-gray-400 mb-3">
-                            <i class="fas fa-trash fa-3x"></i>
+                    <div class="text-center py-5 px-3">
+                        <div class="d-inline-flex align-items-center justify-center rounded-circle bg-light mb-3 shadow-xs" style="width: 64px; height: 64px;">
+                            <i class="fas fa-trash-alt fa-2x text-primary"></i>
                         </div>
-                        <h5 class="text-gray-600 font-weight-bold">No tasks in trash</h5>
-                        <p class="text-muted text-xs">Deleted tasks will appear here and can be retrieved.</p>
+                        <h5 class="font-weight-bold mb-1 text-gray-800">No tasks in trash</h5>
+                        <p class="text-muted text-sm mb-3" style="max-width: 420px; margin-left: auto; margin-right: auto;">
+                            Deleted tasks will appear here and remain safely recoverable for 30 days before automated pruning.
+                        </p>
+                        <a href="{{ route('tasks.index') }}" class="btn btn-sm btn-primary shadow-sm">
+                            <i class="fas fa-arrow-left mr-1"></i> Return to Tasks
+                        </a>
                     </div>
                 @else
                     <div class="table-responsive">
@@ -132,12 +137,17 @@
             <!-- Projects Tab -->
             <div class="tab-pane fade" id="projects" role="tabpanel" aria-labelledby="projects-tab">
                 @if($projects->isEmpty())
-                    <div class="text-center py-5">
-                        <div class="text-gray-400 mb-3">
-                            <i class="fas fa-trash fa-3x"></i>
+                    <div class="text-center py-5 px-3">
+                        <div class="d-inline-flex align-items-center justify-center rounded-circle bg-light mb-3 shadow-xs" style="width: 64px; height: 64px;">
+                            <i class="fas fa-folder-open fa-2x text-primary"></i>
                         </div>
-                        <h5 class="text-gray-600 font-weight-bold">No projects in trash</h5>
-                        <p class="text-muted text-xs">Deleted projects will appear here and can be retrieved.</p>
+                        <h5 class="font-weight-bold mb-1 text-gray-800">No projects in trash</h5>
+                        <p class="text-muted text-sm mb-3" style="max-width: 420px; margin-left: auto; margin-right: auto;">
+                            Deleted projects will appear here and remain safely recoverable for 30 days before automated pruning.
+                        </p>
+                        <a href="{{ route('projects.index') }}" class="btn btn-sm btn-primary shadow-sm">
+                            <i class="fas fa-arrow-left mr-1"></i> Return to Projects
+                        </a>
                     </div>
                 @else
                     <div class="table-responsive">
@@ -201,12 +211,17 @@
             <!-- Companies Tab -->
             <div class="tab-pane fade" id="companies" role="tabpanel" aria-labelledby="companies-tab">
                 @if($companies->isEmpty())
-                    <div class="text-center py-5">
-                        <div class="text-gray-400 mb-3">
-                            <i class="fas fa-trash fa-3x"></i>
+                    <div class="text-center py-5 px-3">
+                        <div class="d-inline-flex align-items-center justify-center rounded-circle bg-light mb-3 shadow-xs" style="width: 64px; height: 64px;">
+                            <i class="fas fa-sitemap fa-2x text-primary"></i>
                         </div>
-                        <h5 class="text-gray-600 font-weight-bold">No organizations in trash</h5>
-                        <p class="text-muted text-xs">Deleted organizations will appear here and can be retrieved.</p>
+                        <h5 class="font-weight-bold mb-1 text-gray-800">No organizations in trash</h5>
+                        <p class="text-muted text-sm mb-3" style="max-width: 420px; margin-left: auto; margin-right: auto;">
+                            Deleted organizations will appear here and can be restored anytime by an administrator.
+                        </p>
+                        <a href="{{ route('companies.index') }}" class="btn btn-sm btn-primary shadow-sm">
+                            <i class="fas fa-arrow-left mr-1"></i> Return to Organizations
+                        </a>
                     </div>
                 @else
                     <div class="table-responsive">
@@ -259,12 +274,14 @@
             <!-- Members Tab -->
             <div class="tab-pane fade" id="members" role="tabpanel" aria-labelledby="members-tab">
                 @if($trashedMembers->isEmpty())
-                    <div class="text-center py-5">
-                        <div class="text-gray-400 mb-3">
-                            <i class="fas fa-trash fa-3x"></i>
+                    <div class="text-center py-5 px-3">
+                        <div class="d-inline-flex align-items-center justify-center rounded-circle bg-light mb-3 shadow-xs" style="width: 64px; height: 64px;">
+                            <i class="fas fa-users-slash fa-2x text-primary"></i>
                         </div>
-                        <h5 class="text-gray-600 font-weight-bold">No removed members in trash</h5>
-                        <p class="text-muted text-xs">Removed team members will appear here and can be restored.</p>
+                        <h5 class="font-weight-bold mb-1 text-gray-800">No removed members in trash</h5>
+                        <p class="text-muted text-sm mb-3" style="max-width: 420px; margin-left: auto; margin-right: auto;">
+                            Removed team members will appear here and can be restored back into the workspace.
+                        </p>
                     </div>
                 @else
                     <div class="table-responsive">

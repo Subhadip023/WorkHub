@@ -22,7 +22,9 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                                 Developer (V2)
                             </span>
-                            <span class="px-1.5 py-0.5 text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 rounded border border-indigo-500/30">Default</span>
+                            <span class="px-2 py-0.5 text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/30 flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Recommended
+                            </span>
                         </div>
                         <h4 class="text-sm font-semibold text-white">React SPA Cockpit</h4>
                         <p class="text-xs text-slate-400 mt-1 leading-relaxed">
@@ -35,7 +37,7 @@
                     </label>
 
                     <!-- Classic Mode (V1) Card -->
-                    <label class="relative flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 select-none border-slate-800 bg-slate-950/40 hover:border-slate-700" id="card-mode-v1">
+                    <label class="relative flex flex-col p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 select-none border-slate-700/80 bg-slate-950/40 hover:border-slate-600" id="card-mode-v1">
                         <input type="radio" name="ui_version" value="v1" class="sr-only" onchange="updateModeSelection('v1')">
                         <div class="flex items-center justify-between mb-2">
                             <span class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-300 uppercase tracking-wide">
@@ -54,8 +56,8 @@
                     </label>
                 </div>
                 <p class="text-[11px] text-slate-400 mt-2 flex items-center gap-1.5">
-                    <svg class="w-3.5 h-3.5 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    Both modes share the same projects and database. Switch anytime in Profile Settings.
+                    <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Both modes share the same projects and database. Switch anytime with 1 click in Profile Settings.
                 </p>
                 @error('ui_version')
                     <p class="text-xs text-rose-400 mt-1">{{ $message }}</p>
@@ -67,7 +69,7 @@
                 <label for="name" class="block text-xs font-medium text-slate-300 mb-1.5">Full Name</label>
                 <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name"
                     placeholder="Subhadip Chakraborty"
-                    class="w-full px-3.5 py-2.5 rounded-lg bg-slate-950/60 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                    class="w-full px-3.5 py-2.5 rounded-lg bg-slate-950/60 border border-slate-700/80 hover:border-slate-600 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all">
                 @error('name')
                     <p class="text-xs text-rose-400 mt-1">{{ $message }}</p>
                 @enderror
@@ -78,7 +80,7 @@
                 <label for="email" class="block text-xs font-medium text-slate-300 mb-1.5">Email Address</label>
                 <input id="email" type="email" name="email" value="{{ old('email', request('email')) }}" required autocomplete="username"
                     placeholder="developer@workhub.io"
-                    class="w-full px-3.5 py-2.5 rounded-lg bg-slate-950/60 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                    class="w-full px-3.5 py-2.5 rounded-lg bg-slate-950/60 border border-slate-700/80 hover:border-slate-600 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all">
                 @error('email')
                     <p class="text-xs text-rose-400 mt-1">{{ $message }}</p>
                 @enderror
@@ -90,7 +92,7 @@
                     <label for="password" class="block text-xs font-medium text-slate-300 mb-1.5">Password</label>
                     <input id="password" type="password" name="password" required autocomplete="new-password"
                         placeholder="••••••••"
-                        class="w-full px-3.5 py-2.5 rounded-lg bg-slate-950/60 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                        class="w-full px-3.5 py-2.5 rounded-lg bg-slate-950/60 border border-slate-700/80 hover:border-slate-600 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all">
                     @error('password')
                         <p class="text-xs text-rose-400 mt-1">{{ $message }}</p>
                     @enderror
@@ -99,7 +101,7 @@
                     <label for="password_confirmation" class="block text-xs font-medium text-slate-300 mb-1.5">Confirm Password</label>
                     <input id="password_confirmation" type="password" name="password_confirmation" required autocomplete="new-password"
                         placeholder="••••••••"
-                        class="w-full px-3.5 py-2.5 rounded-lg bg-slate-950/60 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                        class="w-full px-3.5 py-2.5 rounded-lg bg-slate-950/60 border border-slate-700/80 hover:border-slate-600 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all">
                     @error('password_confirmation')
                         <p class="text-xs text-rose-400 mt-1">{{ $message }}</p>
                     @enderror

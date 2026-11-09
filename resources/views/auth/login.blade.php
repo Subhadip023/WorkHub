@@ -16,7 +16,7 @@
                 <label for="email" class="block text-xs font-medium text-slate-300 mb-1.5">Email Address</label>
                 <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username"
                     placeholder="developer@workhub.io"
-                    class="w-full px-3.5 py-2.5 rounded-lg bg-slate-950/60 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                    class="w-full px-3.5 py-2.5 rounded-lg bg-slate-950/60 border border-slate-700/80 hover:border-slate-600 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all">
                 @error('email')
                     <p class="text-xs text-rose-400 mt-1">{{ $message }}</p>
                 @enderror
@@ -34,7 +34,7 @@
                 </div>
                 <input id="password" type="password" name="password" required autocomplete="current-password"
                     placeholder="••••••••"
-                    class="w-full px-3.5 py-2.5 rounded-lg bg-slate-950/60 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                    class="w-full px-3.5 py-2.5 rounded-lg bg-slate-950/60 border border-slate-700/80 hover:border-slate-600 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all">
                 @error('password')
                     <p class="text-xs text-rose-400 mt-1">{{ $message }}</p>
                 @enderror
@@ -44,7 +44,7 @@
             <div class="flex items-center justify-between">
                 <label for="remember_me" class="inline-flex items-center gap-2 cursor-pointer select-none">
                     <input id="remember_me" type="checkbox" name="remember"
-                        class="rounded bg-slate-950 border-slate-800 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-slate-900 w-4 h-4 cursor-pointer">
+                        class="rounded bg-slate-950 border-slate-700 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-slate-900 w-4 h-4 cursor-pointer">
                     <span class="text-xs text-slate-300 font-medium">Remember my session</span>
                 </label>
             </div>

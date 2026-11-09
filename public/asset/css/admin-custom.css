@@ -923,10 +923,111 @@ body.dark-theme .form-control:focus {
     color: #f8fafc !important;
 }
 
-body.dark-theme footer.sticky-footer {
+body.dark-theme footer.sticky-footer,
+body.dark-theme .sticky-footer,
+body.dark-theme #wrapper #content-wrapper .sticky-footer,
+html.dark-theme footer.sticky-footer,
+html.dark-theme .sticky-footer,
+html.dark-theme #wrapper #content-wrapper .sticky-footer {
     background-color: #0b132b !important;
     border-top: 1px solid #1e293b !important;
     color: #94a3b8 !important;
+}
+
+body.dark-theme .sticky-footer span,
+body.dark-theme #wrapper #content-wrapper .sticky-footer span,
+html.dark-theme .sticky-footer span,
+html.dark-theme #wrapper #content-wrapper .sticky-footer span {
+    color: #94a3b8 !important;
+}
+
+/* Sidebar Dark Theme Enhancement - Eliminates harsh electric blue clash */
+body.dark-theme .bg-gradient-primary {
+    background-color: #0b132b !important;
+    background-image: linear-gradient(180deg, #111c44 0%, #080d1e 100%) !important;
+    border-right: 1px solid #1e293b !important;
+}
+
+body.dark-theme .sidebar-dark .nav-item .nav-link {
+    color: #94a3b8 !important;
+}
+
+body.dark-theme .sidebar-dark .nav-item.active .nav-link,
+body.dark-theme .sidebar-dark .nav-item .nav-link:hover {
+    color: #ffffff !important;
+}
+
+body.dark-theme .sidebar-dark .sidebar-divider {
+    border-top: 1px solid #1e293b !important;
+}
+
+/* Card Footer & Pagination Dark Theme - Eliminates white flashbang glare */
+body.dark-theme .card-footer {
+    background-color: #111c44 !important;
+    border-top: 1px solid #1e293b !important;
+    color: #cbd5e1 !important;
+}
+
+body.dark-theme .pagination {
+    background-color: transparent !important;
+    margin-bottom: 0 !important;
+}
+
+body.dark-theme .page-item .page-link {
+    background-color: #162254 !important;
+    border-color: #1e293b !important;
+    color: #cbd5e1 !important;
+}
+
+body.dark-theme .page-item .page-link:hover {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #ffffff !important;
+}
+
+body.dark-theme .page-item.active .page-link {
+    background-color: #4e73df !important;
+    border-color: #4e73df !important;
+    color: #ffffff !important;
+}
+
+body.dark-theme .page-item.disabled .page-link {
+    background-color: #0b132b !important;
+    border-color: #1e293b !important;
+    color: #64748b !important;
+}
+
+/* Button & Table Action Dark Theme Refinements */
+body.dark-theme .btn-light {
+    background-color: #162254 !important;
+    border-color: #1e293b !important;
+    color: #cbd5e1 !important;
+}
+
+body.dark-theme .btn-light:hover {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #ffffff !important;
+}
+
+body.dark-theme .btn-light:focus {
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25) !important;
+}
+
+/* Table Task Actions Group */
+.task-action-btn-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 4px;
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+body.dark-theme .task-action-btn-group {
+    background-color: rgba(255, 255, 255, 0.03);
+    border-color: #1e293b;
 }
 
 

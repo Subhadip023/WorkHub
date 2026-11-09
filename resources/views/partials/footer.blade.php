@@ -1,3 +1,3 @@
-<div class="sticky-footer">
-    <span>@ WorkHub {{ date('Y') }}</span>
-</div>
+<footer class="sticky-footer">
+    <span>&copy; WorkHub {{ date('Y') }}</span>
+</footer>
