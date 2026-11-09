@@ -198,27 +198,3 @@ test('modern user with ui_version v2 receives inertia settings on clean settings
     $response->assertStatus(200);
     $response->assertInertia(fn ($page) => $page->component('New/Settings'));
 });
-
-test('classic user with ui_version v1 receives blade view on clean routes url', function () {
-    $user = User::factory()->create([
-        'email_verified_at' => now(),
-        'ui_version' => 'v1',
-    ]);
-
-    $response = $this->actingAs($user)->get('/routes');
-
-    $response->assertStatus(200);
-    $response->assertViewIs('routes.index');
-});
-
-test('modern user with ui_version v2 receives inertia routes on clean routes url', function () {
-    $user = User::factory()->create([
-        'email_verified_at' => now(),
-        'ui_version' => 'v2',
-    ]);
-
-    $response = $this->actingAs($user)->get('/routes');
-
-    $response->assertStatus(200);
-    $response->assertInertia(fn ($page) => $page->component('New/Routes'));
-});

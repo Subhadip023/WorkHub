@@ -83,7 +83,6 @@
                 </a>
                 <a href="#bento" class="hover:text-white transition-colors">Features</a>
                 <a href="#workflow" class="hover:text-white transition-colors">Workflow</a>
-                <a href="{{ route('routes.index') }}" class="hover:text-white transition-colors">Routes Parity</a>
             </nav>
 
             <!-- Auth Buttons & Topbar Theme Button -->
@@ -1169,7 +1168,6 @@
                 <a href="#dual-engine" class="hover:text-white transition-colors">Modes</a>
                 <a href="#demo-gallery" class="hover:text-white transition-colors">Live Demos</a>
                 <a href="#bento" class="hover:text-white transition-colors">Features</a>
-                <a href="{{ route('routes.index') }}" class="hover:text-white transition-colors">Routes</a>
                 <a href="{{ route('login') }}" class="hover:text-white transition-colors">Sign In</a>
                 <a href="{{ route('register') }}" class="hover:text-white transition-colors">Register</a>
             </div>

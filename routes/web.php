@@ -13,7 +13,6 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectCredentialsController;
-use App\Http\Controllers\RouteExplorerController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TrashController;
@@ -25,7 +24,6 @@ use App\Http\Controllers\V2\IssueController as V2IssueController;
 use App\Http\Controllers\V2\NoteController as V2NoteController;
 use App\Http\Controllers\V2\PermissionController as V2PermissionController;
 use App\Http\Controllers\V2\ProjectController as V2ProjectController;
-use App\Http\Controllers\V2\RouteExplorerController as V2RouteExplorerController;
 use App\Http\Controllers\V2\SettingsController as V2SettingsController;
 use App\Http\Controllers\V2\TaskController as V2TaskController;
 use App\Http\Controllers\V2\TeamController as V2TeamController;
@@ -56,8 +54,6 @@ Route::get('/old-dashboard', [DashboardController::class, 'oldDashboard'])->midd
 Route::get('/old-dashboard/{company}', [DashboardController::class, 'oldDashboard'])->middleware(['auth', 'verified'])->name('old.dashboard.org');
 
 Route::get('/analytics', AnalyticsController::class)->middleware(['auth', 'verified'])->name('analytics');
-Route::get('/routes', RouteExplorerController::class)->middleware(['auth', 'verified'])->name('routes.index');
-Route::redirect('/all-routes', '/routes')->name('all.routes');
 
 /*
 |--------------------------------------------------------------------------
@@ -124,7 +120,6 @@ Route::middleware(['auth', 'verified'])->prefix('v2')->name('v2.')->group(functi
     Route::post('/settings/notifications', [V2SettingsController::class, 'updateNotificationPreference'])->name('settings.notifications');
 
     Route::get('/analytics', AnalyticsController::class)->name('analytics');
-    Route::get('/routes', V2RouteExplorerController::class)->name('routes');
 });
 
 // Top-level aliases
@@ -133,7 +128,6 @@ Route::redirect('/users', '/v2/team')->name('users.index');
 // Legacy /new aliases
 Route::redirect('/new/dashboard', '/dashboard')->name('new.dashboard');
 Route::get('/new/analytics', AnalyticsController::class)->middleware(['auth', 'verified'])->name('new.analytics');
-Route::redirect('/new/routes', '/routes')->name('new.routes');
 Route::redirect('/new/projects', '/projects')->name('new.projects');
 Route::redirect('/new/tasks', '/tasks')->name('new.tasks');
 Route::redirect('/new/notes', '/v2/notes')->name('new.notes');

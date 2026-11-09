@@ -419,19 +419,6 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       asChild
-                      isActive={currentActive === "routes" || currentActive === "all routes"}
-                      className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
-                    >
-                      <Link href="/routes">
-                        <RouteIcon className="h-4 w-4 text-zinc-400 group-data-[active=true]:text-emerald-400" />
-                        <span>All Routes</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      asChild
                       isActive={currentActive === "activity-logs" || currentActive === "activity logs"}
                       className="gap-3 hover:bg-zinc-900 text-zinc-300 data-[active=true]:bg-emerald-500/10 data-[active=true]:text-emerald-400 data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-emerald-400 transition-colors rounded-md"
                     >
@@ -636,20 +623,6 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                               <div>
                                 <p className="font-medium text-xs">Notes & Docs</p>
                                 <p className="text-xs text-zinc-400">Knowledge base & notes</p>
-                              </div>
-                            </Link>
-
-                            <Link
-                              href="/routes"
-                              onClick={() => setShowSearchDropdown(false)}
-                              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-zinc-800/80 transition-colors group text-zinc-200"
-                            >
-                              <div className="p-2 rounded-lg bg-zinc-800 text-zinc-300 group-hover:bg-emerald-500/20 group-hover:text-emerald-400 transition-colors">
-                                <RouteIcon className="w-4 h-4" />
-                              </div>
-                              <div>
-                                <p className="font-medium text-xs">All Routes</p>
-                                <p className="text-xs text-zinc-400">Endpoint & API explorer</p>
                               </div>
                             </Link>
                           </div>

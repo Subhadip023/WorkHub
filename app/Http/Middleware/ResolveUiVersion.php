@@ -9,7 +9,6 @@ use App\Http\Controllers\V2\IssueController as V2IssueController;
 use App\Http\Controllers\V2\NoteController as V2NoteController;
 use App\Http\Controllers\V2\PermissionController as V2PermissionController;
 use App\Http\Controllers\V2\ProjectController as V2ProjectController;
-use App\Http\Controllers\V2\RouteExplorerController as V2RouteExplorerController;
 use App\Http\Controllers\V2\SettingsController as V2SettingsController;
 use App\Http\Controllers\V2\TaskController as V2TaskController;
 use App\Http\Controllers\V2\TeamController as V2TeamController;
@@ -45,8 +44,6 @@ class ResolveUiVersion
         'permissions.index' => [V2PermissionController::class, 'index'],
         'profile.edit' => [V2SettingsController::class, 'index'],
         'settings.index' => [V2SettingsController::class, 'index'],
-        'routes.index' => [V2RouteExplorerController::class, '__invoke'],
-        'routes' => [V2RouteExplorerController::class, '__invoke'],
     ];
 
     /**

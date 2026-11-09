@@ -81,12 +81,6 @@
             <span>Activity Logs</span>
         </a>
     </li>
-    <li class="nav-item {{Route::currentRouteName() == 'routes.index' ? 'active' : ''}}">
-        <a class="nav-link" href="{{ route('routes.index') }}">
-            <i class="fas fa-route"></i>
-            <span>All Routes</span>
-        </a>
-    </li>
     <li class="nav-item {{ request()->routeIs('settings.*') || request()->routeIs('profile.*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('settings.index') }}">
             <i class="fas fa-cog"></i>
