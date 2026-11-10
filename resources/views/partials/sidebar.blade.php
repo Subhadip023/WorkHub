@@ -97,6 +97,12 @@
                 <span>Feature Access</span>
             </a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url('/log-viewer') }}" target="_blank">
+                <i class="fas fa-terminal text-warning"></i>
+                <span>Log Viewer</span>
+            </a>
+        </li>
     @endcan
 </ul>
 

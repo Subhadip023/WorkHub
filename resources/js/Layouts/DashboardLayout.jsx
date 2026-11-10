@@ -26,6 +26,7 @@ import {
   Route as RouteIcon,
   Bug,
   KeyRound,
+  Terminal,
   Sun,
   Moon,
 } from "lucide-react";
@@ -428,6 +429,20 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
+
+                  {(user?.is_admin || user?.is_super_admin) && (
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        asChild
+                        className="gap-3 hover:bg-zinc-900 text-zinc-300 transition-colors rounded-md"
+                      >
+                        <a href="/log-viewer" target="_blank" rel="noopener noreferrer">
+                          <Terminal className="h-4 w-4 text-amber-400" />
+                          <span>System Logs</span>
+                        </a>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )}
 
                   <SidebarMenuItem>
                     <SidebarMenuButton

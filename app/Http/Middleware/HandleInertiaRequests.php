@@ -43,6 +43,8 @@ class HandleInertiaRequests extends Middleware
                     'name' => $request->user()->name,
                     'email' => $request->user()->email,
                     'ui_version' => $request->user()->ui_version ?? 'v2',
+                    'is_admin' => $request->user()->isAdmin(),
+                    'is_super_admin' => $request->user()->isSuperAdmin(),
                     'profile_image' => $request->user()->profile_image_url,
                     'avatar' => $request->user()->profile_image_url,
                     'companies' => $request->user()->companies()->with('company')->get()->map(function ($cUser) {

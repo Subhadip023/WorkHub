@@ -84,6 +84,14 @@ class AppServiceProvider extends ServiceProvider
                 ]);
         });
 
+        Gate::define('viewLogViewer', function (?User $user = null) {
+            if (app()->environment('local')) {
+                return true;
+            }
+
+            return $user && ($user->isAdmin() || $user->isSuperAdmin());
+        });
+
         view()->composer('layouts.admin', function ($view) {
             if (auth()->check()) {
                 $user = auth()->user();
