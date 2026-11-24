@@ -270,7 +270,7 @@
                 <!-- Read-only HTML View -->
                 <div id="description-read-view" class="task-description-content">
                     @if($task->description && trim(strip_tags($task->description, '<img>')) !== '')
-                        <div class="description-body text-gray-900 ql-editor" style="padding:0; min-height:auto;">{!! $task->description !!}</div>
+                        <div class="description-body text-gray-900 ql-editor" style="padding:0; min-height:auto;">{!! \App\Support\HtmlSanitizer::clean($task->description) !!}</div>
                     @else
                         <div class="text-center py-4 text-muted">
                             <i class="fas fa-align-left fa-2x mb-2 text-gray-300"></i>
@@ -299,7 +299,7 @@
                             <input type="hidden" name="points" value="{{ $task->points }}">
                             <input type="hidden" name="description" id="hidden-description">
                             
-                            <div id="editor-container" style="height: 250px;">{!! $task->description !!}</div>
+                            <div id="editor-container" style="height: 250px;">{!! \App\Support\HtmlSanitizer::clean($task->description) !!}</div>
                             
                             <div class="text-right mt-3">
                                 <button type="button" class="btn btn-sm btn-secondary mr-2" id="btn-cancel-edit">Cancel</button>

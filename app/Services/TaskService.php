@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Company;
+use App\Models\CompanyUsers;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\TaskHistory;
@@ -313,26 +314,31 @@ class TaskService implements TaskServiceInterface
             }
         }
 
-        // Assignee resolution (ID, Email, or Name)
+        // Assignee resolution (ID, Email, or Name) — only among users allowed in
+        // this project's workspace; never search the whole platform.
         $assignedTo = $creator->id;
         $assigneeInput = $item['assigned_to'] ?? $item['assignee'] ?? $item['assignee_email'] ?? $item['assigned_user'] ?? null;
         if (! empty($assigneeInput)) {
+            $candidates = User::query();
+            if ($project->company_id !== null) {
+                $candidates->whereIn('id', CompanyUsers::where('company_id', $project->company_id)
+                    ->where('is_approved', true)
+                    ->pluck('user_id'));
+            } else {
+                $candidates->whereIn('id', array_unique([$creator->id, (int) $project->user_id]));
+            }
+
+            $match = null;
             if (is_numeric($assigneeInput)) {
-                $u = User::find((int) $assigneeInput);
-                if ($u) {
-                    $assignedTo = $u->id;
-                }
+                $match = (clone $candidates)->whereKey((int) $assigneeInput)->first();
             } else {
                 $assigneeStr = trim((string) $assigneeInput);
-                $userByEmail = User::where('email', $assigneeStr)->first();
-                if ($userByEmail) {
-                    $assignedTo = $userByEmail->id;
-                } else {
-                    $userByName = User::where('name', 'LIKE', '%'.$assigneeStr.'%')->first();
-                    if ($userByName) {
-                        $assignedTo = $userByName->id;
-                    }
-                }
+                $match = (clone $candidates)->where('email', $assigneeStr)->first()
+                    ?? (clone $candidates)->where('name', 'LIKE', '%'.addcslashes($assigneeStr, '%_\\').'%')->first();
+            }
+
+            if ($match) {
+                $assignedTo = $match->id;
             }
         }
 
@@ -402,7 +408,9 @@ class TaskService implements TaskServiceInterface
                 }
 
                 $decoded = base64_decode($b64Data, true);
-                if ($decoded !== false) {
+                $detected = $decoded !== false ? $this->detectImageExtension($decoded) : null;
+                if ($detected !== null) {
+                    $extension = $detected;
                     $fileName = 'task_images/'.Str::random(40).'.'.$extension;
                     Storage::disk('public')->put($fileName, $decoded);
                     $createdImages[] = $this->taskRepository->createTaskImage($task, $fileName);
@@ -419,27 +427,15 @@ class TaskService implements TaskServiceInterface
         }
 
         foreach ($urlList as $url) {
-            if (filter_var($url, FILTER_VALIDATE_URL)) {
-                try {
-                    $response = Http::timeout(10)->get($url);
-                    if ($response->successful()) {
-                        $contentType = $response->header('Content-Type');
-                        $extension = 'jpg';
-                        if ($contentType) {
-                            if (str_contains($contentType, 'png')) {
-                                $extension = 'png';
-                            } elseif (str_contains($contentType, 'gif')) {
-                                $extension = 'gif';
-                            } elseif (str_contains($contentType, 'webp')) {
-                                $extension = 'webp';
-                            }
-                        }
-                        $fileName = 'task_images/'.Str::random(40).'.'.$extension;
-                        Storage::disk('public')->put($fileName, $response->body());
-                        $createdImages[] = $this->taskRepository->createTaskImage($task, $fileName);
-                    }
-                } catch (\Throwable $e) {
-                }
+            if (! is_string($url)) {
+                continue;
+            }
+
+            $image = $this->fetchRemoteImage($url);
+            if ($image !== null) {
+                $fileName = 'task_images/'.Str::random(40).'.'.$image['extension'];
+                Storage::disk('public')->put($fileName, $image['bytes']);
+                $createdImages[] = $this->taskRepository->createTaskImage($task, $fileName);
             }
         }
 
@@ -530,17 +526,14 @@ class TaskService implements TaskServiceInterface
         return preg_replace_callback(
             '/data:image\/(\w+);base64,([A-Za-z0-9+\/=\s]+)/',
             function ($matches) {
-                $ext = strtolower($matches[1]);
-                if (in_array($ext, ['jpeg', 'jpg', 'png', 'gif', 'webp', 'svg'])) {
-                    $extension = $ext === 'jpeg' ? 'jpg' : $ext;
-                } else {
-                    $extension = 'png';
-                }
-
                 $b64Data = preg_replace('/\s+/', '', $matches[2]);
                 $decoded = base64_decode($b64Data, true);
 
-                if ($decoded !== false && strlen($decoded) > 0) {
+                // SVG and non-image payloads are rejected: they could carry script
+                // and are served from the app's own origin.
+                $extension = $decoded !== false ? $this->detectImageExtension($decoded) : null;
+
+                if ($extension !== null) {
                     $fileName = 'task_images/'.Str::random(40).'.'.$extension;
                     Storage::disk('public')->put($fileName, $decoded);
 
@@ -551,5 +544,90 @@ class TaskService implements TaskServiceInterface
             },
             $description
         );
+    }
+
+    /** Maximum size for an image fetched from a remote URL (bytes). */
+    private const MAX_REMOTE_IMAGE_BYTES = 10 * 1024 * 1024;
+
+    /**
+     * Return a safe file extension if the bytes are a supported raster image, else null.
+     */
+    private function detectImageExtension(string $bytes): ?string
+    {
+        if ($bytes === '' || strlen($bytes) > self::MAX_REMOTE_IMAGE_BYTES) {
+            return null;
+        }
+
+        $info = @getimagesizefromstring($bytes);
+        if ($info === false) {
+            return null;
+        }
+
+        return match ($info[2]) {
+            IMAGETYPE_JPEG => 'jpg',
+            IMAGETYPE_PNG => 'png',
+            IMAGETYPE_GIF => 'gif',
+            IMAGETYPE_WEBP => 'webp',
+            default => null,
+        };
+    }
+
+    /**
+     * Fetch an image from a user-supplied URL with SSRF protections:
+     * http(s) only, public IPs only (pinned to defeat DNS rebinding),
+     * no redirects, size cap, and content must be a real raster image.
+     *
+     * @return array{bytes: string, extension: string}|null
+     */
+    private function fetchRemoteImage(string $url): ?array
+    {
+        $parts = parse_url($url);
+        $scheme = strtolower($parts['scheme'] ?? '');
+        $host = $parts['host'] ?? null;
+
+        if (! in_array($scheme, ['http', 'https'], true) || ! $host || isset($parts['user']) || isset($parts['pass'])) {
+            return null;
+        }
+
+        $host = trim($host, '[]');
+        $port = $parts['port'] ?? ($scheme === 'https' ? 443 : 80);
+
+        $ips = filter_var($host, FILTER_VALIDATE_IP) ? [$host] : (gethostbynamel($host) ?: []);
+        if ($ips === []) {
+            return null;
+        }
+
+        foreach ($ips as $ip) {
+            if (! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                return null;
+            }
+        }
+
+        try {
+            $response = Http::timeout(10)
+                ->withOptions([
+                    'allow_redirects' => false,
+                    'curl' => [CURLOPT_RESOLVE => ["{$host}:{$port}:{$ips[0]}"]],
+                ])
+                ->get($url);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return null;
+        }
+
+        if (! $response->successful()) {
+            return null;
+        }
+
+        $length = (int) $response->header('Content-Length');
+        if ($length > self::MAX_REMOTE_IMAGE_BYTES) {
+            return null;
+        }
+
+        $bytes = $response->body();
+        $extension = $this->detectImageExtension($bytes);
+
+        return $extension === null ? null : ['bytes' => $bytes, 'extension' => $extension];
     }
 }

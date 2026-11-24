@@ -31,6 +31,77 @@ class CompanyUsers extends Model
     }
 
     /**
+     * Resolve the membership that still grants rights in a company for restore /
+     * force-delete decisions.
+     *
+     * - Active company: only an active, approved membership counts. A member who
+     *   was removed (soft-deleted row) gets nothing.
+     * - Trashed company: every membership is soft-deleted together with the
+     *   company, so a trashed membership counts ONLY if it was deleted as part of
+     *   the company deletion (not earlier by an admin removing that member).
+     */
+    public static function effectiveMembership(int $userId, int $companyId): ?self
+    {
+        $company = Company::withTrashed()->find($companyId);
+        if (! $company) {
+            return null;
+        }
+
+        $active = static::where('company_id', $companyId)
+            ->where('user_id', $userId)
+            ->where('is_approved', true)
+            ->first();
+
+        if ($active || ! $company->trashed()) {
+            return $active;
+        }
+
+        return static::onlyTrashed()
+            ->where('company_id', $companyId)
+            ->where('user_id', $userId)
+            ->where('is_approved', true)
+            ->where('deleted_at', '>=', $company->deleted_at->copy()->subSeconds(5))
+            ->first();
+    }
+
+    /**
+     * Company IDs where the user still holds an effective membership
+     * (see effectiveMembership()), optionally only where they are admin.
+     *
+     * @return array<int, int>
+     */
+    public static function effectiveCompanyIds(int $userId, bool $adminOnly = false): array
+    {
+        return static::withTrashed()
+            ->where('user_id', $userId)
+            ->pluck('company_id')
+            ->unique()
+            ->filter(function ($companyId) use ($userId, $adminOnly) {
+                $membership = static::effectiveMembership($userId, (int) $companyId);
+
+                return $membership && (! $adminOnly || (int) $membership->role === 1);
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Restore only the memberships that were soft-deleted together with the
+     * company, so members removed earlier are not silently re-added.
+     */
+    public static function restoreWithCompany(Company $company): void
+    {
+        if (! $company->deleted_at) {
+            return;
+        }
+
+        static::onlyTrashed()
+            ->where('company_id', $company->id)
+            ->where('deleted_at', '>=', $company->deleted_at->copy()->subSeconds(5))
+            ->restore();
+    }
+
+    /**
      * @return BelongsTo<Company, $this>
      */
     public function company(): BelongsTo

@@ -15,6 +15,32 @@
 
 The main problems are **missing authorization on a few V2 endpoints**, **server-side fetching of user-supplied URLs (SSRF)**, **unsanitized rich-text HTML (stored XSS)**, and **policies that still treat soft-deleted memberships as active**. Most V1 routes check policies correctly. The V2 rewrite skipped several of those checks.
 
+## Fix status (branch `claude/cool-planck-3r5e3y`)
+
+> ⚠️ The fixes were written without running them: `composer install` could not download packages in that environment. **Run `php artisan test` before merging.** Regression tests are in `tests/Feature/SecurityFixesTest.php`.
+
+| ID | Status | Fix |
+|---|---|---|
+| C1 | ✅ Fixed | `TaskService::fetchRemoteImage()`: http(s) only, public IPs only (pinned via `CURLOPT_RESOLVE`), no redirects, 10 MB cap, bytes must be a raster image |
+| C2 | ✅ Fixed | `App\Support\HtmlSanitizer` (allow-list built on PHP DOM, no new package). Applied on write via `setDescriptionAttribute` on Task/Note/Project, and on render in Blade and the V2 Inertia payloads. **Run `php artisan security:sanitize-html` once** to clean existing rows |
+| C3 | ✅ Fixed | `Gate::authorize('update', $task)` in `V2\IssueController::toggle` |
+| C4 | ✅ Fixed | `CompanyUsers::effectiveMembership()`: removed members get no rights; for a trashed company, only memberships deleted together with it count. Nobody can restore their own membership |
+| H1 | ✅ Fixed | Project authorization in `V2\IssueController::store` |
+| H2 | ✅ Fixed | Destination project authorized in `TaskController::update` |
+| H3 | ✅ Fixed | API key cannot target any project but its own |
+| H4 | ⚠️ Partial | Empty-body signature only accepted when the request has no body fields; API key read from the header only. **Still open:** timestamp/nonce replay protection, which needs a breaking client change |
+| H5 | ✅ Fixed | `App\Rules\AssignableToProject` on web, API, external-API-key and import assignees |
+| H6 | ✅ Fixed | New `ProjectPolicy::manageSecrets` (owner or company admin) gates credentials, API keys and the Postman export. The export no longer contains the secret, and the V2 project page hides credentials from non-admins |
+| H7 | ✅ Fixed | SVG removed. Base64 and URL payloads must be real JPEG/PNG/GIF/WebP images |
+| M1 | ⚠️ Config | `TRUSTED_PROXIES` env var. **Set it to your load balancer IPs in production**; the default is still `*` so existing deployments keep working |
+| M2 | ⚠️ Partial | Open redirect fixed (exact host match). The route still accepts GET because the UI uses plain links (low impact) |
+| M3 | ✅ Fixed | `CompanyUsers::restoreWithCompany()` |
+| M4 | ✅ Fixed | Trash listings use effective memberships |
+| M5 | ✅ Fixed | Log Viewer: Super Admin only, in every environment |
+| L2 | ✅ Fixed | `TaskPolicy::delete()` added |
+| L6 | ✅ Fixed | Remote fetch errors are passed to `report()` |
+| L1, L3, L4, L5 | ⏳ Open | Code-quality items; not changed |
+
 ---
 
 ## 🔴 Critical

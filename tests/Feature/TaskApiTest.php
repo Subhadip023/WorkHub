@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Company;
+use App\Models\CompanyUsers;
 use App\Models\ExternalTaskApi;
 use App\Models\ExternalTaskSource;
 use App\Models\Project;
@@ -135,6 +137,11 @@ it('validates task creation payload via API', function () {
 it('allows generating external task API credentials for a project with member assignment and encrypted secret', function () {
     $owner = User::factory()->create();
     $member = User::factory()->create();
+
+    // Assignees must share a workspace with the key owner.
+    $company = Company::factory()->create();
+    CompanyUsers::create(['company_id' => $company->id, 'user_id' => $owner->id, 'role' => 1, 'is_approved' => true]);
+    CompanyUsers::create(['company_id' => $company->id, 'user_id' => $member->id, 'role' => 2, 'is_approved' => true]);
 
     $project = Project::create([
         'name' => 'Integration Project',

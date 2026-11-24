@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\V2;
 
 use App\Http\Controllers\Controller;
+use App\Support\HtmlSanitizer;
 use App\Models\Company;
 use App\Models\Note;
 use App\Models\Project;
@@ -152,7 +153,7 @@ class NoteController extends Controller
             return [
                 'id' => $n->id,
                 'title' => $n->title,
-                'description' => $n->description ?: '',
+                'description' => HtmlSanitizer::clean($n->description) ?: '',
                 'preview_text' => trim(preg_replace('/\s+/', ' ', html_entity_decode(strip_tags($n->description ?: '')))) ?: '',
                 'note_type' => (int) $n->note_type,
                 'note_type_name' => $typeLabel,

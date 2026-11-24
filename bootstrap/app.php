@@ -18,7 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->trustProxies(at: '*');
+        // Set TRUSTED_PROXIES to your load balancer IPs/CIDRs (comma-separated) in
+        // production; '*' lets any client spoof X-Forwarded-For (rate limits, logged IPs).
+        $middleware->trustProxies(at: env('TRUSTED_PROXIES', '*'));
         $middleware->web(append: [
             HandleInertiaRequests::class,
             ResolveUiVersion::class,

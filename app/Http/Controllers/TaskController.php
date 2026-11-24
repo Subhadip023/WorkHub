@@ -9,9 +9,11 @@ use App\Models\Task;
 use App\Models\TaskImage;
 use App\Models\User;
 use App\Repositories\TaskRepositoryInterface;
+use App\Rules\AssignableToProject;
 use App\Services\TaskServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 
 class TaskController extends Controller
 {
@@ -90,6 +92,8 @@ class TaskController extends Controller
             Gate::authorize('update', $project);
         }
 
+        $this->ensureAssignable($validated['assigned_to'] ?? null, $project);
+
         $this->taskService->createTask($validated, $project, auth()->user());
 
         return redirect()->route('tasks.index')->with('success', 'Task created successfully');
@@ -106,7 +110,7 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'due_date' => 'nullable|date',
-            'assigned_to' => 'nullable|exists:users,id',
+            'assigned_to' => ['nullable', 'exists:users,id', new AssignableToProject($project, $request->user())],
             'status' => 'nullable|integer|in:1,2,3,4',
             'priority' => 'nullable|integer|in:1,2,3,4',
             'type' => 'nullable|integer|in:1,2,3,4',
@@ -128,6 +132,22 @@ class TaskController extends Controller
     protected function checkTaskOwnership(Task $task)
     {
         Gate::authorize('update', $task);
+    }
+
+    /**
+     * Reject assignees outside the task's workspace (prevents cross-tenant assignment).
+     */
+    protected function ensureAssignable(mixed $assigneeId, ?Project $project): void
+    {
+        if ($assigneeId === null || $assigneeId === '') {
+            return;
+        }
+
+        if (! AssignableToProject::isAllowed((int) $assigneeId, $project, auth()->user())) {
+            throw ValidationException::withMessages([
+                'assigned_to' => 'The selected assignee is not a member of this workspace.',
+            ]);
+        }
     }
 
     /**
@@ -169,6 +189,19 @@ class TaskController extends Controller
             'type' => 'nullable|integer|in:1,2,3,4',
             'points' => 'nullable|integer|min:0|max:99999',
         ]);
+
+        // Moving a task: caller must be allowed to contribute to the destination project.
+        $targetProject = $task->project;
+        if (array_key_exists('project_id', $validated) && (int) $validated['project_id'] !== (int) $task->project_id) {
+            $targetProject = $validated['project_id'] ? Project::findOrFail($validated['project_id']) : null;
+            if ($targetProject) {
+                Gate::authorize('update', $targetProject);
+            }
+        }
+
+        if (array_key_exists('assigned_to', $validated)) {
+            $this->ensureAssignable($validated['assigned_to'], $targetProject);
+        }
 
         $task = $this->taskService->updateTask($task, $validated, auth()->user());
 
@@ -417,6 +450,8 @@ class TaskController extends Controller
             'type' => 'nullable|integer|in:1,2,3,4',
             'points' => 'nullable|integer|min:0|max:99999',
         ]);
+
+        $this->ensureAssignable($validated['assigned_to'] ?? null, $task->project);
 
         $this->taskService->createSubtask($task, $validated, auth()->user());
 

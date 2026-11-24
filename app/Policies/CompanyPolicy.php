@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Models\Company;
+use App\Models\CompanyUsers;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
@@ -57,9 +58,9 @@ class CompanyPolicy
      */
     public function restore(User $user, Company $company): bool
     {
-        $membership = $user->companies()->withTrashed()->where('company_id', $company->id)->first();
+        $membership = CompanyUsers::effectiveMembership($user->id, $company->id);
 
-        return $membership && $membership->role === 1;
+        return $membership && (int) $membership->role === 1;
     }
 
     /**

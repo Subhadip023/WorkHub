@@ -7,6 +7,7 @@ use App\Models\Company;
 use App\Models\Project;
 use App\Models\Task;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class IssueController extends Controller
@@ -183,6 +184,11 @@ class IssueController extends Controller
 
         $authUser = auth()->user();
 
+        // Only allow reporting into projects the user can contribute to.
+        if ($request->filled('project_id')) {
+            Gate::authorize('update', Project::findOrFail($request->input('project_id')));
+        }
+
         Task::create([
             'title' => trim($request->input('title')),
             'description' => trim($request->input('description')),
@@ -202,6 +208,8 @@ class IssueController extends Controller
      */
     public function toggle(Task $task)
     {
+        Gate::authorize('update', $task);
+
         $newStatus = (int) $task->status === 3 ? 1 : 3;
         $task->update([
             'status' => $newStatus,

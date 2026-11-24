@@ -84,12 +84,10 @@ class AppServiceProvider extends ServiceProvider
                 ]);
         });
 
+        // Logs can contain tokens, emails and stack traces: Super Admins only,
+        // in every environment (a staging box misconfigured as "local" must not leak them).
         Gate::define('viewLogViewer', function (?User $user = null) {
-            if (app()->environment('local')) {
-                return true;
-            }
-
-            return $user && ($user->isAdmin() || $user->isSuperAdmin());
+            return $user !== null && $user->isSuperAdmin();
         });
 
         view()->composer('layouts.admin', function ($view) {

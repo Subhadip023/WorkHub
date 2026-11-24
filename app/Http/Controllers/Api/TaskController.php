@@ -8,6 +8,7 @@ use App\Models\Project;
 use App\Models\Task;
 use App\Models\TaskHistory;
 use App\Models\User;
+use App\Rules\AssignableToProject;
 use App\Services\NotificationService;
 use App\Services\TaskServiceInterface;
 use Illuminate\Http\JsonResponse;
@@ -128,7 +129,18 @@ class TaskController extends Controller
             'images_url.*' => 'nullable|url',
         ]);
 
-        $targetProjectId = $validated['project_id'] ?? ($externalApiConfig ? $externalApiConfig->project_id : null);
+        if ($externalApiConfig) {
+            // An API key is bound to one project; it must never write elsewhere.
+            if (! empty($validated['project_id']) && (int) $validated['project_id'] !== (int) $externalApiConfig->project_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized: This API key cannot create tasks outside its project.',
+                ], 403);
+            }
+            $targetProjectId = $externalApiConfig->project_id;
+        } else {
+            $targetProjectId = $validated['project_id'] ?? null;
+        }
         $project = null;
 
         if ($targetProjectId && $targetProjectId != 0) {
@@ -141,6 +153,16 @@ class TaskController extends Controller
 
         $user_id = $externalApiConfig ? $externalApiConfig->user_id : auth()->id();
         $validated['user_id'] = $user_id;
+
+        if (! empty($validated['assigned_to'])) {
+            $actor = $externalApiConfig ? User::find($externalApiConfig->user_id) : auth()->user();
+            if (! $actor || ! AssignableToProject::isAllowed((int) $validated['assigned_to'], $project, $actor)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'The selected assignee is not a member of this workspace.',
+                ], 422);
+            }
+        }
 
         if (empty($validated['assigned_to'])) {
             if ($externalApiConfig && $externalApiConfig->assigned_user_id) {

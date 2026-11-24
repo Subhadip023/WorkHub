@@ -20,10 +20,7 @@ class TrashController extends Controller
             abort(401);
         }
 
-        $allCompanyIds = CompanyUsers::withTrashed()
-            ->where('user_id', $user->id)
-            ->pluck('company_id')
-            ->toArray();
+        $allCompanyIds = CompanyUsers::effectiveCompanyIds($user->id);
 
         // 1. Fetch Trashed Tasks
         $projectIdsForTasks = Project::withTrashed()
@@ -52,11 +49,7 @@ class TrashController extends Controller
             ->get();
 
         // 2. Fetch Trashed Projects
-        $adminCompanyIds = CompanyUsers::withTrashed()
-            ->where('user_id', $user->id)
-            ->where('role', 1)
-            ->pluck('company_id')
-            ->toArray();
+        $adminCompanyIds = CompanyUsers::effectiveCompanyIds($user->id, adminOnly: true);
 
         $projects = Project::onlyTrashed()
             ->where(function ($q) use ($adminCompanyIds, $user) {
@@ -70,11 +63,7 @@ class TrashController extends Controller
             ->get();
 
         // 3. Fetch Trashed Companies
-        $deletedCompanyIds = CompanyUsers::onlyTrashed()
-            ->where('user_id', $user->id)
-            ->where('role', 1)
-            ->pluck('company_id')
-            ->toArray();
+        $deletedCompanyIds = $adminCompanyIds;
 
         $companies = Company::onlyTrashed()
             ->whereIn('id', $deletedCompanyIds)
@@ -82,11 +71,7 @@ class TrashController extends Controller
             ->get();
 
         // 4. Fetch Trashed Members (where user is admin in the target company)
-        $currentUserAdminCompanyIds = CompanyUsers::withTrashed()
-            ->where('user_id', $user->id)
-            ->where('role', 1)
-            ->pluck('company_id')
-            ->toArray();
+        $currentUserAdminCompanyIds = CompanyUsers::effectiveCompanyIds($user->id, adminOnly: true);
 
         $trashedMembers = CompanyUsers::onlyTrashed()
             ->whereIn('company_id', $currentUserAdminCompanyIds)
@@ -175,10 +160,11 @@ class TrashController extends Controller
         Gate::authorize('restore', $company);
 
         // Restore Company
+        $deletedCompany = clone $company;
         $company->restore();
 
         // Restore all membership records
-        CompanyUsers::onlyTrashed()->where('company_id', $company->id)->restore();
+        CompanyUsers::restoreWithCompany($deletedCompany);
 
         return redirect()->back()->with('success', 'Organization and members restored successfully.');
     }

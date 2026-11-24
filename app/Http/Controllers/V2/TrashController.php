@@ -23,10 +23,7 @@ class TrashController extends Controller
             abort(401);
         }
 
-        $allCompanyIds = CompanyUsers::withTrashed()
-            ->where('user_id', $user->id)
-            ->pluck('company_id')
-            ->toArray();
+        $allCompanyIds = CompanyUsers::effectiveCompanyIds($user->id);
 
         // 1. Trashed Tasks
         $projectIdsForTasks = Project::withTrashed()
@@ -67,11 +64,7 @@ class TrashController extends Controller
             })->values()->toArray();
 
         // 2. Trashed Projects
-        $adminCompanyIds = CompanyUsers::withTrashed()
-            ->where('user_id', $user->id)
-            ->where('role', 1)
-            ->pluck('company_id')
-            ->toArray();
+        $adminCompanyIds = CompanyUsers::effectiveCompanyIds($user->id, adminOnly: true);
 
         $projects = Project::onlyTrashed()
             ->where(function ($q) use ($adminCompanyIds, $user) {
@@ -177,8 +170,9 @@ class TrashController extends Controller
         $company = Company::onlyTrashed()->findOrFail($id);
         Gate::authorize('restore', $company);
 
+        $deletedCompany = clone $company;
         $company->restore();
-        CompanyUsers::onlyTrashed()->where('company_id', $company->id)->restore();
+        CompanyUsers::restoreWithCompany($deletedCompany);
 
         return redirect()->back()->with('success', "Organization '{$company->name}' restored successfully.");
     }

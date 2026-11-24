@@ -98,7 +98,7 @@
             <div class="card-body pt-0">
                 <hr class="mt-0 mb-4">
                 <div class="note-content text-gray-800 lead font-weight-normal" style="line-height: 1.7; font-size: 1.1rem;">
-                    {!! $note->description !!}
+                    {!! \App\Support\HtmlSanitizer::clean($note->description) !!}
                 </div>
             </div>
         </div>

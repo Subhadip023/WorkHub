@@ -24,7 +24,9 @@ class UiSwitchController extends Controller
         $label = $version === 'v2' ? 'Modern V2' : 'Classic V1';
 
         $referer = $request->header('referer');
-        if ($referer && str_starts_with($referer, url('/'))) {
+        // Exact host match: a prefix check would accept e.g. https://app.example.com.evil.com
+        $appHost = parse_url(url('/'), PHP_URL_HOST);
+        if ($referer && $appHost && parse_url($referer, PHP_URL_HOST) === $appHost) {
             // Strip any explicit /v2/ from referer so user transitions to clean URL
             $cleanReferer = str_replace(url('/v2'), url(''), $referer);
 

@@ -131,7 +131,7 @@
     </div>
 
     <div class="content">
-        {!! $noteDescription !!}
+        {!! \App\Support\HtmlSanitizer::clean($noteDescription) !!}
     </div>
 
     <div class="footer">

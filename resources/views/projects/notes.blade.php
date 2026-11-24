@@ -70,7 +70,7 @@
         </div>
     </div>
     @if($project->description)
-        <div class="mt-2 text-gray-600 lead">{!! $project->description !!}</div>
+        <div class="mt-2 text-gray-600 lead">{!! \App\Support\HtmlSanitizer::clean($project->description) !!}</div>
     @else
         <p class="mt-2 text-gray-500 italic">No description provided for this project.</p>
     @endif

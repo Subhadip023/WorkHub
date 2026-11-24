@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\ExternalTaskApi;
 use Closure;
+use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -16,7 +17,8 @@ class VerifyExternalApiKey
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $apiKey = $request->header('X-Api-Key') ?? $request->input('api_key');
+        // Header only: keys in query strings / bodies leak into logs and proxies.
+        $apiKey = $request->header('X-Api-Key');
 
         if ($apiKey) {
             $externalApiConfig = ExternalTaskApi::where('api_key', $apiKey)
@@ -44,11 +46,19 @@ class VerifyExternalApiKey
             if (! hash_equals($expectedSignature, $signature)) {
                 // Support form submissions / multipart uploads
                 $inputs = $request->except(['image', 'images', 'api_key', '_token']);
-                $jsonInputs = json_encode($inputs);
-                $fallbackSignature = hash_hmac('sha256', $jsonInputs, $externalApiConfig->api_secret);
-                $emptySignature = hash_hmac('sha256', '', $externalApiConfig->api_secret);
+                $fallbackSignature = hash_hmac('sha256', json_encode($inputs), $externalApiConfig->api_secret);
 
-                if (! hash_equals($fallbackSignature, $signature) && ! hash_equals($emptySignature, $signature)) {
+                // Body fields only (query-string filters on GET are not part of the signed payload).
+                $bodyFields = Arr::except($request->request->all(), ['image', 'images', 'api_key', '_token']);
+
+                // The empty-payload signature is a constant per key, so it is only
+                // acceptable when the request genuinely carries no signed fields
+                // (e.g. GET listing or a file-only upload). Otherwise anyone who saw
+                // one such signature could forge arbitrary task payloads.
+                $emptySignatureValid = $bodyFields === []
+                    && hash_equals(hash_hmac('sha256', '', $externalApiConfig->api_secret), $signature);
+
+                if (! hash_equals($fallbackSignature, $signature) && ! $emptySignatureValid) {
                     return response()->json([
                         'success' => false,
                         'message' => 'Invalid HMAC signature.',

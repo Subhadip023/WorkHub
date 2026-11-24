@@ -98,7 +98,7 @@
                     <div class="form-group">
                         <label for="editor-container" class="font-weight-bold text-gray-700">Description <span class="text-danger">*</span></label>
                         <input type="hidden" name="description" id="hidden-description" value="{{ old('description') }}">
-                        <div id="editor-container" style="height: 250px;">{!! old('description') !!}</div>
+                        <div id="editor-container" style="height: 250px;">{!! \App\Support\HtmlSanitizer::clean(old('description')) !!}</div>
                         @error('description')
                             <span class="text-danger small d-block mt-2">{{ $message }}</span>
                         @enderror

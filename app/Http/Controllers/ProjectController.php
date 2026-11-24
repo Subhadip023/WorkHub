@@ -134,7 +134,7 @@ class ProjectController extends Controller
      */
     public function credentials(Project $project)
     {
-        Gate::authorize('view', $project);
+        Gate::authorize('manageSecrets', $project);
 
         $credentials = $project->credentials()->latest()->get();
         $comments = $project->getCachedComments();

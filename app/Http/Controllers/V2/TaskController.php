@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\V2;
 
 use App\Http\Controllers\Controller;
+use App\Support\HtmlSanitizer;
 use App\Models\Company;
 use App\Models\Note;
 use App\Models\Project;
@@ -127,7 +128,7 @@ class TaskController extends Controller
                 'db_id' => $t->id,
                 'title' => $t->title,
                 'description' => trim(preg_replace('/\s+/', ' ', html_entity_decode(strip_tags($t->description ?: '')))) ?: '',
-                'raw_description' => $t->description ?: '',
+                'raw_description' => HtmlSanitizer::clean($t->description) ?: '',
                 'status' => $statusName,
                 'status_id' => (int) $t->status,
                 'priority' => $priorityName,
@@ -258,8 +259,8 @@ class TaskController extends Controller
             'id' => 'WH-'.str_pad((string) $task->id, 3, '0', STR_PAD_LEFT),
             'db_id' => $task->id,
             'title' => $task->title,
-            'description' => $task->description ?: '',
-            'raw_description' => $task->description ?: '',
+            'description' => HtmlSanitizer::clean($task->description) ?: '',
+            'raw_description' => HtmlSanitizer::clean($task->description) ?: '',
             'status' => $statusName,
             'status_id' => (int) $task->status,
             'priority' => $priorityName,
@@ -371,7 +372,7 @@ class TaskController extends Controller
                 return [
                     'id' => $n->id,
                     'title' => $n->title,
-                    'content' => $n->description,
+                    'content' => HtmlSanitizer::clean($n->description),
                     'time' => $n->created_at ? $n->created_at->diffForHumans() : '',
                     'created_at' => $n->created_at?->format('M d, Y H:i'),
                 ];

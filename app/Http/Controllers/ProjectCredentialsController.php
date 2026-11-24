@@ -14,7 +14,7 @@ class ProjectCredentialsController extends Controller
      */
     public function store(StoreProjectCredentialsRequest $request, Project $project)
     {
-        Gate::authorize('update', $project);
+        Gate::authorize('manageSecrets', $project);
 
         $typeInput = $request->input('type');
         $type = is_numeric($typeInput)
@@ -51,7 +51,7 @@ class ProjectCredentialsController extends Controller
      */
     public function destroy(Project $project, ProjectCredentials $credential)
     {
-        Gate::authorize('update', $project);
+        Gate::authorize('manageSecrets', $project);
 
         if ($credential->project_id !== $project->id) {
             abort(404);

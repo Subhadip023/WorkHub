@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Models\CompanyUsers;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
@@ -48,6 +49,14 @@ class TaskPolicy
     }
 
     /**
+     * Determine whether the user can delete the task (same rules as update).
+     */
+    public function delete(User $user, Task $task): bool
+    {
+        return $this->update($user, $task);
+    }
+
+    /**
      * Determine whether the user can restore the task.
      */
     public function restore(User $user, Task $task): bool
@@ -60,7 +69,7 @@ class TaskPolicy
         }
 
         // 3. Organization Project Scope
-        $membership = $user->companies()->withTrashed()->where('company_id', $project->company_id)->first();
+        $membership = CompanyUsers::effectiveMembership($user->id, $project->company_id);
 
         if (! $membership) {
             return false;

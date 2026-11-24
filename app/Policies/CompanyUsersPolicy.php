@@ -52,11 +52,14 @@ class CompanyUsersPolicy
      */
     public function restore(User $user, CompanyUsers $companyUsers): bool
     {
-        return $user->companies()
-            ->withTrashed()
-            ->where('company_id', $companyUsers->company_id)
-            ->where('role', 1)
-            ->exists();
+        // A removed user must never be able to restore their own membership.
+        if ((int) $companyUsers->user_id === (int) $user->id) {
+            return false;
+        }
+
+        $membership = CompanyUsers::effectiveMembership($user->id, $companyUsers->company_id);
+
+        return $membership && ! $membership->trashed() && (int) $membership->role === 1;
     }
 
     /**

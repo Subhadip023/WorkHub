@@ -54,7 +54,7 @@
                     <div class="form-group">
                         <label for="editor-container" class="font-weight-bold text-gray-700">Description <span class="text-danger">*</span></label>
                         <input type="hidden" name="description" id="hidden-description">
-                        <div id="editor-container" style="height: 350px;">{!! $note->description !!}</div>
+                        <div id="editor-container" style="height: 350px;">{!! \App\Support\HtmlSanitizer::clean($note->description) !!}</div>
                     </div>
 
                     <div class="text-right">

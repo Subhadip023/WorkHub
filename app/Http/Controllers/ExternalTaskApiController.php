@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CompanyUsers;
 use App\Models\ExternalTaskApi;
 use App\Models\Project;
+use App\Rules\AssignableToProject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
@@ -16,7 +17,7 @@ class ExternalTaskApiController extends Controller
      */
     public function index(Project $project)
     {
-        Gate::authorize('view', $project);
+        Gate::authorize('manageSecrets', $project);
 
         $user_id = auth()->id();
 
@@ -51,11 +52,11 @@ class ExternalTaskApiController extends Controller
      */
     public function store(Request $request, Project $project)
     {
-        Gate::authorize('update', $project);
+        Gate::authorize('manageSecrets', $project);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'assigned_user_id' => 'nullable|exists:users,id',
+            'assigned_user_id' => ['nullable', 'exists:users,id', new AssignableToProject($project, $request->user())],
             'default_status' => 'nullable|integer|in:1,2,3,4',
             'default_priority' => 'nullable|integer|in:1,2,3,4',
             'default_type' => 'nullable|integer|in:1,2,3,4',
@@ -95,7 +96,7 @@ class ExternalTaskApiController extends Controller
     {
         $project = $externalTaskApi->project;
         if ($project) {
-            Gate::authorize('update', $project);
+            Gate::authorize('manageSecrets', $project);
         } else {
             if ($externalTaskApi->user_id !== auth()->id()) {
                 abort(403);
@@ -104,7 +105,7 @@ class ExternalTaskApiController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
-            'assigned_user_id' => 'nullable|exists:users,id',
+            'assigned_user_id' => ['nullable', 'exists:users,id', new AssignableToProject($project, $request->user())],
             'default_status' => 'nullable|integer|in:1,2,3,4',
             'default_priority' => 'nullable|integer|in:1,2,3,4',
             'default_type' => 'nullable|integer|in:1,2,3,4',
@@ -131,7 +132,7 @@ class ExternalTaskApiController extends Controller
     {
         $project = $externalTaskApi->project;
         if ($project) {
-            Gate::authorize('update', $project);
+            Gate::authorize('manageSecrets', $project);
         } else {
             if ($externalTaskApi->user_id !== auth()->id()) {
                 abort(403);
@@ -163,7 +164,7 @@ class ExternalTaskApiController extends Controller
     {
         $project = $externalTaskApi->project;
         if ($project) {
-            Gate::authorize('update', $project);
+            Gate::authorize('manageSecrets', $project);
         } else {
             if ($externalTaskApi->user_id !== auth()->id()) {
                 abort(403);
@@ -187,11 +188,12 @@ class ExternalTaskApiController extends Controller
      */
     public function downloadPostmanCollection(Project $project)
     {
-        Gate::authorize('view', $project);
+        Gate::authorize('manageSecrets', $project);
 
         $activeApi = $project->externalApis()->where('is_active', true)->latest()->first();
         $apiKey = $activeApi ? $activeApi->api_key : 'YOUR_API_KEY_HERE';
-        $apiSecret = $activeApi ? $activeApi->api_secret : 'YOUR_API_SECRET_HERE';
+        // Never export the decrypted secret: it is shown once at creation/rotation only.
+        $apiSecret = 'YOUR_API_SECRET_HERE';
 
         $baseUrl = config('app.url', 'http://localhost');
 

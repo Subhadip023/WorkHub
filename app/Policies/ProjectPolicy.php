@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Models\CompanyUsers;
 use App\Models\Project;
 use App\Models\User;
 
@@ -25,6 +26,22 @@ class ProjectPolicy
     public function update(User $user, Project $project): bool
     {
         return $this->view($user, $project);
+    }
+
+    /**
+     * Determine whether the user can view or manage project secrets
+     * (credentials vault, external API keys). Restricted to the personal-project
+     * owner or company administrators.
+     */
+    public function manageSecrets(User $user, Project $project): bool
+    {
+        if ($project->company_id === null) {
+            return $project->user_id === $user->id;
+        }
+
+        $membership = $user->companies()->where('company_id', $project->company_id)->first();
+
+        return $membership && (int) $membership->role === 1;
     }
 
     /**
@@ -52,9 +69,9 @@ class ProjectPolicy
             return $project->user_id === $user->id;
         }
 
-        $membership = $user->companies()->withTrashed()->where('company_id', $project->company_id)->first();
+        $membership = CompanyUsers::effectiveMembership($user->id, $project->company_id);
 
-        return $membership && $membership->role === 1;
+        return $membership && (int) $membership->role === 1;
     }
 
     /**

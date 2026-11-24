@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\V2;
 
 use App\Http\Controllers\Controller;
+use App\Support\HtmlSanitizer;
 use App\Models\Company;
 use App\Models\CompanyUsers;
 use App\Models\Project;
@@ -235,7 +236,7 @@ class ProjectController extends Controller
                     'id' => $task->id,
                     'db_id' => $task->id,
                     'title' => $task->title,
-                    'description' => $task->description,
+                    'description' => HtmlSanitizer::clean($task->description),
                     'status' => (int) $task->status,
                     'status_label' => match ((int) $task->status) {
                         3 => 'Completed',
@@ -281,7 +282,7 @@ class ProjectController extends Controller
                 return [
                     'id' => $note->id,
                     'title' => $note->title,
-                    'description' => $note->description,
+                    'description' => HtmlSanitizer::clean($note->description),
                     'created_at' => $note->created_at ? $note->created_at->format('M d, Y') : '',
                     'user' => $note->user ? [
                         'id' => $note->user->id,
@@ -293,9 +294,8 @@ class ProjectController extends Controller
             });
 
         // Project Credentials
-        $credentials = $project->credentials()
-            ->latest()
-            ->get()
+        $canManageSecrets = Gate::allows('manageSecrets', $project);
+        $credentials = ($canManageSecrets ? $project->credentials()->latest()->get() : collect())
             ->map(function ($cred) {
                 return [
                     'id' => $cred->id,
@@ -346,7 +346,7 @@ class ProjectController extends Controller
             'id' => $project->id,
             'name' => $project->name,
             'slug' => $project->slug,
-            'description' => $project->description ?: '',
+            'description' => HtmlSanitizer::clean($project->description) ?: '',
             'theme' => $project->theme ?: '#10b981',
             'status' => (int) $project->status,
             'status_label' => match ((int) $project->status) {

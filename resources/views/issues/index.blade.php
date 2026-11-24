@@ -133,7 +133,7 @@
                     <div class="collapse mt-3" id="issue-desc-{{ $issue['number'] }}">
                         <div class="issue-description-box p-3 text-gray-800 text-sm font-weight-normal">
                             @if(trim($issue['body']))
-                                {!! $issue['body'] !!}
+                                {!! \App\Support\HtmlSanitizer::clean($issue['body']) !!}
                             @else
                                 <span class="text-muted italic">No description provided.</span>
                             @endif
