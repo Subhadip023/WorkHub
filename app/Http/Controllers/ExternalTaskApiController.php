@@ -208,6 +208,7 @@ class ExternalTaskApiController extends Controller
                 ['key' => 'api_key', 'value' => $apiKey, 'type' => 'string'],
                 ['key' => 'api_secret', 'value' => $apiSecret, 'type' => 'string'],
                 ['key' => 'hmac_signature', 'value' => '', 'type' => 'string'],
+                ['key' => 'api_timestamp', 'value' => '', 'type' => 'string'],
             ],
             'event' => [
                 [
@@ -230,7 +231,10 @@ class ExternalTaskApiController extends Controller
                             '    }',
                             '    bodyToSign = Object.keys(formObj).length > 0 ? JSON.stringify(formObj) : "";',
                             '}',
-                            'const signature = CryptoJS.HmacSHA256(bodyToSign, secretKey).toString(CryptoJS.enc.Hex);',
+                            '// v2 signing: HMAC over "{timestamp}.{payload}" (each signature is single-use, valid 5 min)',
+                            'const timestamp = Math.floor(Date.now() / 1000).toString();',
+                            'const signature = CryptoJS.HmacSHA256(timestamp + "." + bodyToSign, secretKey).toString(CryptoJS.enc.Hex);',
+                            'pm.variables.set("api_timestamp", timestamp);',
                             'pm.variables.set("hmac_signature", signature);',
                         ],
                     ],
@@ -244,6 +248,7 @@ class ExternalTaskApiController extends Controller
                         'header' => [
                             ['key' => 'X-Api-Key', 'value' => '{{api_key}}', 'type' => 'text'],
                             ['key' => 'X-Api-Signature', 'value' => '{{hmac_signature}}', 'type' => 'text'],
+                            ['key' => 'X-Api-Timestamp', 'value' => '{{api_timestamp}}', 'type' => 'text'],
                         ],
                         'url' => [
                             'raw' => '{{base_url}}/api/tasks?status=1',
@@ -263,6 +268,7 @@ class ExternalTaskApiController extends Controller
                             ['key' => 'Content-Type', 'value' => 'application/json', 'type' => 'text'],
                             ['key' => 'X-Api-Key', 'value' => '{{api_key}}', 'type' => 'text'],
                             ['key' => 'X-Api-Signature', 'value' => '{{hmac_signature}}', 'type' => 'text'],
+                            ['key' => 'X-Api-Timestamp', 'value' => '{{api_timestamp}}', 'type' => 'text'],
                         ],
                         'body' => [
                             'mode' => 'raw',
@@ -289,6 +295,7 @@ class ExternalTaskApiController extends Controller
                         'header' => [
                             ['key' => 'X-Api-Key', 'value' => '{{api_key}}', 'type' => 'text'],
                             ['key' => 'X-Api-Signature', 'value' => '{{hmac_signature}}', 'type' => 'text'],
+                            ['key' => 'X-Api-Timestamp', 'value' => '{{api_timestamp}}', 'type' => 'text'],
                         ],
                         'body' => [
                             'mode' => 'formdata',
@@ -312,6 +319,7 @@ class ExternalTaskApiController extends Controller
                         'header' => [
                             ['key' => 'X-Api-Key', 'value' => '{{api_key}}', 'type' => 'text'],
                             ['key' => 'X-Api-Signature', 'value' => '{{hmac_signature}}', 'type' => 'text'],
+                            ['key' => 'X-Api-Timestamp', 'value' => '{{api_timestamp}}', 'type' => 'text'],
                         ],
                         'body' => [
                             'mode' => 'formdata',

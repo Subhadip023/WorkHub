@@ -18,6 +18,12 @@ return [
         'key' => env('POSTMARK_API_KEY'),
     ],
 
+    'external_api' => [
+        // Accept signatures without X-Api-Timestamp (no replay protection).
+        // Keep true only while integrations migrate; set false in production afterwards.
+        'allow_legacy_signatures' => (bool) env('EXTERNAL_API_ALLOW_LEGACY_SIGNATURES', true),
+    ],
+
     'resend' => [
         'key' => env('RESEND_API_KEY'),
     ],

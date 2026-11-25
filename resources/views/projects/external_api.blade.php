@@ -217,13 +217,14 @@
                     <div class="bg-dark text-light p-2 rounded font-monospace" style="font-size: 11px; line-height: 1.5;">
                         <span class="text-info">Content-Type:</span> application/json <span class="text-warning">OR</span> multipart/form-data<br>
                         <span class="text-info">X-Api-Key:</span> &lt;YOUR_PUBLIC_KEY&gt;<br>
+                        <span class="text-info">X-Api-Timestamp:</span> &lt;UNIX_SECONDS&gt;<br>
                         <span class="text-info">X-Api-Signature:</span> &lt;HMAC_SHA256_HEX&gt;
                     </div>
                 </div>
 
                 <div class="alert alert-info py-2 px-2 border-left-info text-xs mb-3">
                     <i class="fas fa-shield-alt text-info mr-1"></i> <strong>HMAC Signature:</strong><br>
-                    Compute <code class="text-dark font-weight-bold">hash_hmac('sha256', payload, secret_key)</code> and send in <code class="text-dark font-weight-bold">X-Api-Signature</code> header.
+                    Compute <code class="text-dark font-weight-bold">hash_hmac('sha256', timestamp . '.' . payload, secret_key)</code> and send it in <code class="text-dark font-weight-bold">X-Api-Signature</code>, with the same Unix timestamp in <code class="text-dark font-weight-bold">X-Api-Timestamp</code>. Requests older than 5 minutes and repeated signatures are rejected.
                 </div>
 
                 <div class="mb-3">
@@ -354,12 +355,14 @@
                                     <div class="tab-pane fade show active" id="get-curl">
                                         <pre class="mb-0 text-light" style="font-size: 11px;">curl -X GET "{{ route('api.tasks.index') }}?status=1" \
   -H "X-Api-Key: YOUR_PUBLIC_KEY" \
+  -H "X-Api-Timestamp: UNIX_SECONDS" \
   -H "X-Api-Signature: YOUR_HMAC_SHA256_HEX"</pre>
                                     </div>
                                     <div class="tab-pane fade" id="get-js">
                                         <pre class="mb-0 text-light" style="font-size: 11px;">fetch('{{ route('api.tasks.index') }}?status=1', {
   headers: {
     'X-Api-Key': 'YOUR_PUBLIC_KEY',
+    'X-Api-Timestamp': 'UNIX_SECONDS',
     'X-Api-Signature': 'YOUR_HMAC_SHA256_HEX'
   }
 }).then(res => res.json()).then(console.log);</pre>
@@ -367,6 +370,7 @@
                                     <div class="tab-pane fade" id="get-php">
                                         <pre class="mb-0 text-light" style="font-size: 11px;">$response = Http::withHeaders([
     'X-Api-Key' => 'YOUR_PUBLIC_KEY',
+    'X-Api-Timestamp' => (string) time(),
     'X-Api-Signature' => 'YOUR_HMAC_SHA256_HEX',
 ])->get('{{ route('api.tasks.index') }}', ['status' => 1]);</pre>
                                     </div>
@@ -375,6 +379,7 @@
 
 headers = {
     'X-Api-Key': 'YOUR_PUBLIC_KEY',
+    'X-Api-Timestamp': 'UNIX_SECONDS',
     'X-Api-Signature': 'YOUR_HMAC_SHA256_HEX'
 }
 response = requests.get('{{ route('api.tasks.index') }}?status=1', headers=headers)
@@ -401,6 +406,7 @@ print(response.json())</pre>
                                         <pre class="mb-0 text-light" style="font-size: 11px;">curl -X POST "{{ route('api.tasks.store') }}" \
   -H "Content-Type: application/json" \
   -H "X-Api-Key: YOUR_PUBLIC_KEY" \
+  -H "X-Api-Timestamp: UNIX_SECONDS" \
   -H "X-Api-Signature: YOUR_HMAC_SHA256_HEX" \
   -d '{
     "title": "Bug in Checkout Flow",
@@ -418,20 +424,22 @@ print(response.json())</pre>
   priority: 4,
   image_url: "https://example.com/shot.png"
 });
-const signature = CryptoJS.HmacSHA256(body, secretKey).toString();
+const timestamp = Math.floor(Date.now() / 1000).toString();
+const signature = CryptoJS.HmacSHA256(timestamp + "." + body, secretKey).toString();
 
 fetch('{{ route('api.tasks.store') }}', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
     'X-Api-Key': apiKey,
+    'X-Api-Timestamp': timestamp,
     'X-Api-Signature': signature
   },
   body: body
 });</pre>
                                     </div>
                                     <div class="tab-pane fade" id="post-json-python">
-                                        <pre class="mb-0 text-light" style="font-size: 11px;">import requests, hmac, hashlib, json
+                                        <pre class="mb-0 text-light" style="font-size: 11px;">import requests, hmac, hashlib, json, time
 
 payload = {
     "title": "Bug in Checkout Flow",
@@ -439,11 +447,13 @@ payload = {
     "priority": 4
 }
 body_bytes = json.dumps(payload).encode('utf-8')
-signature = hmac.new(secret_key.encode('utf-8'), body_bytes, hashlib.sha256).hexdigest()
+timestamp = str(int(time.time()))
+signature = hmac.new(secret_key.encode('utf-8'), timestamp.encode() + b'.' + body_bytes, hashlib.sha256).hexdigest()
 
 headers = {
     "Content-Type": "application/json",
     "X-Api-Key": api_key,
+    "X-Api-Timestamp": timestamp,
     "X-Api-Signature": signature
 }
 res = requests.post('{{ route('api.tasks.store') }}', data=body_bytes, headers=headers)</pre>
@@ -462,6 +472,7 @@ res = requests.post('{{ route('api.tasks.store') }}', data=body_bytes, headers=h
                                 <div class="border rounded p-3 bg-dark text-light font-monospace text-xs mb-3">
                                     <pre class="mb-0 text-light" style="font-size: 11px;">curl -X POST "{{ route('api.tasks.store') }}" \
   -H "X-Api-Key: YOUR_PUBLIC_KEY" \
+  -H "X-Api-Timestamp: UNIX_SECONDS" \
   -H "X-Api-Signature: YOUR_HMAC_SHA256_HEX" \
   -F "title=Task via Form Upload" \
   -F "type=1" \
@@ -481,6 +492,7 @@ res = requests.post('{{ route('api.tasks.store') }}', data=body_bytes, headers=h
                                 <div class="border rounded p-3 bg-dark text-light font-monospace text-xs">
                                     <pre class="mb-0 text-light" style="font-size: 11px;">curl -X POST "{{ url('/api/tasks/12/images') }}" \
   -H "X-Api-Key: YOUR_PUBLIC_KEY" \
+  -H "X-Api-Timestamp: UNIX_SECONDS" \
   -H "X-Api-Signature: YOUR_HMAC_SHA256_HEX" \
   -F "image=@/path/to/extra_screenshot.png"</pre>
                                 </div>
@@ -509,7 +521,10 @@ if (pm.request.body && pm.request.body.mode === "raw") {
     bodyToSign = Object.keys(formObj).length > 0 ? JSON.stringify(formObj) : "";
 }
 
-const signature = CryptoJS.HmacSHA256(bodyToSign, secretKey).toString(CryptoJS.enc.Hex);
+// v2: sign "{timestamp}.{payload}" — add header X-Api-Timestamp: {{ '{{' }}api_timestamp{{ '}}' }}
+const timestamp = Math.floor(Date.now() / 1000).toString();
+const signature = CryptoJS.HmacSHA256(timestamp + "." + bodyToSign, secretKey).toString(CryptoJS.enc.Hex);
+pm.variables.set("api_timestamp", timestamp);
 pm.variables.set("hmac_signature", signature);</pre>
                             </div>
                         </div>

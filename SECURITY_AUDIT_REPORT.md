@@ -17,7 +17,7 @@ The main problems are **missing authorization on a few V2 endpoints**, **server-
 
 ## Fix status (branch `claude/cool-planck-3r5e3y`)
 
-> ⚠️ The fixes were written without running them: `composer install` could not download packages in that environment. **Run `php artisan test` before merging.** Regression tests are in `tests/Feature/SecurityFixesTest.php`.
+> ✅ First batch verified locally on 2026-11-24: `php artisan test` passed 274 tests (1122 assertions), and `security:sanitize-html` cleaned 2 task rows. The second batch (H4 replay protection, L1, L4, L5) has not been run yet; **run `php artisan test` again before merging.** Regression tests are in `tests/Feature/SecurityFixesTest.php`.
 
 | ID | Status | Fix |
 |---|---|---|
@@ -28,7 +28,7 @@ The main problems are **missing authorization on a few V2 endpoints**, **server-
 | H1 | ✅ Fixed | Project authorization in `V2\IssueController::store` |
 | H2 | ✅ Fixed | Destination project authorized in `TaskController::update` |
 | H3 | ✅ Fixed | API key cannot target any project but its own |
-| H4 | ⚠️ Partial | Empty-body signature only accepted when the request has no body fields; API key read from the header only. **Still open:** timestamp/nonce replay protection, which needs a breaking client change |
+| H4 | ✅ Fixed | v2 signing: `X-Api-Timestamp` + HMAC over `"{timestamp}.{payload}"`. A 5-minute window applies and every signature works only once (cache-backed). Legacy signatures still work, with a `Deprecation` header, while `EXTERNAL_API_ALLOW_LEGACY_SIGNATURES=true`; **set it to `false` once all integrations are migrated.** The empty-body signature is only accepted when there are no body fields, and the API key is read from the header only. The Postman export and in-app docs now use v2 |
 | H5 | ✅ Fixed | `App\Rules\AssignableToProject` on web, API, external-API-key and import assignees |
 | H6 | ✅ Fixed | New `ProjectPolicy::manageSecrets` (owner or company admin) gates credentials, API keys and the Postman export. The export no longer contains the secret, and the V2 project page hides credentials from non-admins |
 | H7 | ✅ Fixed | SVG removed. Base64 and URL payloads must be real JPEG/PNG/GIF/WebP images |
@@ -39,7 +39,10 @@ The main problems are **missing authorization on a few V2 endpoints**, **server-
 | M5 | ✅ Fixed | Log Viewer: Super Admin only, in every environment |
 | L2 | ✅ Fixed | `TaskPolicy::delete()` added |
 | L6 | ✅ Fixed | Remote fetch errors are passed to `report()` |
-| L1, L3, L4, L5 | ⏳ Open | Code-quality items; not changed |
+| L1 | ✅ Fixed | `/new/task-view` and `/new/task/{id}` now require login; `/demo/dashboard` is not registered in production |
+| L4 | ✅ Fixed | `.env.example` keeps the dev defaults and adds a production checklist |
+| L5 | ✅ Reclassified | Not dead code: tests (and any `actingAs` caller) use it. It is informational: browser session cookies do not authenticate `/api/*`, so integrations must use API keys |
+| L3 | ⏳ Open | V1/V2 duplication. A large refactor, to be done on its own branch |
 
 ---
 
@@ -201,7 +204,7 @@ The main problems are **missing authorization on a few V2 endpoints**, **server-
 | L2 | `TaskPolicy` has no `delete()` method, so `can_delete` is always `false` for everyone except Super Admins. The delete UI quietly breaks | `app/Http/Controllers/V2/TaskController.php:152,307` | Add `TaskPolicy::delete()` (admins or the creator). |
 | L3 | V1 and V2 controllers duplicate business logic (Company, Trash, Note, Task, Issue). The V2 copies already lost authorization checks (C3, H1) | `app/Http/Controllers/*` vs `app/Http/Controllers/V2/*` | Move the logic into services or actions that both versions call. |
 | L4 | `.env.example` defaults to `APP_DEBUG=true`, `SESSION_ENCRYPT=false`, `LOG_LEVEL=debug` | `.env.example` | Document production values. A debug page on an exception leaks env and secrets. |
-| L5 | The API's session-auth branch never runs: the `api` group has no session middleware, so `auth()->check()` is always false | `VerifyExternalApiKey.php`, `Api/TaskController.php` | Remove it, or use Sanctum properly. |
+| L5 | *(Corrected)* The API's session-auth branch is reachable from tests (`actingAs`), but in production the `api` group has no session middleware, so browser cookies never authenticate `/api/*` | `VerifyExternalApiKey.php`, `Api/TaskController.php` | Informational. Use API keys for integrations, or adopt Sanctum if first-party SPA calls are needed. |
 | L6 | Errors are silently swallowed | `app/Services/TaskService.php:441` (`catch (\Throwable $e) {}`) | At least call `report($e)` or log a warning. |
 
 ---

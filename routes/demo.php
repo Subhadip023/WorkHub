@@ -13,6 +13,11 @@ use Inertia\Inertia;
 |
 */
 
+// Static demo data: never exposed in production.
+if (app()->environment('production')) {
+    return;
+}
+
 Route::get('/demo/dashboard', function () {
     return Inertia::render('New/Dashboard', [
         'user' => auth()->user() ?? [

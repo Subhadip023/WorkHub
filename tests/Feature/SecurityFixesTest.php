@@ -247,3 +247,95 @@ it('does not redirect to look-alike external hosts after switching UI', function
         ->get(route('ui.switch', 'v2'))
         ->assertRedirect(route('dashboard'));
 });
+
+// H4 — v2 timestamped signatures and replay protection
+function secApiKey(): array
+{
+    $owner = User::factory()->create();
+    $project = secProject($owner, null, 'Signed Project');
+    $creds = ExternalTaskApi::generateCredentials();
+    ExternalTaskApi::create([
+        'project_id' => $project->id, 'user_id' => $owner->id, 'name' => 'Signed Key',
+        'api_key' => $creds['api_key'], 'api_secret' => $creds['api_secret'], 'is_active' => true,
+    ]);
+
+    return [$creds, $owner, $project];
+}
+
+function secSignedHeaders(array $creds, string $body, ?int $timestamp = null): array
+{
+    $ts = (string) ($timestamp ?? time());
+
+    return [
+        'X-Api-Key' => $creds['api_key'],
+        'X-Api-Timestamp' => $ts,
+        'X-Api-Signature' => hash_hmac('sha256', $ts.'.'.$body, $creds['api_secret']),
+    ];
+}
+
+it('accepts a v2 timestamped signature', function () {
+    [$creds] = secApiKey();
+    $payload = ['title' => 'Signed v2 task'];
+
+    $this->withHeaders(secSignedHeaders($creds, json_encode($payload)))
+        ->postJson(route('api.tasks.store'), $payload)
+        ->assertCreated()
+        ->assertHeaderMissing('Deprecation');
+});
+
+it('rejects a v2 signature whose timestamp is outside the 5 minute window', function () {
+    [$creds] = secApiKey();
+    $payload = ['title' => 'Stale task'];
+
+    $this->withHeaders(secSignedHeaders($creds, json_encode($payload), time() - 600))
+        ->postJson(route('api.tasks.store'), $payload)
+        ->assertForbidden();
+
+    expect(Task::where('title', 'Stale task')->exists())->toBeFalse();
+});
+
+it('rejects a replayed v2 request', function () {
+    [$creds] = secApiKey();
+    $payload = ['title' => 'Replay me'];
+    $headers = secSignedHeaders($creds, json_encode($payload));
+
+    $this->withHeaders($headers)->postJson(route('api.tasks.store'), $payload)->assertCreated();
+    $this->withHeaders($headers)->postJson(route('api.tasks.store'), $payload)->assertForbidden();
+
+    expect(Task::where('title', 'Replay me')->count())->toBe(1);
+});
+
+it('accepts legacy signatures with a deprecation header only while the flag is enabled', function () {
+    [$creds] = secApiKey();
+    $payload = ['title' => 'Legacy task'];
+    $legacy = [
+        'X-Api-Key' => $creds['api_key'],
+        'X-Api-Signature' => hash_hmac('sha256', json_encode($payload), $creds['api_secret']),
+    ];
+
+    $this->withHeaders($legacy)->postJson(route('api.tasks.store'), $payload)
+        ->assertCreated()
+        ->assertHeader('Deprecation', 'true');
+
+    config(['services.external_api.allow_legacy_signatures' => false]);
+
+    $this->withHeaders($legacy)->postJson(route('api.tasks.store'), $payload)->assertForbidden();
+});
+
+it('exports a Postman collection that signs with timestamps', function () {
+    [, $owner, $project] = secApiKey();
+
+    $content = $this->actingAs($owner)
+        ->get(route('projects.external-api.postman', $project))
+        ->streamedContent();
+
+    expect($content)->toContain('X-Api-Timestamp')
+        ->and($content)->toContain('api_timestamp')
+        ->and($content)->toContain('YOUR_API_SECRET_HERE');
+});
+
+// L1
+it('requires login for the mock task view pages', function () {
+    $this->get(route('new.task.view'))->assertRedirect(route('login'));
+    $this->get(route('new.task.show', ['id' => '1']))->assertRedirect(route('login'));
+});
