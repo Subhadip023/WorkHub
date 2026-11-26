@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\V2;
 
+use App\Enums\CompanyRole;
 use App\Http\Controllers\Controller;
 use App\Support\HtmlSanitizer;
 use App\Models\Company;
@@ -118,7 +119,7 @@ class ProjectController extends Controller
                     $canDelete = $p->user_id === $user->id;
                 } else {
                     $membership = $user->companies()->where('company_id', $p->company_id)->first();
-                    $canDelete = $membership && (int) $membership->role === 1;
+                    $canDelete = $membership && CompanyRole::fromStored($membership->role)->atLeast(CompanyRole::Admin);
                 }
             }
 
@@ -189,7 +190,7 @@ class ProjectController extends Controller
                 $canDelete = $project->user_id === $user->id;
             } else {
                 $membership = $user->companies()->where('company_id', $project->company_id)->first();
-                $canDelete = $membership && (int) $membership->role === 1;
+                $canDelete = $membership && CompanyRole::fromStored($membership->role)->atLeast(CompanyRole::Admin);
             }
         }
 
@@ -220,7 +221,7 @@ class ProjectController extends Controller
                     'email' => $u->email,
                     'avatar' => strtoupper(substr($u->name, 0, 2)),
                     'profile_image' => $u->profile_image_url,
-                    'role' => (int) $cu->role === 1 ? 'Admin' : 'Member',
+                    'role' => CompanyRole::fromStored($cu->role)->label(),
                 ];
             })->filter()->values()->toArray();
         }

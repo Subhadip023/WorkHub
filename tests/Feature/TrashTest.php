@@ -15,7 +15,7 @@ it('allows user to view their soft-deleted tasks, projects, and companies in the
     CompanyUsers::create([
         'company_id' => $company->id,
         'user_id' => $user->id,
-        'role' => 1, // Admin
+        'role' => 3, // Owner
         'is_approved' => true,
     ]);
 
@@ -67,7 +67,7 @@ it('allows user to restore their soft-deleted tasks, projects, and companies', f
     CompanyUsers::create([
         'company_id' => $company->id,
         'user_id' => $user->id,
-        'role' => 1,
+        'role' => 3, // Owner
         'is_approved' => true,
     ]);
 
@@ -118,7 +118,7 @@ it('allows user to permanently delete (force delete) their soft-deleted tasks, p
     CompanyUsers::create([
         'company_id' => $company->id,
         'user_id' => $user->id,
-        'role' => 1,
+        'role' => 3, // Owner
         'is_approved' => true,
     ]);
 

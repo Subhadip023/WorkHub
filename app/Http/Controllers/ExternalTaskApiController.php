@@ -38,7 +38,7 @@ class ExternalTaskApiController extends Controller
                 ->filter()
                 ->values();
 
-            $user_role = $membership ? $membership->role : 2;
+            $user_role = $membership ? $membership->role : 0; // 0 = Member
         }
 
         $externalApis = $project->externalApis()->with(['assignedUser', 'user'])->latest()->get();

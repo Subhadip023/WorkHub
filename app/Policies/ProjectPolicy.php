@@ -2,10 +2,15 @@
 
 namespace App\Policies;
 
+use App\Authorization\CompanyAbility;
 use App\Models\CompanyUsers;
 use App\Models\Project;
 use App\Models\User;
 
+/**
+ * Personal projects (company_id null): the owner can do everything.
+ * Company projects: rules come from App\Authorization\CompanyAbility.
+ */
 class ProjectPolicy
 {
     /**
@@ -21,17 +26,36 @@ class ProjectPolicy
     }
 
     /**
-     * Determine whether the user can update the project.
+     * Create tasks, notes, issues and imports inside the project.
      */
-    public function update(User $user, Project $project): bool
+    public function contribute(User $user, Project $project): bool
     {
-        return $this->view($user, $project);
+        if ($project->company_id === null) {
+            return $project->user_id === $user->id;
+        }
+
+        return CompanyAbility::allows($user, $project->company_id, CompanyAbility::PROJECT_CONTRIBUTE);
     }
 
     /**
-     * Determine whether the user can view or manage project secrets
-     * (credentials vault, external API keys). Restricted to the personal-project
-     * owner or company administrators.
+     * Edit the project itself (name, description, status...). Managers and above,
+     * or the member who created the project.
+     */
+    public function update(User $user, Project $project): bool
+    {
+        if ($project->company_id === null) {
+            return $project->user_id === $user->id;
+        }
+
+        if ($project->user_id === $user->id && $this->view($user, $project)) {
+            return true;
+        }
+
+        return CompanyAbility::allows($user, $project->company_id, CompanyAbility::PROJECT_UPDATE);
+    }
+
+    /**
+     * View or manage project secrets (credentials vault, external API keys).
      */
     public function manageSecrets(User $user, Project $project): bool
     {
@@ -39,9 +63,7 @@ class ProjectPolicy
             return $project->user_id === $user->id;
         }
 
-        $membership = $user->companies()->where('company_id', $project->company_id)->first();
-
-        return $membership && (int) $membership->role === 1;
+        return CompanyAbility::allows($user, $project->company_id, CompanyAbility::SECRETS_MANAGE);
     }
 
     /**
@@ -53,10 +75,7 @@ class ProjectPolicy
             return $project->user_id === $user->id;
         }
 
-        // Only company administrators can delete company projects
-        $membership = $user->companies()->where('company_id', $project->company_id)->first();
-
-        return $membership && $membership->role === 1;
+        return CompanyAbility::allows($user, $project->company_id, CompanyAbility::PROJECT_DELETE);
     }
 
     /**
@@ -64,14 +83,14 @@ class ProjectPolicy
      */
     public function restore(User $user, Project $project): bool
     {
-        // Use withTrashed() because membership or project components might be soft-deleted
         if ($project->company_id === null) {
             return $project->user_id === $user->id;
         }
 
+        // Membership may be soft-deleted together with a trashed company.
         $membership = CompanyUsers::effectiveMembership($user->id, $project->company_id);
 
-        return $membership && (int) $membership->role === 1;
+        return CompanyAbility::roleAllows($membership?->roleEnum(), CompanyAbility::TRASH_MANAGE);
     }
 
     /**

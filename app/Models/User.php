@@ -33,6 +33,11 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public const ROLE_SUPER_ADMIN = 'Super Admin';
 
+    /**
+     * @deprecated The global Admin role was removed (2026_11_26 migration).
+     *             Kept only so historical migrations still run. Workspace
+     *             permissions come from company roles (App\Enums\CompanyRole).
+     */
     public const ROLE_ADMIN = 'Admin';
 
     public const ROLE_USER = 'User';
@@ -171,13 +176,5 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isSuperAdmin(): bool
     {
         return $this->hasRole(self::ROLE_SUPER_ADMIN);
-    }
-
-    /**
-     * Check if user is an Admin (or Super Admin).
-     */
-    public function isAdmin(): bool
-    {
-        return $this->hasRole(self::ROLE_ADMIN) || $this->isSuperAdmin();
     }
 }

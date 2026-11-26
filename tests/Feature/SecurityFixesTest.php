@@ -15,9 +15,10 @@ use Illuminate\Support\Facades\Http;
 function secCompanyWith(User $admin, array $members = []): Company
 {
     $company = Company::factory()->create();
-    CompanyUsers::create(['company_id' => $company->id, 'user_id' => $admin->id, 'role' => 1, 'is_approved' => true]);
+    // The creating user is the company's Owner (as CompanyController::store does).
+    CompanyUsers::create(['company_id' => $company->id, 'user_id' => $admin->id, 'role' => 3, 'is_approved' => true]);
     foreach ($members as $member) {
-        CompanyUsers::create(['company_id' => $company->id, 'user_id' => $member->id, 'role' => 2, 'is_approved' => true]);
+        CompanyUsers::create(['company_id' => $company->id, 'user_id' => $member->id, 'role' => 0, 'is_approved' => true]);
     }
 
     return $company;
@@ -193,7 +194,7 @@ it('does not re-add previously removed members when a company is restored', func
     $admin = User::factory()->create();
     $removed = User::factory()->create();
     $company = secCompanyWith($admin);
-    $removedMembership = CompanyUsers::create(['company_id' => $company->id, 'user_id' => $removed->id, 'role' => 2, 'is_approved' => true]);
+    $removedMembership = CompanyUsers::create(['company_id' => $company->id, 'user_id' => $removed->id, 'role' => 0, 'is_approved' => true]);
 
     $this->travel(-1)->days();
     $removedMembership->delete();

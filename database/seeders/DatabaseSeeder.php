@@ -85,7 +85,7 @@ class DatabaseSeeder extends Seeder
             'company_id' => $companyAcme->id,
             'user_id' => $admin->id,
         ], [
-            'role' => 1, // Admin
+            'role' => 3, // Owner
             'is_approved' => 1,
         ]);
 
@@ -93,7 +93,7 @@ class DatabaseSeeder extends Seeder
             'company_id' => $companyAcme->id,
             'user_id' => $user->id,
         ], [
-            'role' => 2, // Member
+            'role' => 0, // Member
             'is_approved' => 1,
         ]);
 
@@ -101,7 +101,7 @@ class DatabaseSeeder extends Seeder
             'company_id' => $companyAcme->id,
             'user_id' => $emily->id,
         ], [
-            'role' => 2, // Member
+            'role' => 0, // Member
             'is_approved' => 1,
         ]);
 
@@ -110,7 +110,7 @@ class DatabaseSeeder extends Seeder
             'company_id' => $companyNexus->id,
             'user_id' => $user->id,
         ], [
-            'role' => 1, // Admin
+            'role' => 3, // Owner
             'is_approved' => 1,
         ]);
 
@@ -118,7 +118,7 @@ class DatabaseSeeder extends Seeder
             'company_id' => $companyNexus->id,
             'user_id' => $jae->id,
         ], [
-            'role' => 2, // Member
+            'role' => 0, // Member
             'is_approved' => 1,
         ]);
 
@@ -126,7 +126,7 @@ class DatabaseSeeder extends Seeder
             'company_id' => $companyNexus->id,
             'user_id' => $morgan->id,
         ], [
-            'role' => 2, // Member
+            'role' => 0, // Member
             'is_approved' => 1,
         ]);
 

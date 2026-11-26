@@ -17,7 +17,7 @@ The main problems are **missing authorization on a few V2 endpoints**, **server-
 
 ## Fix status (branch `claude/cool-planck-3r5e3y`)
 
-> ✅ First batch verified locally on 2026-11-24: `php artisan test` passed 274 tests (1122 assertions), and `security:sanitize-html` cleaned 2 task rows. The second batch (H4 replay protection, L1, L4, L5) has not been run yet; **run `php artisan test` again before merging.** Regression tests are in `tests/Feature/SecurityFixesTest.php`.
+> ✅ First batch verified locally on 2026-11-24: `php artisan test` passed 274 tests (1122 assertions), and `security:sanitize-html` cleaned 2 task rows. Later batches (H4 replay protection, L1, L4, L5, and the R1–R4 roles work) have not been run yet; **run `php artisan test` again before merging.** Regression tests are in `tests/Feature/SecurityFixesTest.php`.
 
 | ID | Status | Fix |
 |---|---|---|
@@ -43,6 +43,10 @@ The main problems are **missing authorization on a few V2 endpoints**, **server-
 | L4 | ✅ Fixed | `.env.example` keeps the dev defaults and adds a production checklist |
 | L5 | ✅ Reclassified | Not dead code: tests (and any `actingAs` caller) use it. It is informational: browser session cookies do not authenticate `/api/*`, so integrations must use API keys |
 | L3 | ⏳ Open | V1/V2 duplication. A large refactor, to be done on its own branch |
+| R1 | ✅ Fixed | **Activity-log IDOR** (found during the roles review): `?user_id=N` returned any user's activity. Now restricted to the viewer, or to members of organizations the viewer administers, and only for that organization's records (`App\Support\ActivityLogQuery`) |
+| R2 | ✅ Fixed | **Cross-tenant activity**: the global "Admin" role saw every tenant via `scope=all`. The global Admin role is removed; `scope=company` covers only the viewer's Admin/Owner organizations |
+| R3 | ✅ Fixed | **Member-activity drawer** returned a member's activity from every tenant, including personal work. Now scoped to the organization (`App\Support\CompanyActivityScope`) |
+| R4 | ✅ Fixed | **Roles**: Owner / Admin / Manager / Member are defined once in `App\Enums\CompanyRole` + `App\Authorization\CompanyAbility`. Rank rules apply: you can only manage lower roles, and the Owner can't be removed and must transfer before leaving. The Permissions page is generated from the same rules, replacing the old hard-coded matrix that didn't match the code |
 
 ---
 

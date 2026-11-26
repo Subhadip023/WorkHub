@@ -89,7 +89,7 @@ class TaskController extends Controller
         $project = ! empty($validated['project_id']) ? Project::findOrFail($validated['project_id']) : null;
 
         if ($project) {
-            Gate::authorize('update', $project);
+            Gate::authorize('contribute', $project);
         }
 
         $this->ensureAssignable($validated['assigned_to'] ?? null, $project);
@@ -104,7 +104,7 @@ class TaskController extends Controller
      */
     public function store(Request $request, Project $project)
     {
-        Gate::authorize('update', $project);
+        Gate::authorize('contribute', $project);
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -195,7 +195,7 @@ class TaskController extends Controller
         if (array_key_exists('project_id', $validated) && (int) $validated['project_id'] !== (int) $task->project_id) {
             $targetProject = $validated['project_id'] ? Project::findOrFail($validated['project_id']) : null;
             if ($targetProject) {
-                Gate::authorize('update', $targetProject);
+                Gate::authorize('contribute', $targetProject);
             }
         }
 
@@ -266,7 +266,7 @@ class TaskController extends Controller
      */
     public function import(Request $request, Project $project)
     {
-        Gate::authorize('update', $project);
+        Gate::authorize('contribute', $project);
 
         $request->validate([
             'json_data' => 'nullable|string',
@@ -403,7 +403,7 @@ class TaskController extends Controller
                 ->filter()
                 ->values();
 
-            $user_role = $membership ? $membership->role : 1;
+            $user_role = $membership ? $membership->role : 0; // 0 = Member
         }
 
         $task->load([

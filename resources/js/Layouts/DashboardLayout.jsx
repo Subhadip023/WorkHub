@@ -430,7 +430,7 @@ export default function DashboardLayout({ title, children, activeItem = "dashboa
                     </SidebarMenuButton>
                   </SidebarMenuItem>
 
-                  {(user?.is_admin || user?.is_super_admin) && (
+                  {user?.is_super_admin && (
                     <SidebarMenuItem>
                       <SidebarMenuButton
                         asChild

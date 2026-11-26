@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\V2;
 
+use App\Enums\CompanyRole;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\CompanyUsers;
@@ -185,7 +186,7 @@ class DashboardController extends Controller
                 'name' => $u ? $u->name : 'User',
                 'email' => $u ? $u->email : '',
                 'company_name' => $c ? $c->name : null,
-                'role' => (int) $member->role === 1 ? 'Admin' : 'Member',
+                'role' => CompanyRole::fromStored($member->role)->label(),
                 'profile_image' => $u?->profile_image_url,
             ];
         })->values()->toArray();

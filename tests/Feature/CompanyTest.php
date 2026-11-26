@@ -80,13 +80,13 @@ it('allows company admin to update company name', function () {
     ]);
 });
 
-it('allows company admin to delete the company', function () {
+it('allows company owner to delete the company', function () {
     $user = User::factory()->create();
     $company = Company::create(['name' => 'To Be Deleted', 'code' => 'ABCD']);
     CompanyUsers::create([
         'company_id' => $company->id,
         'user_id' => $user->id,
-        'role' => 1, // Admin
+        'role' => 3, // Owner
     ]);
 
     $this->actingAs($user);
@@ -675,24 +675,24 @@ it('allows a member to leave the company and unassigns tasks', function () {
     expect(session('current_company_id'))->toBe('personal');
 });
 
-it('prevents an admin from leaving the company', function () {
-    $admin = User::factory()->create();
+it('prevents the owner from leaving the company without transferring ownership', function () {
+    $owner = User::factory()->create();
     $company = Company::create(['name' => 'Admin Org', 'code' => 'ADMN']);
     CompanyUsers::create([
         'company_id' => $company->id,
-        'user_id' => $admin->id,
-        'role' => 1, // Admin
+        'user_id' => $owner->id,
+        'role' => 3, // Owner
         'is_approved' => true,
     ]);
 
-    $this->actingAs($admin);
+    $this->actingAs($owner);
 
     $response = $this->post(route('companies.leave', $company));
     $response->assertStatus(403);
 
     $this->assertDatabaseHas('company_users', [
         'company_id' => $company->id,
-        'user_id' => $admin->id,
+        'user_id' => $owner->id,
     ]);
 });
 

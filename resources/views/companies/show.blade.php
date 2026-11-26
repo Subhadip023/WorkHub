@@ -108,10 +108,10 @@
                                     </td>
                                     <td class="align-middle">{{ $member->user->email ?? 'N/A' }}</td>
                                     <td class="align-middle">
-                                        @if($member->role == 1)
-                                            <span class="badge badge-success"><i class="fas fa-user-shield mr-1"></i>Admin</span>
+                                        @if($member->isAdministrator())
+                                            <span class="badge badge-success"><i class="fas fa-user-shield mr-1"></i>{{ $member->roleEnum()->label() }}</span>
                                         @else
-                                            <span class="badge badge-secondary"><i class="fas fa-user mr-1"></i>Member</span>
+                                            <span class="badge badge-secondary"><i class="fas fa-user mr-1"></i>{{ $member->roleEnum()->label() }}</span>
                                         @endif
                                     </td>
                                     <td class="align-middle">

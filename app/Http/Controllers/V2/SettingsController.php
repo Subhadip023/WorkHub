@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\V2;
 
+use App\Enums\CompanyRole;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\User;
@@ -31,7 +32,7 @@ class SettingsController extends Controller
                 'id' => $cu->company?->id,
                 'name' => $cu->company?->name,
                 'code' => $cu->company?->code,
-                'role' => (int) $cu->role === 1 ? 'Admin' : 'Member',
+                'role' => CompanyRole::fromStored($cu->role)->label(),
             ];
         })->filter(fn ($c) => ! empty($c['id']))->values()->toArray();
 

@@ -124,13 +124,13 @@ it('allows admin to update company name in v2', function () {
     ]);
 });
 
-it('allows admin to delete company in v2', function () {
+it('allows owner to delete company in v2', function () {
     $user = User::factory()->create(['email_verified_at' => now()]);
     $company = Company::create(['name' => 'Delete Me Corp', 'code' => 'DEL1']);
     CompanyUsers::create([
         'company_id' => $company->id,
         'user_id' => $user->id,
-        'role' => 1,
+        'role' => 3, // Owner
         'is_approved' => true,
     ]);
 

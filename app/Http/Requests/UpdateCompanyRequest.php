@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\CompanyRole;
 use App\Models\CompanyUsers;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -20,7 +21,7 @@ class UpdateCompanyRequest extends FormRequest
 
         return CompanyUsers::where('company_id', $company->id)
             ->where('user_id', $this->user()->id)
-            ->where('role', 1)
+            ->whereIn('role', CompanyRole::adminValues())
             ->exists();
     }
 

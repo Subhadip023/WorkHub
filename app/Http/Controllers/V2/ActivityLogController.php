@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\V2;
 
+use App\Support\ActivityLogQuery;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\User;
@@ -25,34 +26,7 @@ class ActivityLogController extends Controller
         $activeCompany = is_numeric($sessionCompanyId) ? Company::find($sessionCompanyId) : null;
         $currentWorkspaceName = $activeCompany ? $activeCompany->name : ($sessionCompanyId === 'personal' ? 'Personal Space' : 'All Workspaces');
 
-        $scope = $request->query('scope', 'mine');
-        $query = Activity::with(['causer', 'subject']);
-
-        if ($request->filled('user_id')) {
-            $targetUserId = (int) $request->input('user_id');
-            $query->where(function ($q) use ($targetUserId) {
-                $q->where(function ($sub) use ($targetUserId) {
-                    $sub->where('causer_type', 'user')
-                        ->where('causer_id', $targetUserId);
-                })->orWhere(function ($sub) use ($targetUserId) {
-                    $sub->where('subject_type', 'user')
-                        ->where('subject_id', $targetUserId);
-                });
-            });
-        } elseif ($scope === 'all' && $authUser->isAdmin()) {
-            // Viewing workspace/system activities
-        } else {
-            // Viewing own activities
-            $query->where(function ($q) use ($authUser) {
-                $q->where(function ($sub) use ($authUser) {
-                    $sub->where('causer_type', 'user')
-                        ->where('causer_id', $authUser->id);
-                })->orWhere(function ($sub) use ($authUser) {
-                    $sub->where('subject_type', 'user')
-                        ->where('subject_id', $authUser->id);
-                });
-            });
-        }
+        [$query, $scope] = ActivityLogQuery::build($request, auth()->user());
 
         if ($request->filled('event')) {
             $query->where('event', $request->input('event'));
@@ -113,6 +87,7 @@ class ActivityLogController extends Controller
             'activities' => $formattedActivities,
             'stats' => $stats,
             'scope' => $scope,
+            'can_view_company' => ActivityLogQuery::canViewCompanyScope($authUser),
             'current_workspace_name' => $currentWorkspaceName,
         ]);
     }

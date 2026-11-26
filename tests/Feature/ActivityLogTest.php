@@ -138,9 +138,27 @@ it('allows company members to fetch team member activity via memberActivity endp
         'is_approved' => true,
     ]);
 
+    $companyProject = Project::create([
+        'name' => 'Member Activity Project',
+        'slug' => 'member-activity-project',
+        'theme' => '#123456',
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $owner->id,
+        'company_id' => $company->id,
+    ]);
+
     $this->actingAs($memberUser);
     Task::create([
         'title' => 'Member Created Task',
+        'status' => 1,
+        'priority' => 1,
+        'user_id' => $memberUser->id,
+        'project_id' => $companyProject->id,
+    ]);
+    // Personal work must never show up in the organization's view of this member.
+    Task::create([
+        'title' => 'Private Personal Task',
         'status' => 1,
         'priority' => 1,
         'user_id' => $memberUser->id,
@@ -153,6 +171,7 @@ it('allows company members to fetch team member activity via memberActivity endp
     $response->assertJsonPath('success', true);
     $response->assertJsonPath('user.email', $memberUser->email);
     expect(count($response->json('activities')))->toBeGreaterThan(0);
+    expect(collect($response->json('activities'))->pluck('subject_title'))->not->toContain('Private Personal Task');
 
     // Unauthorized call (non-member)
     $this->actingAs($nonMemberUser);

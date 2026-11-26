@@ -78,10 +78,7 @@
                                 @if($user->isSuperAdmin())
                                     <span class="badge badge-warning px-3 py-2 font-weight-bold"><i class="fas fa-crown mr-1"></i> Super Admin</span>
                                 @else
-                                    <select class="form-control form-control-sm role-select font-weight-bold" data-user-id="{{ $user->id }}" style="max-width: 130px;">
-                                        <option value="Admin" {{ $user->hasRole('Admin') ? 'selected' : '' }}>⭐ Admin</option>
-                                        <option value="User" {{ $user->hasRole('User') || $user->roles->isEmpty() ? 'selected' : '' }}>👤 User</option>
-                                    </select>
+                                    <span class="badge badge-light px-3 py-2 font-weight-bold"><i class="fas fa-user mr-1"></i> User</span>
                                 @endif
                             </td>
                             <td class="text-center align-middle">
@@ -173,39 +170,6 @@ $(document).ready(function() {
         });
     });
 
-    // 2. Change Role via AJAX Dropdown
-    $('.role-select').on('change', function() {
-        const $select = $(this);
-        const userId = $select.data('user-id');
-        const newRole = $select.val();
-        const prevRole = $select.data('prev-val') || $select.val();
-
-        $.ajax({
-            url: `/admin/features/${userId}/toggle-role`,
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            },
-            data: { role: newRole },
-            success: function(res) {
-                $select.data('prev-val', newRole);
-                showToast(res.message, 'success');
-                // If promoted to Super Admin, feature is automatically active
-                if (parseInt(newRole) === 0) {
-                    const $featureBtn = $select.closest('tr').find('.btn-toggle-feature');
-                    $featureBtn.removeClass('btn-outline-secondary').addClass('btn-success');
-                    $featureBtn.find('i').removeClass('fa-times-circle').addClass('fa-check-circle');
-                    $featureBtn.find('.feature-status-text').text('Active');
-                }
-            },
-            error: function(xhr) {
-                $select.val(prevRole);
-                const msg = xhr.responseJSON?.message || 'Failed to update user role.';
-                showToast(msg, 'error');
-            }
-        });
-    });
 });
 </script>
 @endpush

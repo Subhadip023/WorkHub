@@ -6,13 +6,13 @@
 <div class="container-fluid">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800"><i class="fas fa-history text-primary mr-2"></i>My Activity Logs</h1>
-        @if(auth()->user()->isAdmin() || auth()->user()->isSuperAdmin())
+        @if(\App\Support\ActivityLogQuery::canViewCompanyScope(auth()->user()))
             <div class="btn-group" role="group">
                 <a href="{{ route('activity-logs.index', array_merge(request()->except('scope'), ['scope' => 'mine'])) }}" class="btn btn-sm {{ ($scope ?? 'mine') === 'mine' ? 'btn-primary font-weight-bold' : 'btn-outline-primary' }}">
                     <i class="fas fa-user mr-1"></i>My Activity
                 </a>
-                <a href="{{ route('activity-logs.index', array_merge(request()->except('scope'), ['scope' => 'all'])) }}" class="btn btn-sm {{ ($scope ?? 'mine') === 'all' ? 'btn-primary font-weight-bold' : 'btn-outline-primary' }}">
-                    <i class="fas fa-users-cog mr-1"></i>All System Activity
+                <a href="{{ route('activity-logs.index', array_merge(request()->except('scope'), ['scope' => 'company'])) }}" class="btn btn-sm {{ ($scope ?? 'mine') === 'company' ? 'btn-primary font-weight-bold' : 'btn-outline-primary' }}">
+                    <i class="fas fa-users-cog mr-1"></i>Organization Activity
                 </a>
             </div>
         @endif

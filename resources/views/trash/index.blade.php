@@ -311,10 +311,10 @@
                                             </span>
                                         </td>
                                         <td class="align-middle text-xs">
-                                            @if($membership->role == 1)
-                                                <span class="badge badge-danger">Admin</span>
+                                            @if($membership->isAdministrator())
+                                                <span class="badge badge-danger">{{ $membership->roleEnum()->label() }}</span>
                                             @else
-                                                <span class="badge badge-secondary">Member</span>
+                                                <span class="badge badge-secondary">{{ $membership->roleEnum()->label() }}</span>
                                             @endif
                                         </td>
                                         <td class="align-middle text-xs text-muted">

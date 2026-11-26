@@ -186,7 +186,7 @@ class IssueController extends Controller
 
         // Only allow reporting into projects the user can contribute to.
         if ($request->filled('project_id')) {
-            Gate::authorize('update', Project::findOrFail($request->input('project_id')));
+            Gate::authorize('contribute', Project::findOrFail($request->input('project_id')));
         }
 
         Task::create([

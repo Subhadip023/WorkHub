@@ -19,6 +19,7 @@ import { Badge } from "@/Components/ui/badge";
 
 export default function Permissions({
   roles = [],
+  role_columns = [],
   matrix = [],
   user_memberships = [],
   current_workspace_name = "All Workspaces",
@@ -115,7 +116,7 @@ export default function Permissions({
               <KeyRound className="w-4 h-4 text-emerald-400" />
               <span>Permission Capabilities Matrix</span>
             </h3>
-            <span className="text-xs font-mono text-zinc-500">Super Admin • Org Admin • Manager • Member</span>
+            <span className="text-xs font-mono text-zinc-500">{role_columns.map((c) => c.label).join(" • ")}</span>
           </div>
 
           <div className="overflow-x-auto">
@@ -123,17 +124,16 @@ export default function Permissions({
               <thead className="bg-zinc-950/40 text-zinc-400 font-mono text-[11px] uppercase border-b border-zinc-800">
                 <tr>
                   <th className="py-3 px-4">Capability Action</th>
-                  <th className="py-3 px-4 text-center">Super Admin</th>
-                  <th className="py-3 px-4 text-center">Org Admin</th>
-                  <th className="py-3 px-4 text-center">Project Lead</th>
-                  <th className="py-3 px-4 text-center">Member</th>
+                  {role_columns.map((col) => (
+                    <th key={col.key} className="py-3 px-4 text-center">{col.label}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/60">
                 {matrix.map((section, sIdx) => (
                   <React.Fragment key={sIdx}>
                     <tr className="bg-zinc-950/90 font-mono font-bold text-[11px] text-emerald-400/90 tracking-wider">
-                      <td colSpan={5} className="py-2.5 px-4 uppercase">
+                      <td colSpan={role_columns.length + 1} className="py-2.5 px-4 uppercase">
                         {section.category}
                       </td>
                     </tr>
@@ -142,34 +142,15 @@ export default function Permissions({
                         <td className="py-3 px-4 font-medium text-zinc-200">
                           {perm.name}
                         </td>
-                        <td className="py-3 px-4 text-center">
-                          {perm.super_admin ? (
-                            <Check className="w-4 h-4 text-emerald-400 mx-auto" />
-                          ) : (
-                            <X className="w-4 h-4 text-zinc-600 mx-auto" />
-                          )}
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          {perm.org_admin ? (
-                            <Check className="w-4 h-4 text-emerald-400 mx-auto" />
-                          ) : (
-                            <X className="w-4 h-4 text-zinc-600 mx-auto" />
-                          )}
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          {perm.manager ? (
-                            <Check className="w-4 h-4 text-emerald-400 mx-auto" />
-                          ) : (
-                            <X className="w-4 h-4 text-zinc-600 mx-auto" />
-                          )}
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          {perm.member ? (
-                            <Check className="w-4 h-4 text-emerald-400 mx-auto" />
-                          ) : (
-                            <X className="w-4 h-4 text-zinc-600 mx-auto" />
-                          )}
-                        </td>
+                        {role_columns.map((col) => (
+                          <td key={col.key} className="py-3 px-4 text-center">
+                            {perm[col.key] ? (
+                              <Check className="w-4 h-4 text-emerald-400 mx-auto" />
+                            ) : (
+                              <X className="w-4 h-4 text-zinc-600 mx-auto" />
+                            )}
+                          </td>
+                        ))}
                       </tr>
                     ))}
                   </React.Fragment>

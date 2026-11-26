@@ -174,7 +174,7 @@ class ProjectController extends Controller
                 ->filter()
                 ->values();
 
-            $user_role = $membership ? $membership->role : 2;
+            $user_role = $membership ? $membership->role : 0; // 0 = Member
         }
 
         // Build tasks query with filters

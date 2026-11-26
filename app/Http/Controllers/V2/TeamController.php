@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\V2;
 
+use App\Enums\CompanyRole;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\CompanyUsers;
@@ -31,7 +32,7 @@ class TeamController extends Controller
             return [
                 'id' => $cu->company?->id,
                 'name' => $cu->company?->name,
-                'is_admin' => (int) $cu->role === 1,
+                'is_admin' => CompanyRole::fromStored($cu->role)->atLeast(CompanyRole::Admin),
             ];
         })->filter(fn ($c) => ! empty($c['id']))->values()->toArray();
 
@@ -66,13 +67,17 @@ class TeamController extends Controller
                 return null;
             }
 
-            $isAdmin = $userMemberships->contains(fn ($m) => (int) $m->role === 1);
+            $highestRole = $userMemberships
+                ->map(fn ($m) => CompanyRole::fromStored($m->role))
+                ->sortByDesc(fn (CompanyRole $r) => $r->rank())
+                ->first() ?? CompanyRole::Member;
+            $isAdmin = $highestRole->atLeast(CompanyRole::Admin);
 
             $memberCompanies = $userMemberships->map(function ($m) {
                 return [
                     'id' => $m->company_id,
                     'name' => $m->company?->name,
-                    'role' => (int) $m->role === 1 ? 'Admin' : 'Member',
+                    'role' => CompanyRole::fromStored($m->role)->label(),
                 ];
             })->values()->toArray();
 
@@ -94,7 +99,7 @@ class TeamController extends Controller
                 'avatar' => strtoupper(substr($user->name, 0, 2)),
                 'profile_image' => $user->profile_image_url ?? null,
                 'is_admin' => $isAdmin,
-                'primary_role' => $isAdmin ? 'Admin' : 'Member',
+                'primary_role' => $highestRole->label(),
                 'companies' => $memberCompanies,
                 'tasks_count' => $totalTasks,
                 'completed_tasks_count' => $completedTasks,

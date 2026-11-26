@@ -316,6 +316,24 @@ export default function Companies({
     });
   };
 
+  const handleChangeRole = (comp, user, roleValue) => {
+    router.patch(
+      `/v2/companies/${comp.id}/members/${user.id}/role`,
+      { role: Number(roleValue) },
+      { preserveScroll: true }
+    );
+  };
+
+  const handleTransferOwnership = (comp, user) => {
+    if (
+      !confirm(
+        `Transfer ownership of ${comp.name} to ${user.name}? You will become an Admin and can no longer delete the organization.`
+      )
+    )
+      return;
+    router.post(`/v2/companies/${comp.id}/transfer-ownership/${user.id}`, {}, { preserveScroll: true });
+  };
+
   const fetchMemberActivity = async (comp, user) => {
     setActivityModalUser(user);
     setActivityModalData(null);
@@ -1172,16 +1190,40 @@ export default function Companies({
                             </td>
 
                             <td className="py-3.5">
-                              <Badge
-                                variant="outline"
-                                className={`text-[10px] font-semibold ${
-                                  m.role === "Admin"
-                                    ? "border-indigo-500/30 text-indigo-400 bg-indigo-500/10"
-                                    : "border-zinc-700 text-zinc-400 bg-zinc-800/40"
-                                }`}
-                              >
-                                {m.role}
-                              </Badge>
+                              {m.can_manage_role && m.assignable_roles?.length > 0 ? (
+                                <select
+                                  aria-label={`Role for ${m.name}`}
+                                  value={m.role_id}
+                                  onChange={(e) => handleChangeRole(inspectingCompany, m, e.target.value)}
+                                  className="h-7 rounded-md border border-zinc-700 bg-zinc-900 px-2 text-[11px] font-semibold text-zinc-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                >
+                                  {!m.assignable_roles.some((r) => r.value === m.role_id) && (
+                                    <option value={m.role_id} disabled>
+                                      {m.role}
+                                    </option>
+                                  )}
+                                  {m.assignable_roles.map((r) => (
+                                    <option key={r.value} value={r.value}>
+                                      {r.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              ) : (
+                                <Badge
+                                  variant="outline"
+                                  className={`text-[10px] font-semibold ${
+                                    m.role === "Owner"
+                                      ? "border-amber-500/30 text-amber-400 bg-amber-500/10"
+                                      : m.role === "Admin"
+                                      ? "border-indigo-500/30 text-indigo-400 bg-indigo-500/10"
+                                      : m.role === "Manager"
+                                      ? "border-emerald-500/30 text-emerald-400 bg-emerald-500/10"
+                                      : "border-zinc-700 text-zinc-400 bg-zinc-800/40"
+                                  }`}
+                                >
+                                  {m.role}
+                                </Badge>
+                              )}
                             </td>
 
                             <td className="py-3.5">
@@ -1210,6 +1252,17 @@ export default function Companies({
                                   <Activity className="w-3.5 h-3.5" />
                                   <span>Activity</span>
                                 </Button>
+
+                                {m.can_transfer_ownership && (
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => handleTransferOwnership(inspectingCompany, m)}
+                                    className="h-7 text-xs text-amber-400 hover:bg-amber-500/10"
+                                  >
+                                    Make owner
+                                  </Button>
+                                )}
 
                                 {m.can_remove && (
                                   <Button

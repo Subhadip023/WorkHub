@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Authorization\CompanyAbility;
 use App\Models\CompanyUsers;
 use App\Models\Project;
 use App\Models\Task;
@@ -44,8 +45,9 @@ class TaskPolicy
             return false;
         }
 
-        // Admins can modify anything; Members can only modify tasks explicitly assigned to them
-        return ($membership->role == 1) || ($task->assigned_to === $user->id) || ($task->user_id === $user->id);
+        // Managers and above can modify any task; members only tasks they created or are assigned to.
+        return CompanyAbility::roleAllows($membership->roleEnum(), CompanyAbility::TASK_UPDATE_ANY)
+            || ($task->assigned_to === $user->id) || ($task->user_id === $user->id);
     }
 
     /**
@@ -75,8 +77,9 @@ class TaskPolicy
             return false;
         }
 
-        // Admins can restore anything; Members can only restore tasks explicitly assigned to them or created by them
-        return ($membership->role == 1) || ($task->assigned_to === $user->id) || ($task->user_id === $user->id);
+        // Admins and above can restore anything; members only tasks they created or are assigned to.
+        return CompanyAbility::roleAllows($membership->roleEnum(), CompanyAbility::TRASH_MANAGE)
+            || ($task->assigned_to === $user->id) || ($task->user_id === $user->id);
     }
 
     /**

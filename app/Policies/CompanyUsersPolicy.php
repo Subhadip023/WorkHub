@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Authorization\CompanyAbility;
 use App\Models\CompanyUsers;
 use App\Models\User;
 
@@ -59,7 +60,9 @@ class CompanyUsersPolicy
 
         $membership = CompanyUsers::effectiveMembership($user->id, $companyUsers->company_id);
 
-        return $membership && ! $membership->trashed() && (int) $membership->role === 1;
+        return $membership && ! $membership->trashed()
+            && CompanyAbility::roleAllows($membership->roleEnum(), CompanyAbility::MEMBERS_REMOVE)
+            && $membership->roleEnum()->outranks($companyUsers->roleEnum());
     }
 
     /**

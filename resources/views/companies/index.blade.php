@@ -105,10 +105,10 @@
                                             </div>
                                         </td>
                                         <td class="align-middle">
-                                            @if($cu->role == 1)
-                                                <span class="badge badge-success"><i class="fas fa-user-shield mr-1"></i>Admin</span>
+                                            @if($cu->isAdministrator())
+                                                <span class="badge badge-success"><i class="fas fa-user-shield mr-1"></i>{{ $cu->roleEnum()->label() }}</span>
                                             @else
-                                                <span class="badge badge-secondary"><i class="fas fa-user mr-1"></i>Member</span>
+                                                <span class="badge badge-secondary"><i class="fas fa-user mr-1"></i>{{ $cu->roleEnum()->label() }}</span>
                                             @endif
                                         </td>
                                         <td class="align-middle">
@@ -125,7 +125,7 @@
                                         <td class="align-middle">
                                             @if(!$cu->is_approved)
                                                 <span class="text-muted small">Awaiting Admin Approval</span>
-                                            @elseif($cu->role == 1)
+                                            @elseif($cu->isAdministrator())
                                                 <button type="button" 
                                                         class="btn btn-info btn-sm btn-circle edit-company-btn" 
                                                         data-toggle="modal" 

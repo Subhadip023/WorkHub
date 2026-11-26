@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CompanyRole;
 use Database\Factories\CompanyUsersFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,6 +17,23 @@ class CompanyUsers extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = ['role', 'company_id', 'user_id', 'is_approved'];
+
+    /** Typed role; unknown stored values count as Member. */
+    public function roleEnum(): CompanyRole
+    {
+        return CompanyRole::fromStored($this->role);
+    }
+
+    public function hasRoleAtLeast(CompanyRole $minimum): bool
+    {
+        return $this->roleEnum()->atLeast($minimum);
+    }
+
+    /** Admin or Owner. */
+    public function isAdministrator(): bool
+    {
+        return $this->hasRoleAtLeast(CompanyRole::Admin);
+    }
 
     protected static function booted(): void
     {
@@ -70,16 +88,18 @@ class CompanyUsers extends Model
      *
      * @return array<int, int>
      */
-    public static function effectiveCompanyIds(int $userId, bool $adminOnly = false): array
+    public static function effectiveCompanyIds(int $userId, bool $adminOnly = false, ?CompanyRole $minimumRole = null): array
     {
+        $minimumRole ??= $adminOnly ? CompanyRole::Admin : null;
+
         return static::withTrashed()
             ->where('user_id', $userId)
             ->pluck('company_id')
             ->unique()
-            ->filter(function ($companyId) use ($userId, $adminOnly) {
+            ->filter(function ($companyId) use ($userId, $minimumRole) {
                 $membership = static::effectiveMembership($userId, (int) $companyId);
 
-                return $membership && (! $adminOnly || (int) $membership->role === 1);
+                return $membership && (! $minimumRole || $membership->hasRoleAtLeast($minimumRole));
             })
             ->values()
             ->all();

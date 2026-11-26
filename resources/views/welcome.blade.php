@@ -378,10 +378,10 @@
                                     </div>
                                 </div>
                                 <div>
-                                    @if($member->role == 1)
-                                        <span class="badge badge-success px-2 py-1 text-xs">Admin</span>
+                                    @if($member->isAdministrator())
+                                        <span class="badge badge-success px-2 py-1 text-xs">{{ $member->roleEnum()->label() }}</span>
                                     @else
-                                        <span class="badge badge-secondary px-2 py-1 text-xs">Member</span>
+                                        <span class="badge badge-secondary px-2 py-1 text-xs">{{ $member->roleEnum()->label() }}</span>
                                     @endif
                                 </div>
                             </div>

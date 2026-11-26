@@ -28,6 +28,7 @@ export default function ActivityLogs({
   activities = [],
   stats = null,
   scope = "mine",
+  can_view_company = false,
   current_workspace_name = "All Workspaces",
 }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -121,16 +122,18 @@ export default function ActivityLogs({
             >
               My Activity
             </button>
-            <button
-              onClick={() => handleScopeChange("all")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                currentScope === "all"
-                  ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold"
-                  : "text-zinc-400 hover:text-zinc-200"
-              }`}
-            >
-              All Events
-            </button>
+            {can_view_company && (
+              <button
+                onClick={() => handleScopeChange("company")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  currentScope === "company"
+                    ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold"
+                    : "text-zinc-400 hover:text-zinc-200"
+                }`}
+              >
+                Organization Activity
+              </button>
+            )}
           </div>
         </div>
 

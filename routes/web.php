@@ -85,6 +85,8 @@ Route::middleware(['auth', 'verified'])->prefix('v2')->name('v2.')->group(functi
     Route::post('/companies/{company}/approve/{user}', [V2CompanyController::class, 'approveMember'])->name('companies.approve-member');
     Route::post('/companies/{company}/reject-request/{user}', [V2CompanyController::class, 'rejectMemberRequest'])->name('companies.reject-member-request');
     Route::delete('/companies/{company}/members/{user}', [V2CompanyController::class, 'removeMember'])->name('companies.members.destroy');
+    Route::patch('/companies/{company}/members/{user}/role', [V2CompanyController::class, 'changeMemberRole'])->name('companies.members.role');
+    Route::post('/companies/{company}/transfer-ownership/{user}', [V2CompanyController::class, 'transferOwnership'])->name('companies.transfer-ownership');
     Route::get('/companies/{company}/members/{user}/activity', [V2CompanyController::class, 'memberActivity'])->name('companies.members.activity');
 
     // Team Members

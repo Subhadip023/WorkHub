@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\CompanyRole;
 use App\Models\Company;
 use App\Models\CompanyUsers;
 use App\Models\Project;
@@ -63,7 +64,8 @@ class TrashController extends Controller
             ->get();
 
         // 3. Fetch Trashed Companies
-        $deletedCompanyIds = $adminCompanyIds;
+        // Trashed organizations can only be restored/purged by their owner.
+        $deletedCompanyIds = CompanyUsers::effectiveCompanyIds($user->id, minimumRole: CompanyRole::Owner);
 
         $companies = Company::onlyTrashed()
             ->whereIn('id', $deletedCompanyIds)

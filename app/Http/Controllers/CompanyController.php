@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\CompanyRole;
+use App\Support\CompanyActivityScope;
 use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Requests\UpdateCompanyRequest;
 use App\Mail\InviteMember;
@@ -56,8 +58,8 @@ class CompanyController extends Controller
         CompanyUsers::create([
             'company_id' => $company_id,
             'user_id' => $user_id,
-            'role' => 1,
-            'is_approved' => true, // #23: Creator is always an approved admin
+            'role' => CompanyRole::Owner->value,
+            'is_approved' => true, // #23: Creator is always the approved owner
         ]);
 
         session(['current_company_id' => $company_id]);
@@ -101,7 +103,7 @@ class CompanyController extends Controller
 
         $isAdmin = CompanyUsers::where('company_id', $company->id)
             ->where('user_id', $user->id)
-            ->where('role', 1)
+            ->whereIn('role', CompanyRole::adminValues())
             ->exists();
 
         // Load pending join requests for admins
@@ -143,15 +145,11 @@ class CompanyController extends Controller
             return response()->json(['success' => false, 'message' => 'User is not a member of this organization.'], 404);
         }
 
-        $activities = Activity::where(function ($q) use ($user) {
-            $q->where(function ($sub) use ($user) {
-                $sub->where('causer_type', 'user')
-                    ->where('causer_id', $user->id);
-            })->orWhere(function ($sub) use ($user) {
-                $sub->where('subject_type', 'user')
-                    ->where('subject_id', $user->id);
-            });
-        })
+        // Only this organization's records: never the member's personal or other-tenant activity.
+        $activities = CompanyActivityScope::apply(
+            Activity::where('causer_type', 'user')->where('causer_id', $user->id),
+            [$company->id]
+        )
             ->with(['causer', 'subject'])
             ->latest('id')
             ->take(30)
@@ -223,14 +221,8 @@ class CompanyController extends Controller
     public function destroy(Company $company)
     {
         $user = auth()->user();
-        $is_admin = CompanyUsers::where('company_id', $company->id)
-            ->where('user_id', $user->id)
-            ->where('role', 1)
-            ->exists();
-
-        if (! $is_admin) {
-            abort(403, 'Unauthorized action.');
-        }
+        // Only the owner may delete the organization.
+        Gate::authorize('delete', $company);
 
         // Delete association records
         CompanyUsers::where('company_id', $company->id)->delete();
@@ -286,7 +278,7 @@ class CompanyController extends Controller
 
             // Notify admins
             $admins = CompanyUsers::where('company_id', $company_id)
-                ->where('role', 1)
+                ->whereIn('role', CompanyRole::adminValues())
                 ->where('is_approved', true)
                 ->with('user')
                 ->get();
@@ -360,6 +352,9 @@ class CompanyController extends Controller
         if (! $memberRelation) {
             return back()->with('error', 'Member not found in this organization.');
         }
+
+        // Admins can only remove members ranked below them; the owner can never be removed.
+        Gate::authorize('manageMember', [$company, $memberRelation]);
 
         // Unassign member's tasks in this company
         Task::where('assigned_to', $user->id)

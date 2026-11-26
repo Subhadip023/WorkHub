@@ -47,17 +47,6 @@ class UserFactory extends Factory
     }
 
     /**
-     * Indicate that the user is an Admin.
-     */
-    public function admin(): static
-    {
-        return $this->afterCreating(function (User $user) {
-            Role::findOrCreate(User::ROLE_ADMIN);
-            $user->syncRoles([User::ROLE_ADMIN]);
-        });
-    }
-
-    /**
      * Indicate that the model's email address should be unverified.
      */
     public function unverified(): static

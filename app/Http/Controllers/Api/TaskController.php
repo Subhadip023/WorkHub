@@ -146,7 +146,7 @@ class TaskController extends Controller
         if ($targetProjectId && $targetProjectId != 0) {
             $project = Project::findOrFail($targetProjectId);
             if (! $externalApiConfig) {
-                Gate::authorize('update', $project);
+                Gate::authorize('contribute', $project);
             }
             $validated['project_id'] = $project->id;
         }

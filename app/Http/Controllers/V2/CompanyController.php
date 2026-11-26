@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\V2;
 
+use App\Authorization\CompanyAbility;
+use App\Enums\CompanyRole;
+use App\Support\CompanyActivityScope;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Requests\UpdateCompanyRequest;
@@ -15,6 +18,7 @@ use App\Models\User;
 use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
@@ -65,7 +69,7 @@ class CompanyController extends Controller
             }
 
             $isActive = (string) $sessionCompanyId === (string) $company->id;
-            $isAdmin = (int) $cu->role === 1;
+            $isAdmin = CompanyRole::fromStored($cu->role)->atLeast(CompanyRole::Admin);
             $isApproved = (bool) $cu->is_approved;
 
             // Tasks count in this workspace
@@ -100,7 +104,7 @@ class CompanyController extends Controller
                 'id' => $company->id,
                 'name' => $company->name,
                 'code' => $company->code,
-                'role' => $isAdmin ? 'Admin' : 'Member',
+                'role' => CompanyRole::fromStored($cu->role)->label(),
                 'role_id' => (int) $cu->role,
                 'is_approved' => $isApproved,
                 'is_active' => $isActive,
@@ -126,7 +130,7 @@ class CompanyController extends Controller
         if (! $selectedCompanyData && $activeCompany) {
             $activeMembership = $authUser->companies()->where('company_id', $activeCompany->id)->first();
             if ($activeMembership) {
-                $isAdmin = (int) $activeMembership->role === 1;
+                $isAdmin = CompanyRole::fromStored($activeMembership->role)->atLeast(CompanyRole::Admin);
                 $selectedCompanyData = $this->loadFullCompanyDetails($activeCompany, $authUser, $isAdmin);
             }
         }
@@ -205,7 +209,7 @@ class CompanyController extends Controller
         CompanyUsers::create([
             'company_id' => $company->id,
             'user_id' => $user->id,
-            'role' => 1,
+            'role' => CompanyRole::Owner->value,
             'is_approved' => true,
         ]);
 
@@ -264,7 +268,7 @@ class CompanyController extends Controller
 
         // Notify organization administrators
         $admins = CompanyUsers::where('company_id', $company->id)
-            ->where('role', 1)
+            ->whereIn('role', CompanyRole::adminValues())
             ->where('is_approved', true)
             ->with('user')
             ->get();
@@ -345,14 +349,8 @@ class CompanyController extends Controller
     public function destroy(Company $company)
     {
         $user = auth()->user();
-        $isAdmin = CompanyUsers::where('company_id', $company->id)
-            ->where('user_id', $user->id)
-            ->where('role', 1)
-            ->exists();
-
-        if (! $isAdmin) {
-            abort(403, 'Unauthorized action. Only administrators can delete this organization.');
-        }
+        // Only the owner may delete the organization.
+        Gate::authorize('delete', $company);
 
         $companyName = $company->name;
 
@@ -539,6 +537,9 @@ class CompanyController extends Controller
             return back()->with('error', 'Member not found in this organization.');
         }
 
+        // Admins can only remove members ranked below them; the owner can never be removed.
+        Gate::authorize('manageMember', [$company, $membership]);
+
         // Unassign member's tasks
         Task::where('assigned_to', $user->id)
             ->whereHas('project', function ($query) use ($company) {
@@ -549,6 +550,82 @@ class CompanyController extends Controller
         $membership->delete();
 
         return back()->with('success', "{$user->name} was removed from the organization.");
+    }
+
+    /**
+     * Change a member's role. Actors can only assign roles below their own and
+     * only manage members ranked below them.
+     */
+    public function changeMemberRole(Request $request, Company $company, User $user)
+    {
+        $membership = CompanyUsers::where('company_id', $company->id)
+            ->where('user_id', $user->id)
+            ->where('is_approved', true)
+            ->firstOrFail();
+
+        Gate::authorize('manageMember', [$company, $membership]);
+
+        $actorRole = auth()->user()->isSuperAdmin()
+            ? CompanyRole::Owner
+            : CompanyAbility::roleOf(auth()->user(), $company->id);
+
+        $assignableValues = array_map(fn (CompanyRole $r) => $r->value, CompanyRole::assignableBy($actorRole));
+
+        $validated = $request->validate([
+            'role' => ['required', 'integer', 'in:'.implode(',', $assignableValues)],
+        ], [
+            'role.in' => 'You can only assign roles below your own.',
+        ]);
+
+        $oldRole = $membership->roleEnum();
+        $newRole = CompanyRole::from((int) $validated['role']);
+
+        $membership->update(['role' => $newRole->value]);
+
+        log_activity(
+            description: "Changed {$user->name}'s role in '{$company->name}' from {$oldRole->label()} to {$newRole->label()}",
+            event: 'role_changed',
+            subject: $company,
+            properties: ['user_id' => $user->id, 'from' => $oldRole->value, 'to' => $newRole->value]
+        );
+
+        return back()->with('success', "{$user->name} is now {$newRole->label()}.");
+    }
+
+    /**
+     * Transfer ownership to another approved member. The previous owner becomes Admin.
+     */
+    public function transferOwnership(Company $company, User $user)
+    {
+        Gate::authorize('transferOwnership', $company);
+
+        $authUser = auth()->user();
+        if ($authUser->id === $user->id) {
+            return back()->with('error', 'You already own this organization.');
+        }
+
+        $target = CompanyUsers::where('company_id', $company->id)
+            ->where('user_id', $user->id)
+            ->where('is_approved', true)
+            ->firstOrFail();
+
+        DB::transaction(function () use ($company, $authUser, $target) {
+            CompanyUsers::where('company_id', $company->id)
+                ->where('role', CompanyRole::Owner->value)
+                ->get()
+                ->each(fn (CompanyUsers $m) => $m->update(['role' => CompanyRole::Admin->value]));
+
+            $target->update(['role' => CompanyRole::Owner->value]);
+        });
+
+        log_activity(
+            description: "Transferred ownership of '{$company->name}' to {$user->name}",
+            event: 'ownership_transferred',
+            subject: $company,
+            properties: ['from_user_id' => $authUser->id, 'to_user_id' => $user->id]
+        );
+
+        return back()->with('success', "Ownership of {$company->name} transferred to {$user->name}. You are now an Admin.");
     }
 
     /**
@@ -567,13 +644,20 @@ class CompanyController extends Controller
             return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
         }
 
-        $activities = Activity::where(function ($q) use ($user) {
-            $q->where(function ($sub) use ($user) {
-                $sub->where('causer_type', 'user')->where('causer_id', $user->id);
-            })->orWhere(function ($sub) use ($user) {
-                $sub->where('subject_type', 'user')->where('subject_id', $user->id);
-            });
-        })
+        $targetIsMember = CompanyUsers::where('company_id', $company->id)
+            ->where('user_id', $user->id)
+            ->where('is_approved', true)
+            ->exists();
+
+        if (! $targetIsMember) {
+            return response()->json(['success' => false, 'message' => 'User is not a member of this organization.'], 404);
+        }
+
+        // Only this organization's records: never the member's personal or other-tenant activity.
+        $activities = CompanyActivityScope::apply(
+            Activity::where('causer_type', 'user')->where('causer_id', $user->id),
+            [$company->id]
+        )
             ->with(['causer', 'subject'])
             ->latest('id')
             ->take(30)
@@ -622,19 +706,27 @@ class CompanyController extends Controller
                 'completedTasks as completed_tasks_count',
                 'totalTasks as total_tasks_count',
             ])
-            ->get()
-            ->map(function (CompanyUsers $m) use ($isAdmin, $authUser) {
+            ->get();
+
+        $viewerRole = CompanyAbility::roleOf($authUser, $company->id);
+        $assignable = $viewerRole ? CompanyRole::assignableBy($viewerRole) : [];
+        $viewerIsOwner = $viewerRole === CompanyRole::Owner;
+
+        $members = $members
+            ->map(function (CompanyUsers $m) use ($authUser, $company, $assignable, $viewerIsOwner) {
                 $u = $m->user;
                 if (! $u) {
                     return null;
                 }
+
+                $canManage = Gate::forUser($authUser)->allows('manageMember', [$company, $m]);
 
                 return [
                     'id' => $u->id,
                     'membership_id' => $m->id,
                     'name' => $u->name,
                     'email' => $u->email,
-                    'role' => (int) $m->role === 1 ? 'Admin' : 'Member',
+                    'role' => CompanyRole::fromStored($m->role)->label(),
                     'role_id' => (int) $m->role,
                     'avatar' => strtoupper(substr($u->name, 0, 2)),
                     'profile_image' => $u->profile_image_url ?? null,
@@ -643,7 +735,12 @@ class CompanyController extends Controller
                     'total_tasks_count' => $m->total_tasks_count ?? 0,
                     'joined_at' => $m->created_at ? $m->created_at->format('M d, Y') : '',
                     'last_login' => $u->last_login_at ? $u->last_login_at->diffForHumans() : 'Never',
-                    'can_remove' => $isAdmin && $u->id !== $authUser->id,
+                    'can_remove' => $canManage,
+                    'can_manage_role' => $canManage,
+                    'assignable_roles' => $canManage
+                        ? array_map(fn (CompanyRole $r) => ['value' => $r->value, 'label' => $r->label()], $assignable)
+                        : [],
+                    'can_transfer_ownership' => $viewerIsOwner && $u->id !== $authUser->id,
                 ];
             })->filter()->values()->toArray();
 
@@ -708,6 +805,8 @@ class CompanyController extends Controller
             'created_at' => $company->created_at ? $company->created_at->format('M d, Y') : '',
             'created_at_human' => $company->created_at ? $company->created_at->diffForHumans() : '',
             'is_admin' => $isAdmin,
+            'viewer_role' => $viewerRole?->label(),
+            'can_transfer_ownership' => $viewerIsOwner,
             'members' => $members,
             'pending_requests' => $pendingRequests,
             'projects' => $projects,
