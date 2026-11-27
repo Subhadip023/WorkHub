@@ -18,6 +18,15 @@ return [
         'key' => env('POSTMARK_API_KEY'),
     ],
 
+    'gemini' => [
+        // Never commit the key: set GEMINI_API_KEY in .env only.
+        'key' => env('GEMINI_API_KEY'),
+        // Check the current stable "flash" model ID at https://ai.google.dev/gemini-api/docs/models
+        'model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),
+        'base_url' => env('GEMINI_BASE_URL', 'https://generativelanguage.googleapis.com/v1beta'),
+        'timeout' => (int) env('GEMINI_TIMEOUT', 20),
+    ],
+
     'external_api' => [
         // Accept signatures without X-Api-Timestamp (no replay protection).
         // Keep true only while integrations migrate; set false in production afterwards.

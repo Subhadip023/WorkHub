@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, router, usePage } from "@inertiajs/react";
+import axios from "axios";
 import DashboardLayout from "@/Layouts/DashboardLayout";
 import {
   CheckSquare,
@@ -87,6 +88,43 @@ export default function Tasks({
   };
   const [formData, setFormData] = useState(initialFormState);
 
+  // AI drafting (Gemini): fills the form, never saves on its own.
+  const [aiText, setAiText] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState("");
+
+  const handleAiDraft = async () => {
+    if (aiText.trim().length < 3 || aiLoading) return;
+    setAiLoading(true);
+    setAiError("");
+    try {
+      const projectId =
+        formData.project_id === "personal" || !formData.project_id ? null : Number(formData.project_id);
+      const { data } = await axios.post("/tasks/ai-draft", { text: aiText.trim(), project_id: projectId });
+      const d = data.draft;
+      setFormData((prev) => ({
+        ...prev,
+        title: d.title ?? prev.title,
+        description: d.description ?? prev.description,
+        priority: d.priority ?? prev.priority,
+        type: d.type ?? prev.type,
+        status: d.status ?? prev.status,
+        due_date: d.due_date ?? prev.due_date,
+        points: d.points ?? prev.points,
+        assigned_to: d.assigned_to ? String(d.assigned_to) : prev.assigned_to,
+      }));
+    } catch (err) {
+      const status = err.response?.status;
+      setAiError(
+        status === 429
+          ? "Too many AI drafts. Please wait a minute and try again."
+          : err.response?.data?.message || "AI drafting failed. Please fill the form manually."
+      );
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   // Sync tasks when server props change
   useEffect(() => {
     if (initial_tasks) {
@@ -172,6 +210,8 @@ export default function Tasks({
       onSuccess: () => {
         setShowCreateModal(false);
         setFormData(initialFormState);
+        setAiText("");
+        setAiError("");
         setIsSubmitting(false);
       },
       onError: (errs) => {
@@ -1132,6 +1172,41 @@ export default function Tasks({
                 >
                   <X className="w-4 h-4" />
                 </button>
+              </div>
+
+              {/* AI draft: describe the task, review the filled form, then save */}
+              <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 space-y-2">
+                <label htmlFor="ai-draft-text" className="flex items-center gap-1.5 text-xs font-mono text-emerald-400">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Describe it and let AI fill the form
+                </label>
+                <textarea
+                  id="ai-draft-text"
+                  rows={2}
+                  maxLength={2000}
+                  placeholder='e.g. "Urgent: checkout button broken on mobile, assign to Sarah, due Friday"'
+                  value={aiText}
+                  onChange={(e) => setAiText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleAiDraft();
+                  }}
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500 transition-colors resize-none"
+                />
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-[11px] text-zinc-500" role={aiError ? "alert" : undefined}>
+                    {aiError ? <span className="text-rose-400">{aiError}</span> : "Review the fields before saving. Nothing is saved automatically."}
+                  </p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleAiDraft}
+                    disabled={aiLoading || aiText.trim().length < 3}
+                    className="shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1.5"
+                  >
+                    {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                    {aiLoading ? "Drafting…" : "Draft with AI"}
+                  </Button>
+                </div>
               </div>
 
               <form onSubmit={handleCreateSubmit} className="space-y-4">

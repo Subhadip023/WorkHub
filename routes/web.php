@@ -206,6 +206,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/external-api/{externalTaskApi}', [ExternalTaskApiController::class, 'destroy'])->name('external-api.destroy');
     Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
     Route::post('/tasks', [TaskController::class, 'storeGeneral'])->name('tasks.store');
+    // AI drafting costs money per call: tightly rate-limited per user.
+    Route::post('/tasks/ai-draft', [TaskController::class, 'aiDraft'])->middleware('throttle:10,1')->name('tasks.ai-draft');
     Route::post('/projects/{project}/tasks', [TaskController::class, 'store'])->name('projects.tasks.store');
     Route::post('/projects/{project}/tasks/import', [TaskController::class, 'import'])->name('projects.tasks.import');
     Route::patch('/tasks/{task}/toggle', [TaskController::class, 'toggle'])->name('tasks.toggle');

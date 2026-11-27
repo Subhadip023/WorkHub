@@ -10,6 +10,8 @@ use App\Models\TaskImage;
 use App\Models\User;
 use App\Repositories\TaskRepositoryInterface;
 use App\Rules\AssignableToProject;
+use App\Services\Ai\AiTaskDraftService;
+use App\Services\Ai\AiUnavailableException;
 use App\Services\TaskServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -97,6 +99,31 @@ class TaskController extends Controller
         $this->taskService->createTask($validated, $project, auth()->user());
 
         return redirect()->route('tasks.index')->with('success', 'Task created successfully');
+    }
+
+    /**
+     * Draft a task from natural language with AI. Returns JSON only and never
+     * writes to the database: the client pre-fills the create form with it.
+     */
+    public function aiDraft(Request $request, AiTaskDraftService $drafts)
+    {
+        $validated = $request->validate([
+            'text' => 'required|string|min:3|max:2000',
+            'project_id' => 'nullable|integer|exists:projects,id',
+        ]);
+
+        $project = ! empty($validated['project_id']) ? Project::findOrFail($validated['project_id']) : null;
+        if ($project) {
+            Gate::authorize('contribute', $project);
+        }
+
+        try {
+            $draft = $drafts->draft($validated['text'], $project, $request->user());
+        } catch (AiUnavailableException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 503);
+        }
+
+        return response()->json(['success' => true, 'draft' => $draft]);
     }
 
     /**
